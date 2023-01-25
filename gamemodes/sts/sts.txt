@@ -1,0 +1,7 @@
+"sts"
+{
+	"base"			"base"
+	"title"			"Sts"
+	"maps"			""
+	"menusystem"	"1"
+}
