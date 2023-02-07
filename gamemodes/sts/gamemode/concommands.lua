@@ -1,3 +1,55 @@
+local models = {
+    "models/player/group01/female_01.mdl",
+    "models/player/group01/female_02.mdl",
+    "models/player/group01/female_03.mdl",
+    "models/player/group01/female_04.mdl",
+    "models/player/group01/female_05.mdl",
+    "models/player/group01/female_06.mdl",
+    "models/player/group01/male_01.mdl",
+    "models/player/group01/male_02.mdl",
+    "models/player/group01/male_03.mdl",
+    "models/player/group01/male_04.mdl",
+    "models/player/group01/male_05.mdl",
+    "models/player/group01/male_06.mdl",
+    "models/player/group01/male_07.mdl",
+    "models/player/group01/male_08.mdl",
+    "models/player/group01/male_09.mdl",
+    "models/player/group02/male_02.mdl",
+    "models/player/group02/male_04.mdl",
+    "models/player/group02/male_06.mdl",
+    "models/player/group02/male_08.mdl",
+    "models/player/group03/female_01.mdl",
+    "models/player/group03/female_02.mdl",
+    "models/player/group03/female_03.mdl",
+    "models/player/group03/female_04.mdl",
+    "models/player/group03/female_05.mdl",
+    "models/player/group03/female_06.mdl",
+    "models/player/group03/male_01.mdl",
+    "models/player/group03/male_02.mdl",
+    "models/player/group03/male_03.mdl",
+    "models/player/group03/male_04.mdl",
+    "models/player/group03/male_05.mdl",
+    "models/player/group03/male_06.mdl",
+    "models/player/group03/male_07.mdl",
+    "models/player/group03/male_08.mdl",
+    "models/player/group03/male_09.mdl",
+    "models/player/group03m/female_01.mdl",
+    "models/player/group03m/female_02.mdl",
+    "models/player/group03m/female_03.mdl",
+    "models/player/group03m/female_04.mdl",
+    "models/player/group03m/female_05.mdl",
+    "models/player/group03m/female_06.mdl",
+    "models/player/group03m/male_01.mdl",
+    "models/player/group03m/male_02.mdl",
+    "models/player/group03m/male_03.mdl",
+    "models/player/group03m/male_04.mdl",
+    "models/player/group03m/male_05.mdl",
+    "models/player/group03m/male_06.mdl",
+    "models/player/group03m/male_07.mdl",
+    "models/player/group03m/male_08.mdl",
+    "models/player/group03m/male_09.mdl"
+}
+
 concommand.Add("set_team", function(ply, cmd, args)
     local inp = tonumber(args[1]) -- wtf is inp?
 
@@ -31,25 +83,25 @@ concommand.Add("set_team", function(ply, cmd, args)
     if ply:Team() == 1 then
         ply:SetKeyValue("targetname", "Blueply" .. ply:GetName())
         ply:SetKeyValue("rendercolor", "28 141 255")
-        ply:SetModel("models/player/group03m/male_07.mdl")
+        ply:SetModel(models[math.random(#models)])
     end
 
     if ply:Team() == 2 then
         ply:SetKeyValue("targetname", "Redply" .. ply:GetName())
         ply:SetKeyValue("rendercolor", "255 30 30")
-        ply:SetModel("models/player/group03m/male_03.mdl")
+        ply:SetModel(models[math.random(#models)])
     end
 
     if ply:Team() == 3 then
         ply:SetKeyValue("targetname", "Greenply" .. ply:GetName())
         ply:SetKeyValue("rendercolor", "30 255 30")
-        ply:SetModel("models/player/group03m/male_09.mdl")
+        ply:SetModel(models[math.random(#models)])
     end
 
     if ply:Team() == 4 then
         ply:SetKeyValue("targetname", "Yellowply" .. ply:GetName())
         ply:SetKeyValue("rendercolor", "255 230 0")
-        ply:SetModel("models/player/group03m/male_01.mdl")
+        ply:SetModel(models[math.random(#models)])
     end
 
     if ply:Team() == 0 then
@@ -75,7 +127,7 @@ concommand.Add("deathpnt", function(ply, cmd, args)
     end
 
     print("Each deathmatch kill will give you " .. amount .. " points")
-end)
+end, nil, nil, FCVAR_CHEAT)
 
 concommand.Add("stsgod", function(ply, cmd, args)
     local amount = args[1]
@@ -88,7 +140,7 @@ concommand.Add("newround", function(args)
             v:Fire("Trigger")
         end
     end
-end)
+end, nil, nil, FCVAR_CHEAT)
 
 concommand.Add("flagspwn", function(args)
     for k, v in ipairs(ents.GetAll()) do
@@ -96,7 +148,7 @@ concommand.Add("flagspwn", function(args)
             v:Fire("ForceSpawn")
         end
     end
-end)
+end, nil, nil, FCVAR_CHEAT)
 
 concommand.Add("batteryspwn", function(args)
     for k, v in ipairs(ents.GetAll()) do
@@ -104,7 +156,7 @@ concommand.Add("batteryspwn", function(args)
             v:Fire("ForceSpawn")
         end
     end
-end)
+end, nil, nil, FCVAR_CHEAT)
 
 concommand.Add("mob_descriptions", function(ply, cmd, args)
     local onoff = args[1]
@@ -120,7 +172,7 @@ concommand.Add("bround_interval", function(ply, cmd, args)
             v:Fire("SetHitMax", tostring(amount))
         end
     end
-end)
+end, nil, nil, FCVAR_CHEAT)
 
 -- concommand.Add( "bround_toggle", function( ply, cmd, args)
 -- local amount = args[1]
@@ -164,13 +216,13 @@ end)
 concommand.Add("time_survival", function(ply, cmd, args)
     local amount = args[1]
     timeset(1, amount)
-end)
+end, nil, nil, FCVAR_CHEAT)
 
 concommand.Add("time_deathmatch", function(ply, cmd, args)
     local amount = args[1]
     timeset(2, amount)
-end)
+end, nil, nil, FCVAR_CHEAT)
 
 concommand.Add("tst", function(ply, cmd, args)
     allgonetest()
-end)
+end, nil, nil, FCVAR_CHEAT)

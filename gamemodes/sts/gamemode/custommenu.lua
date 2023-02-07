@@ -1,30 +1,30 @@
-local Menu
+local customMenu
 
 net.Receive("FMenu", function()
-    if Menu == nil then
-        Menu = vgui.Create("DFrame")
-        Menu:SetSize(750, 500)
-        Menu:SetPos(ScrW() / 2 - 325, ScrH() / 2 - 250)
-        Menu:SetTitle("Gamemode Menu")
-        Menu:SetDraggable(false)
-        Menu:ShowCloseButton(true)
-        Menu:SetDeleteOnClose(false)
+    if customMenu == nil then
+        customMenu = vgui.Create("DFrame")
+        customMenu:SetSize(750, 500)
+        customMenu:SetPos(ScrW() / 2 - 325, ScrH() / 2 - 250)
+        customMenu:SetTitle("Gamemode Menu")
+        customMenu:SetDraggable(false)
+        customMenu:ShowCloseButton(true)
+        customMenu:SetDeleteOnClose(false)
 
-        Menu.Paint = function()
+        customMenu.Paint = function()
             surface.SetDrawColor(60, 60, 60, 255)
-            surface.DrawRect(0, 0, Menu:GetWide(), Menu:GetTall())
+            surface.DrawRect(0, 0, customMenu:GetWide(), customMenu:GetTall())
             surface.SetDrawColor(40, 40, 40, 255)
-            surface.DrawRect(0, 24, Menu:GetWide(), 1)
+            surface.DrawRect(0, 24, customMenu:GetWide(), 1)
         end
     end
 
-    addButtons(Menu)
+    addButtons(customMenu)
 
     if net.ReadBit() == 0 then
-        Menu:Hide()
+        customMenu:Hide()
         gui.EnableScreenClicker(false)
     else
-        Menu:Show()
+        customMenu:Show()
         gui.EnableScreenClicker(true)
     end
 end)
@@ -42,7 +42,7 @@ function addButtons(Menu)
         draw.DrawText("Blue", "DermaDefaultBold", blueButton:GetWide() / 2, 17, Color(255, 255, 255, 255), 1)
     end
 
-    blueButton.DoClick = function(blueButton)
+    blueButton.DoClick = function()
         LocalPlayer():ConCommand("set_team " .. 1)
     end
 
@@ -58,7 +58,7 @@ function addButtons(Menu)
         draw.DrawText("Red", "DermaDefaultBold", redButton:GetWide() / 2, 17, Color(255, 255, 255, 255), 1)
     end
 
-    redButton.DoClick = function(redButton)
+    redButton.DoClick = function()
         LocalPlayer():ConCommand("set_team " .. 2)
     end
 
@@ -74,7 +74,7 @@ function addButtons(Menu)
         draw.DrawText("Green", "DermaDefaultBold", greenButton:GetWide() / 2, 17, Color(255, 255, 255, 255), 1)
     end
 
-    greenButton.DoClick = function(greenButton)
+    greenButton.DoClick = function()
         LocalPlayer():ConCommand("set_team " .. 3)
     end
 
@@ -90,7 +90,7 @@ function addButtons(Menu)
         draw.DrawText("Yellow", "DermaDefaultBold", yellowButton:GetWide() / 2, 17, Color(0, 0, 0, 255), 1)
     end
 
-    yellowButton.DoClick = function(yellowButton)
+    yellowButton.DoClick = function()
         LocalPlayer():ConCommand("set_team " .. 4)
     end
 end

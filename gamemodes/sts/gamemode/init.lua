@@ -22,6 +22,16 @@ end
 RunConsoleCommand("sv_gravity", "600")
 RunConsoleCommand("sk_combine_s_kick", "6")
 
+-- ensure bonus rounds get turned on, hammer logic broken on map load despite best efforts
+for k, v in ipairs(ents.GetAll()) do
+    if v:GetName() == "newround_counter" then
+        v:Fire("Enable")
+    end
+    if v:GetName() == "bonusround_disable_relay" then
+        v:Fire("Disable")
+    end
+end
+
 function GM:PlayerInitialSpawn(ply)
     allgonened()
     ply:SetMaxHealth(100)
@@ -156,21 +166,21 @@ function boxprint(ply, boxnum, col)
     local mobnum
     local mobtech
 
-    for k, u in ipairs(ents.GetAll()) do
-        if u:GetName() == (col .. "_box" .. boxnum .. "_rarity_case") then
+    for _, entity in ipairs(ents.GetAll()) do
+        if entity:GetName() == (col .. "_box" .. boxnum .. "_rarity_case") then
             mobrarstr = u:GetInternalVariable("Case16")
             mobrarval = u:GetInternalVariable("Case15")
         end
 
-        if u:GetName() == (col .. "_box" .. boxnum .. "_mobcase_" .. mobrarval) then
+        if entity:GetName() == (col .. "_box" .. boxnum .. "_mobcase_" .. mobrarval) then
             mobtype = u:GetInternalVariable("Case16")
         end
 
-        if u:GetName() == (col .. "_box" .. boxnum .. "_amountcounter_rand") then
+        if entity:GetName() == (col .. "_box" .. boxnum .. "_amountcounter_rand") then
             mobnum = u:GetInternalVariable("Case16")
         end
 
-        if u:GetName() == (col .. "_box" .. boxnum .. "_tech_casein") then
+        if entity:GetName() == (col .. "_box" .. boxnum .. "_tech_casein") then
             mobtech = u:GetInternalVariable("Case16")
         end
     end
@@ -185,6 +195,7 @@ function boxprint(ply, boxnum, col)
     end
 end
 
+-- trig???? trigonometry???? what does this mean???? trigger?????
 function trigafford(y)
     local col = string.sub(y, 1, -16)
     colnum = teamval[col]
@@ -200,7 +211,7 @@ function trigafford(y)
                     end
                 end
             else
-                ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCan\"t Afford\n-------------\n\n\n\n")
+                ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCan't Afford\n-------------\n\n\n\n")
             end
         end
     end
@@ -212,8 +223,8 @@ function randomizeboxsub(box)
     local col = string.sub(box, 1, length)
     colnum = teamval[col]
 
-    for k, u in ipairs(ents.GetAll()) do
-        if u:GetName() == (box .. "_tech_casein") then
+    for _, entity in ipairs(ents.GetAll()) do
+        if entity:GetName() == (box .. "_tech_casein") then
             local subamount = tonumber(u:GetInternalVariable("Case16")) * 6
 
             if string.len(tostring(subamount)) == 1 then
@@ -228,48 +239,99 @@ end
 -- same shit here, why is it the same for loop over and over? there must be a reason, cause otherwise this wastes time and creates errors
 -- i literally cannot make this readable until tergative tells me EXACTLY what its doing because frankly i cannot decipher it with my currently limited knowledge
 -- tl;dr DO NOT TOUCH
+-- i touched it, untested but should work the same
+-- this isn't too much better but at least i can read it
 function randafford(boxname)
     -- local num = string.sub(boxname,-1,-1)
     local length = string.len(boxname) - 5
     local col = string.sub(boxname, 1, length)
+    local points = 0
+    local mobtechcost
+    local randomizeBox
+    local levelAvailable
+    local maxLevel
+
     colnum = teamval[col]
 
-    for i, ply in ipairs(player.GetAll()) do
+    for _, entity in ipairs(ents.GetAll()) do
+        if entity:GetName() == (boxname .. "_upgrade_case") then
+            if tonumber(u:GetInternalVariable("Case16")) < 5 then
+                mobtechcost = u:GetInternalVariable("Case16") * 6 -- why * 6?
+            else
+                mobtechcost = 99999 -- arbitrarily high number
+                maxLevel = true
+            end
+        end
+        if entity:GetName() == (col .. "_raradd_trig") then
+            randomizeBox = entity
+        end
+        if tonumber(entity:GetInternalVariable("Case01")) == 2 then
+            levelAvailable = 2
+        elseif tonumber(entity:GetInternalVariable("Case01")) == 1 then
+            levelAvailable = 1
+        else
+            levelAvailable = tonumber(entity:GetInternalVariable("Case01"))
+            print("Warning! Var levelAvailable set to " .. levelAvailable .. ". This should never happen!!!")
+        end
+    end
+
+    for _, ply in ipairs(player.GetAll()) do
         if ply:Team() == colnum then
-            local points = tonumber(ply:GetNWInt("researchPoints"))
-
-            for k, u in ipairs(ents.GetAll()) do
-                if u:GetName() == (boxname .. "_tech_casein") then
-                    if tonumber(u:GetInternalVariable("Case16")) < 5 then
-                        local mobtechcost = u:GetInternalVariable("Case16") * 6
-
-                        for k, i in ipairs(ents.GetAll()) do
-                            if i:GetName() == (boxname .. "_upgrade_case") then
-                                if tonumber(i:GetInternalVariable("Case01")) == 2 then
-                                    if points >= mobtechcost then
-                                        for k, v in ipairs(ents.GetAll()) do
-                                            if v:GetName() == (col .. "_raradd_trig") then
-                                                v:Fire("Enable")
-                                            end
-                                        end
-                                    else
-                                        ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCan\"t Afford\n-------------\n\n\n\n")
-                                    end
-                                elseif tonumber(i:GetInternalVariable("Case01")) == 1 then
-                                    ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nTech Level Not Available\n-------------\n\n\n\n")
-                                else
-                                    ply:PrintMessage(HUD_PRINTTALK, "Congrats! You've found a bug, please screenshot this and send it along with a description of what you were doing to the developers.")
-                                end
-                            end
-                        end
-                    else
+            points = tonumber(ply:GetNWInt("researchPoints"))
+            if randomizeBox then
+                if levelAvailable == 2 then
+                    if points >= mobtechcost then
+                        randomizeBox:Fire("Enable")
+                    elseif points < mobtechcost then
+                        ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCan't Afford\n-------------\n\n\n\n")
+                    elseif maxLevel then
                         ply:PrintMessage(HUD_PRINTTALK, ".\n\n\n\n\n\n\n\n\n\nMax Level\n-------------\n\n\n\n")
+                    else
+                        ply:PrintMessage(HUD_PRINTTALK, "Congrats! You've found a bug, please screenshot this and send it along with a description of what you were doing to the developers.")
                     end
+                elseif levelAvailable == 1 then
+                    ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nTech Level Not Available\n-------------\n\n\n\n")
+                else
+                    ply:PrintMessage(HUD_PRINTTALK, "Congrats! You've found a bug, please screenshot this and send it along with a description of what you were doing to the developers.")
                 end
             end
         end
     end
 end
+
+
+--             for k, u in ipairs(ents.GetAll()) do
+--                 if u:GetName() == (boxname .. "_tech_casein") then
+--                     if tonumber(u:GetInternalVariable("Case16")) < 5 then
+--                         mobtechcost = u:GetInternalVariable("Case16") * 6
+
+--                         for k, i in ipairs(ents.GetAll()) do
+--                             if i:GetName() == (boxname .. "_upgrade_case") then
+--                                 if tonumber(i:GetInternalVariable("Case01")) == 2 then
+--                                     if points >= mobtechcost then
+--                                         for k, v in ipairs(ents.GetAll()) do
+--                                             if v:GetName() == (col .. "_raradd_trig") then
+--                                                 v:Fire("Enable")
+--                                             end
+--                                         end
+--                                     else
+--                                         ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCan\"t Afford\n-------------\n\n\n\n")
+--                                     end
+--                                 elseif tonumber(i:GetInternalVariable("Case01")) == 1 then
+--                                     ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nTech Level Not Available\n-------------\n\n\n\n")
+--                                 else
+--                                     ply:PrintMessage(HUD_PRINTTALK, "Congrats! You've found a bug, please screenshot this and send it along with a description of what you were doing to the developers.")
+--                                 end
+--                             end
+--                         end
+--                     else
+--                         ply:PrintMessage(HUD_PRINTTALK, ".\n\n\n\n\n\n\n\n\n\nMax Level\n-------------\n\n\n\n")
+--                     end
+--                 end
+--             end
+--         end
+--     end
+-- end
 
 --RESEARCH POINTS EDITING
 function pointsub(x)
@@ -304,37 +366,37 @@ function survpointadd(x)
     end
 end
 
-function broundtoggle(x)
-    local amount = x
+-- function broundtoggle(x)
+--     local amount = x
 
-    if tonumber(amount) == 0 then
-        print("Bonusrounds Disabled")
+--     if tonumber(amount) == 0 then
+--         print("Bonusrounds Disabled")
 
-        for k, v in ipairs(ents.GetAll()) do
-            if v:GetName() == "newround_counter" then
-                v:Fire("Disable")
-            end
+--         for k, v in ipairs(ents.GetAll()) do
+--             if v:GetName() == "newround_counter" then
+--                 v:Fire("Disable")
+--             end
 
-            if v:GetName() == "bonusround_disable_relay" then
-                v:Fire("Enable")
-            end
-        end
-    elseif tonumber(amount) == 1 then
-        print("Bonusrounds Enabled")
+--             if v:GetName() == "bonusround_disable_relay" then
+--                 v:Fire("Enable")
+--             end
+--         end
+--     elseif tonumber(amount) == 1 then
+--         print("Bonusrounds Enabled")
 
-        for k, v in ipairs(ents.GetAll()) do
-            if v:GetName() == "newround_counter" then
-                v:Fire("Enable")
-            end
+--         for k, v in ipairs(ents.GetAll()) do
+--             if v:GetName() == "newround_counter" then
+--                 v:Fire("Enable")
+--             end
 
-            if v:GetName() == "bonusround_disable_relay" then
-                v:Fire("Disable")
-            end
-        end
-    else
-        print("Invalid Entry")
-    end
-end
+--             if v:GetName() == "bonusround_disable_relay" then
+--                 v:Fire("Disable")
+--             end
+--         end
+--     else
+--         print("Invalid Entry")
+--     end
+-- end
 
 --TIMER STUFF
 function roundend()
@@ -381,10 +443,10 @@ function GM:PlayerDisconnected(ply)
     print("A player has disconnected")
     print(ply:Name() .. " has left the server.")
     colortest()
-    timer.Simple(10, allgonetest)
+    timer.Simple(10, allgonecheck)
 end
 
-function allgonetest()
+function allgonecheck()
     print(tonumber(player.GetCount()))
 
     if tonumber(player.GetCount()) == 0 then
@@ -406,34 +468,28 @@ function allgonened()
     end
 end
 
-function yip()
-    print("yip")
-end
-
 function gamereset()
-    for i, x in ipairs(player.GetAll()) do
-        x:SetHealth(100)
-        x:SetNWInt("combat", 0)
-        x:SetNWInt("timon", 0)
-        scorereset(0)
-        x:SetKeyValue("targetname", x:GetName())
-        x:SetKeyValue("rendercolor", "255 255 255")
-        x:SetTeam(0)
-        x:ConCommand("set_team 0")
-    end
-
-    game.ConsoleCommand("gmod_admin_cleanup\n")
-    game.ConsoleCommand("sv_gravity 600\n")
-
-    for i, x in ipairs(player.GetAll()) do
-        x:Spawn()
-        x:SetNWInt("beginon", 1)
-        x:SetNWInt("strtround", 5)
-        x:SetNWInt("strtpnt", 20)
-    end
-
-    if timer.Exists("endtimer") then
-        print("Game Restarted")
-        timer.Remove("endtimer")
-    end
+    RunConsoleCommand("map", "gm_sts")
+    -- for i, x in ipairs(player.GetAll()) do
+    --     x:SetHealth(100)
+    --     x:SetNWInt("combat", 0)
+    --     x:SetNWInt("timon", 0)
+    --     scorereset(0)
+    --     x:SetKeyValue("targetname", x:GetName())
+    --     x:SetKeyValue("rendercolor", "255 255 255")
+    --     x:SetTeam(0)
+    --     x:ConCommand("set_team 0")
+    -- end
+    -- game.ConsoleCommand("gmod_admin_cleanup\n")
+    -- game.ConsoleCommand("sv_gravity 600\n")
+    -- for i, x in ipairs(player.GetAll()) do
+    --     x:Spawn()
+    --     x:SetNWInt("beginon", 1)
+    --     x:SetNWInt("strtround", 5)
+    --     x:SetNWInt("strtpnt", 20)
+    -- end
+    -- if timer.Exists("endtimer") then
+    --     print("Game Restarted")
+    --     timer.Remove("endtimer")
+    -- end
 end
