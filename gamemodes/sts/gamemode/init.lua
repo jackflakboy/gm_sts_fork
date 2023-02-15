@@ -1,16 +1,16 @@
-AddCSLuaFile("cl_init.lua")
-AddCSLuaFile("shared.lua")
-AddCSLuaFile("testhud.lua")
-AddCSLuaFile("teamsetup.lua")
-AddCSLuaFile("custommenu.lua")
-AddCSLuaFile("concommands.lua")
 AddCSLuaFile("bonusround.lua")
-include("testhud.lua")
+AddCSLuaFile("concommands.lua")
+AddCSLuaFile("cl_init.lua")
+AddCSLuaFile("custommenu.lua")
+AddCSLuaFile("shared.lua")
+AddCSLuaFile("teamsetup.lua")
+AddCSLuaFile("testhud.lua")
+include("bonusround.lua")
+include("concommands.lua")
+include("custommenu.lua")
 include("shared.lua")
 include("teamsetup.lua")
-include("custommenu.lua")
-include("concommands.lua")
-include("bonusround.lua")
+include("testhud.lua")
 
 --local beginon = 1
 -- Idk what they do but glualint insists they are unused
@@ -23,12 +23,15 @@ RunConsoleCommand("sv_gravity", "600")
 RunConsoleCommand("sk_combine_s_kick", "6")
 
 -- ensure bonus rounds get turned on, hammer logic broken on map load despite best efforts
-for k, v in ipairs(ents.GetAll()) do
-    if v:GetName() == "newround_counter" then
-        v:Fire("Enable")
+for _, entity in ipairs(ents.GetAll()) do
+    if entity:GetName() == "newround_counter" then
+        entity:Fire("Disable")
+        entity:Fire("Enable")
     end
-    if v:GetName() == "bonusround_disable_relay" then
-        v:Fire("Disable")
+
+    if entity:GetName() == "bonusround_disable_relay" then
+        entity:Fire("Enable")
+        entity:Fire("Disable")
     end
 end
 
@@ -52,19 +55,19 @@ function GM:PlayerSpawn(ply)
 end
 
 function checkbegin(ply)
-    for k, bib in ipairs(ents.GetAll()) do
-        if bib:GetName() == "beginonoff" then
-            local var = tonumber(bib:GetInternalVariable("Case16"))
+    for _, entity in ipairs(ents.GetAll()) do
+        if entity:GetName() == "beginonoff" then
+            local var = tonumber(entity:GetInternalVariable("Case16"))
             ply:SetNWInt("beginon", var)
         end
 
-        if bib:GetName() == "waiting_startpnt_case" then
-            local var = tonumber(bib:GetInternalVariable("Case16"))
+        if entity:GetName() == "waiting_startpnt_case" then
+            local var = tonumber(entity:GetInternalVariable("Case16"))
             ply:SetNWInt("strtpnt", var)
         end
 
-        if bib:GetName() == "waiting_score_case" then
-            local var = tonumber(bib:GetInternalVariable("Case16"))
+        if entity:GetName() == "waiting_score_case" then
+            local var = tonumber(entity:GetInternalVariable("Case16"))
             ply:SetNWInt("strtround", var)
         end
     end
@@ -72,7 +75,7 @@ end
 
 -- why no e???
 function bgin(x)
-    for i, ply in ipairs(player.GetAll()) do
+    for _, ply in ipairs(player.GetAll()) do
         ply:SetNWInt("beginon", tonumber(x))
     end
 end
@@ -84,20 +87,20 @@ function scrnprint(x)
     local inamount = string.sub(x, -2, -1)
 
     if intype == "ro" then
-        for i, ply in ipairs(player.GetAll()) do
+        for _, ply in ipairs(player.GetAll()) do
             ply:SetNWInt("strtround", inamount)
         end
     end
 
     if intype == "sp" then
-        for i, ply in ipairs(player.GetAll()) do
+        for _, ply in ipairs(player.GetAll()) do
             ply:SetNWInt("strtpnt", inamount)
         end
     end
 end
 
 function spawnteams()
-    for i, ply in ipairs(player.GetAll()) do
+    for _, ply in ipairs(player.GetAll()) do
         ply:Spawn()
     end
 end
@@ -168,20 +171,20 @@ function boxprint(ply, boxnum, col)
 
     for _, entity in ipairs(ents.GetAll()) do
         if entity:GetName() == (col .. "_box" .. boxnum .. "_rarity_case") then
-            mobrarstr = u:GetInternalVariable("Case16")
-            mobrarval = u:GetInternalVariable("Case15")
+            mobrarstr = entity:GetInternalVariable("Case16")
+            mobrarval = entity:GetInternalVariable("Case15")
         end
 
-        if entity:GetName() == (col .. "_box" .. boxnum .. "_mobcase_" .. mobrarval) then
-            mobtype = u:GetInternalVariable("Case16")
+        if mobrarval and entity:GetName() == (col .. "_box" .. boxnum .. "_mobcase_" .. mobrarval) then
+            mobtype = entity:GetInternalVariable("Case16")
         end
 
         if entity:GetName() == (col .. "_box" .. boxnum .. "_amountcounter_rand") then
-            mobnum = u:GetInternalVariable("Case16")
+            mobnum = entity:GetInternalVariable("Case16")
         end
 
         if entity:GetName() == (col .. "_box" .. boxnum .. "_tech_casein") then
-            mobtech = u:GetInternalVariable("Case16")
+            mobtech = entity:GetInternalVariable("Case16")
         end
     end
 
@@ -198,16 +201,17 @@ end
 -- trig???? trigonometry???? what does this mean???? trigger?????
 function trigafford(y)
     local col = string.sub(y, 1, -16)
+    local points
     colnum = teamval[col]
 
-    for i, ply in ipairs(player.GetAll()) do
+    for _, ply in ipairs(player.GetAll()) do
         if ply:Team() == colnum then
-            local points = tonumber(ply:GetNWInt("researchPoints"))
+            points = tonumber(ply:GetNWInt("researchPoints"))
 
             if points >= 1 then
-                for k, v in ipairs(ents.GetAll()) do
-                    if v:GetName() == y then
-                        v:Fire("Enable")
+                for k, entity in ipairs(ents.GetAll()) do
+                    if entity:GetName() == y then
+                        entity:Fire("Enable")
                     end
                 end
             else
@@ -225,7 +229,7 @@ function randomizeboxsub(box)
 
     for _, entity in ipairs(ents.GetAll()) do
         if entity:GetName() == (box .. "_tech_casein") then
-            local subamount = tonumber(u:GetInternalVariable("Case16")) * 6
+            local subamount = tonumber(entity:GetInternalVariable("Case16")) * 6
 
             if string.len(tostring(subamount)) == 1 then
                 pointsub(tostring(col) .. "0" .. subamount)
@@ -250,42 +254,46 @@ function randafford(boxname)
     local randomizeBox
     local levelAvailable
     local maxLevel
-
+    local boxEntity
     colnum = teamval[col]
 
     for _, entity in ipairs(ents.GetAll()) do
         if entity:GetName() == (boxname .. "_upgrade_case") then
-            if tonumber(u:GetInternalVariable("Case16")) < 5 then
-                mobtechcost = u:GetInternalVariable("Case16") * 6 -- why * 6?
+            -- check tech level
+            boxEntity = entity
+            if tonumber(entity:GetInternalVariable("Case16")) < 5 then
+                mobtechcost = entity:GetInternalVariable("Case16") * 6 -- why * 6?
             else
-                mobtechcost = 99999 -- arbitrarily high number
                 maxLevel = true
             end
         end
-        if entity:GetName() == (col .. "_raradd_trig") then
-            randomizeBox = entity
-        end
-        if tonumber(entity:GetInternalVariable("Case01")) == 2 then
+
+        if boxEntity and tonumber(entity:GetInternalVariable("Case01")) == 2 then
             levelAvailable = 2
-        elseif tonumber(entity:GetInternalVariable("Case01")) == 1 then
+        elseif boxEntity and tonumber(entity:GetInternalVariable("Case01")) == 1 then
             levelAvailable = 1
         else
             levelAvailable = tonumber(entity:GetInternalVariable("Case01"))
             print("Warning! Var levelAvailable set to " .. levelAvailable .. ". This should never happen!!!")
+        end
+
+        if entity:GetName() == (col .. "_raradd_trig") then
+            randomizeBox = entity
         end
     end
 
     for _, ply in ipairs(player.GetAll()) do
         if ply:Team() == colnum then
             points = tonumber(ply:GetNWInt("researchPoints"))
+
             if randomizeBox then
                 if levelAvailable == 2 then
                     if points >= mobtechcost then
                         randomizeBox:Fire("Enable")
-                    elseif points < mobtechcost then
-                        ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCan't Afford\n-------------\n\n\n\n")
                     elseif maxLevel then
                         ply:PrintMessage(HUD_PRINTTALK, ".\n\n\n\n\n\n\n\n\n\nMax Level\n-------------\n\n\n\n")
+                    elseif points < mobtechcost then
+                        ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCan't Afford\n-------------\n\n\n\n")
                     else
                         ply:PrintMessage(HUD_PRINTTALK, "Congrats! You've found a bug, please screenshot this and send it along with a description of what you were doing to the developers.")
                     end
@@ -298,40 +306,6 @@ function randafford(boxname)
         end
     end
 end
-
-
---             for k, u in ipairs(ents.GetAll()) do
---                 if u:GetName() == (boxname .. "_tech_casein") then
---                     if tonumber(u:GetInternalVariable("Case16")) < 5 then
---                         mobtechcost = u:GetInternalVariable("Case16") * 6
-
---                         for k, i in ipairs(ents.GetAll()) do
---                             if i:GetName() == (boxname .. "_upgrade_case") then
---                                 if tonumber(i:GetInternalVariable("Case01")) == 2 then
---                                     if points >= mobtechcost then
---                                         for k, v in ipairs(ents.GetAll()) do
---                                             if v:GetName() == (col .. "_raradd_trig") then
---                                                 v:Fire("Enable")
---                                             end
---                                         end
---                                     else
---                                         ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCan\"t Afford\n-------------\n\n\n\n")
---                                     end
---                                 elseif tonumber(i:GetInternalVariable("Case01")) == 1 then
---                                     ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nTech Level Not Available\n-------------\n\n\n\n")
---                                 else
---                                     ply:PrintMessage(HUD_PRINTTALK, "Congrats! You've found a bug, please screenshot this and send it along with a description of what you were doing to the developers.")
---                                 end
---                             end
---                         end
---                     else
---                         ply:PrintMessage(HUD_PRINTTALK, ".\n\n\n\n\n\n\n\n\n\nMax Level\n-------------\n\n\n\n")
---                     end
---                 end
---             end
---         end
---     end
--- end
 
 --RESEARCH POINTS EDITING
 function pointsub(x)
@@ -366,37 +340,32 @@ function survpointadd(x)
     end
 end
 
--- function broundtoggle(x)
---     local amount = x
-
---     if tonumber(amount) == 0 then
---         print("Bonusrounds Disabled")
-
---         for k, v in ipairs(ents.GetAll()) do
---             if v:GetName() == "newround_counter" then
---                 v:Fire("Disable")
---             end
-
---             if v:GetName() == "bonusround_disable_relay" then
---                 v:Fire("Enable")
---             end
---         end
---     elseif tonumber(amount) == 1 then
---         print("Bonusrounds Enabled")
-
---         for k, v in ipairs(ents.GetAll()) do
---             if v:GetName() == "newround_counter" then
---                 v:Fire("Enable")
---             end
-
---             if v:GetName() == "bonusround_disable_relay" then
---                 v:Fire("Disable")
---             end
---         end
---     else
---         print("Invalid Entry")
---     end
--- end
+function broundtoggle(x)
+    local amount = x
+    if tonumber(amount) == 0 then
+        print("Bonusrounds Disabled")
+        for k, entity in ipairs(ents.GetAll()) do
+            if entity:GetName() == "newround_counter" then
+                entity:Fire("Disable")
+            end
+            if entity:GetName() == "bonusround_disable_relay" then
+                entity:Fire("Enable")
+            end
+        end
+    elseif tonumber(amount) == 1 then
+        print("Bonusrounds Enabled")
+        for k, entity in ipairs(ents.GetAll()) do
+            if entity:GetName() == "newround_counter" then
+                entity:Fire("Enable")
+            end
+            if entity:GetName() == "bonusround_disable_relay" then
+                entity:Fire("Disable")
+            end
+        end
+    else
+        print("Invalid Entry")
+    end
+end
 
 --TIMER STUFF
 function roundend()
@@ -406,10 +375,10 @@ function roundbegin()
 end
 
 function colortest()
-    for k, v in pairs(teamval) do
+    for k, entity in pairs(teamval) do
         if k ~= "empty" then
-            if team.NumPlayers(v) == 0 then
-                --print(k.." "..team.NumPlayers(v))
+            if team.NumPlayers(entity) == 0 then
+                --print(k.." "..team.NumPlayers(entity))
                 for i, l in ipairs(ents.GetAll()) do
                     if l:GetName() == (k .. "_excl_branch_round") then
                         l:Fire("SetValue", "0")
@@ -419,8 +388,8 @@ function colortest()
                 end
             end
 
-            if team.NumPlayers(v) ~= 0 then
-                --print(k.." "..team.NumPlayers(v))
+            if team.NumPlayers(entity) ~= 0 then
+                --print(k.." "..team.NumPlayers(entity))
                 for i, l in ipairs(ents.GetAll()) do
                     if l:GetName() == (k .. "_excl_branch_round") then
                         l:Fire("SetValue", "1")
@@ -432,9 +401,9 @@ function colortest()
         end
     end
 
-    for k, v in ipairs(ents.GetAll()) do
-        if v:GetName() == "colortest_relay" then
-            v:Fire("Trigger")
+    for k, entity in ipairs(ents.GetAll()) do
+        if entity:GetName() == "colortest_relay" then
+            entity:Fire("Trigger")
         end
     end
 end
@@ -469,27 +438,5 @@ function allgonened()
 end
 
 function gamereset()
-    RunConsoleCommand("map", "gm_sts")
-    -- for i, x in ipairs(player.GetAll()) do
-    --     x:SetHealth(100)
-    --     x:SetNWInt("combat", 0)
-    --     x:SetNWInt("timon", 0)
-    --     scorereset(0)
-    --     x:SetKeyValue("targetname", x:GetName())
-    --     x:SetKeyValue("rendercolor", "255 255 255")
-    --     x:SetTeam(0)
-    --     x:ConCommand("set_team 0")
-    -- end
-    -- game.ConsoleCommand("gmod_admin_cleanup\n")
-    -- game.ConsoleCommand("sv_gravity 600\n")
-    -- for i, x in ipairs(player.GetAll()) do
-    --     x:Spawn()
-    --     x:SetNWInt("beginon", 1)
-    --     x:SetNWInt("strtround", 5)
-    --     x:SetNWInt("strtpnt", 20)
-    -- end
-    -- if timer.Exists("endtimer") then
-    --     print("Game Restarted")
-    --     timer.Remove("endtimer")
-    -- end
+    RunConsoleCommand("map", "gm_sts") -- should've done this from the beginning
 end

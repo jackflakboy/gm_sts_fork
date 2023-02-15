@@ -1,5 +1,5 @@
 GM.Name = "sts"
-GM.Author = "Tergative"
+GM.Author = "Tergative" -- most i'll ever do to this is add "& Bobby" if/when i feel i deserve it
 GM.Email = "N/A"
 GM.Website = "N/A"
 DeriveGamemode("sandbox")

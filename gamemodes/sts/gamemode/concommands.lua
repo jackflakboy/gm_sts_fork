@@ -1,58 +1,15 @@
-local models = {
-    "models/player/group01/female_01.mdl",
-    "models/player/group01/female_02.mdl",
-    "models/player/group01/female_03.mdl",
-    "models/player/group01/female_04.mdl",
-    "models/player/group01/female_05.mdl",
-    "models/player/group01/female_06.mdl",
-    "models/player/group01/male_01.mdl",
-    "models/player/group01/male_02.mdl",
-    "models/player/group01/male_03.mdl",
-    "models/player/group01/male_04.mdl",
-    "models/player/group01/male_05.mdl",
-    "models/player/group01/male_06.mdl",
-    "models/player/group01/male_07.mdl",
-    "models/player/group01/male_08.mdl",
-    "models/player/group01/male_09.mdl",
-    "models/player/group02/male_02.mdl",
-    "models/player/group02/male_04.mdl",
-    "models/player/group02/male_06.mdl",
-    "models/player/group02/male_08.mdl",
-    "models/player/group03/female_01.mdl",
-    "models/player/group03/female_02.mdl",
-    "models/player/group03/female_03.mdl",
-    "models/player/group03/female_04.mdl",
-    "models/player/group03/female_05.mdl",
-    "models/player/group03/female_06.mdl",
-    "models/player/group03/male_01.mdl",
-    "models/player/group03/male_02.mdl",
-    "models/player/group03/male_03.mdl",
-    "models/player/group03/male_04.mdl",
-    "models/player/group03/male_05.mdl",
-    "models/player/group03/male_06.mdl",
-    "models/player/group03/male_07.mdl",
-    "models/player/group03/male_08.mdl",
-    "models/player/group03/male_09.mdl",
-    "models/player/group03m/female_01.mdl",
-    "models/player/group03m/female_02.mdl",
-    "models/player/group03m/female_03.mdl",
-    "models/player/group03m/female_04.mdl",
-    "models/player/group03m/female_05.mdl",
-    "models/player/group03m/female_06.mdl",
-    "models/player/group03m/male_01.mdl",
-    "models/player/group03m/male_02.mdl",
-    "models/player/group03m/male_03.mdl",
-    "models/player/group03m/male_04.mdl",
-    "models/player/group03m/male_05.mdl",
-    "models/player/group03m/male_06.mdl",
-    "models/player/group03m/male_07.mdl",
-    "models/player/group03m/male_08.mdl",
-    "models/player/group03m/male_09.mdl"
-}
+local models = {"models/player/group01/female_01.mdl", "models/player/group01/female_02.mdl", "models/player/group01/female_03.mdl", "models/player/group01/female_04.mdl", "models/player/group01/female_05.mdl", "models/player/group01/female_06.mdl", "models/player/group01/male_01.mdl", "models/player/group01/male_02.mdl", "models/player/group01/male_03.mdl", "models/player/group01/male_04.mdl", "models/player/group01/male_05.mdl", "models/player/group01/male_06.mdl", "models/player/group01/male_07.mdl", "models/player/group01/male_08.mdl", "models/player/group01/male_09.mdl", "models/player/group02/male_02.mdl", "models/player/group02/male_04.mdl", "models/player/group02/male_06.mdl", "models/player/group02/male_08.mdl", "models/player/group03/female_01.mdl", "models/player/group03/female_02.mdl", "models/player/group03/female_03.mdl", "models/player/group03/female_04.mdl", "models/player/group03/female_05.mdl", "models/player/group03/female_06.mdl", "models/player/group03/male_01.mdl", "models/player/group03/male_02.mdl", "models/player/group03/male_03.mdl", "models/player/group03/male_04.mdl", "models/player/group03/male_05.mdl", "models/player/group03/male_06.mdl", "models/player/group03/male_07.mdl", "models/player/group03/male_08.mdl", "models/player/group03/male_09.mdl", "models/player/group03m/female_01.mdl", "models/player/group03m/female_02.mdl", "models/player/group03m/female_03.mdl", "models/player/group03m/female_04.mdl", "models/player/group03m/female_05.mdl", "models/player/group03m/female_06.mdl", "models/player/group03m/male_01.mdl", "models/player/group03m/male_02.mdl", "models/player/group03m/male_03.mdl", "models/player/group03m/male_04.mdl", "models/player/group03m/male_05.mdl", "models/player/group03m/male_06.mdl", "models/player/group03m/male_07.mdl", "models/player/group03m/male_08.mdl", "models/player/group03m/male_09.mdl"}
 
 concommand.Add("set_team", function(ply, cmd, args)
     local inp = tonumber(args[1]) -- wtf is inp?
 
+    if inp == nil then
+        print("0 - No team\n1 - Blue\n2 - Red\n3 - Green\n4 - Yellow")
+    end
+
+    if inp ~= nil and inp > 4 then
+        print("0 - No team\n1 - Blue\n2 - Red\n3 - Green\n4 - Yellow")
+    end
     if team.NumPlayers(inp) ~= 0 then
         print("The team you want to join is NOT empty.") -- clearer
 
@@ -174,37 +131,38 @@ concommand.Add("bround_interval", function(ply, cmd, args)
     end
 end, nil, nil, FCVAR_CHEAT)
 
--- concommand.Add( "bround_toggle", function( ply, cmd, args)
--- local amount = args[1]
--- if tonumber(amount) == 0 then
--- print("Bonusrounds Disabled")
--- for k, v in ipairs(ents.GetAll()) do
--- if v:GetName() == ("newround_counter") then
--- v:Fire("Disable")
--- end
--- if v:GetName() == ("bonusround_disable_relay") then
--- v:Fire("Enable")
--- end
--- end
--- elseif tonumber(amount) == 1 then
--- print("Bonusrounds Enabled")
--- for k, v in ipairs(ents.GetAll()) do
--- if v:GetName() == ("newround_counter") then
--- v:Fire("Enable")
--- end
--- if v:GetName() == ("bonusround_disable_relay") then
--- v:Fire("Disable")
--- end
--- end
--- else
--- print("Invalid Entry")
--- end
--- end )
+concommand.Add( "bround_toggle", function( ply, cmd, args)
+    local amount = args[1]
+    if tonumber(amount) == 0 then
+        print("Bonusrounds Disabled")
+        for k, v in ipairs(ents.GetAll()) do
+            if v:GetName() == "newround_counter" then
+                v:Fire("Disable")
+            end
+            if v:GetName() == "bonusround_disable_relay" then
+            v:Fire("Enable")
+            end
+        end
+    elseif tonumber(amount) == 1 then
+        print("Bonusrounds Enabled")
+        for k, v in ipairs(ents.GetAll()) do
+            if v:GetName() == "newround_counter" then
+                v:Fire("Enable")
+            end
+            if v:GetName() == "bonusround_disable_relay" then
+                v:Fire("Disable")
+            end
+        end
+    else
+        print("Invalid Entry")
+    end
+end, nil, nil, FCVAR_CHEAT )
+
 concommand.Add("reset_game", function(ply, cmd, args)
     gamereset()
 end, nil, nil, FCVAR_CHEAT)
 
-concommand.Add("reset_game_solo", function(ply, cmd, args)
+concommand.Add("reset_game_solo", function(ply, cmd, args) -- this func will make the gamemode unfriendly to dedicated servers, needs to be automated
     if tonumber(player.GetCount()) == 1 then
         print("\n\n\nYou are alone, so you can reset the map \nThanks for cleaning up the server! \n\n-Tergative\n\n\n\n")
         gamereset()

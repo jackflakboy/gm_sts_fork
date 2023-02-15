@@ -101,8 +101,8 @@ end
 hook.Add("HUDPaint", "TestHud", HUD)
 
 function HideHud(name)
-    for k, v in pairs({"CHudHealth", "CHudBattery", "CHudAmmo", "CHudSecondaryAmmo"}) do
-        if name == v then return false end
+    for _, element in pairs({"CHudHealth", "CHudBattery", "CHudAmmo", "CHudSecondaryAmmo"}) do
+        if name == element then return false end
     end
 end
 

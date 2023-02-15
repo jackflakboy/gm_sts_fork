@@ -1,21 +1,21 @@
 function survivalstart()
-    for k, u in ipairs(ents.GetAll()) do
-        if u:GetName() == "timer_vars" then
-            survtime = u:GetInternalVariable("Case15") -- stored in hammer?
+    for _, entity in ipairs(ents.GetAll()) do
+        if entity:GetName() == "timer_vars" then
+            survtime = entity:GetInternalVariable("Case15") -- stored in hammer?
         end
     end
 
     timerset(tonumber(survtime))
     timon(1)
 
-    for i, ply in ipairs(player.GetAll()) do
+    for _, ply in ipairs(player.GetAll()) do
         ply:SetNWInt("timer", tonumber(survtime))
         ply:SetNWInt("survive", 1)
     end
 end
 
 function survivalcheck()
-    for i, ply in ipairs(player.GetAll()) do
+    for _, ply in ipairs(player.GetAll()) do
         if ply:GetNWInt("survive") == 1 then
             survpointadd(ply:Team())
             ply:SetNWInt("survive", 0)
@@ -24,17 +24,17 @@ function survivalcheck()
 end
 
 function timeset(y, x)
-    for k, u in ipairs(ents.GetAll()) do
-        if u:GetName() == "timer_vars" then
-            u:SetKeyValue("Case1" .. tostring(4 + y), tostring(x))
+    for _, entity in ipairs(ents.GetAll()) do
+        if entity:GetName() == "timer_vars" then
+            entity:SetKeyValue("Case1" .. tostring(4 + y), tostring(x))
         end
     end
 end
 
 function deathstart()
-    for k, u in ipairs(ents.GetAll()) do
-        if u:GetName() == "timer_vars" then
-            deathtime = u:GetInternalVariable("Case16")
+    for _, entity in ipairs(ents.GetAll()) do
+        if entity:GetName() == "timer_vars" then
+            deathtime = entity:GetInternalVariable("Case16")
         end
     end
 
@@ -45,19 +45,19 @@ end
 
 -- ???
 function timon(x)
-    for i, ply in ipairs(player.GetAll()) do
+    for _, ply in ipairs(player.GetAll()) do
         ply:SetNWInt("timon", x)
     end
 end
 
 function timerset(x)
-    for i, ply in ipairs(player.GetAll()) do
+    for _, ply in ipairs(player.GetAll()) do
         ply:SetNWInt("timer", x)
     end
 end
 
 function timersub(x)
-    for i, ply in ipairs(player.GetAll()) do
+    for _, ply in ipairs(player.GetAll()) do
         if ply:GetNWInt("timer") == 1 then
             timend()
             break
@@ -70,20 +70,20 @@ end
 function timend()
     timon(0)
 
-    for k, u in ipairs(ents.GetAll()) do
-        if u:GetName() == "bonusround_deathmatch_end" then
-            u:Fire("Trigger")
+    for _, entity in ipairs(ents.GetAll()) do
+        if entity:GetName() == "bonusround_deathmatch_end" then
+            entity:Fire("Trigger")
         end
 
-        if u:GetName() == "bonusround_survival_end" then
-            u:Fire("Trigger")
+        if entity:GetName() == "bonusround_survival_end" then
+            entity:Fire("Trigger")
         end
     end
 end
 
 --DEATHMATCH	
 function deathmatch(x)
-    for i, ply in ipairs(player.GetAll()) do
+    for _, ply in ipairs(player.GetAll()) do
         ply:SetNWInt("combat", x)
     end
 end
@@ -100,7 +100,7 @@ function deathmatchkill(victim, inflictor, attacker)
         if teamnum == victim:Team() then
             print("Quit Team Killing")
         else
-            for i, ply in ipairs(player.GetAll()) do
+            for _, ply in ipairs(player.GetAll()) do
                 if teamnum == 1 then
                     ply:PrintMessage(HUD_PRINTTALK, ".\n\n\n\n\n\n\n\n\n\nBlue Team Gained a Point!\n\n\n\n")
                 end
