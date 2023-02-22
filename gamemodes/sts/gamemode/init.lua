@@ -116,7 +116,7 @@ function scorereset(x)
     team.SetScore(3, 0)
     team.SetScore(4, 0)
 
-    for i, ply in ipairs(player.GetAll()) do
+    for entity, ply in ipairs(player.GetAll()) do
         ply:SetNWInt("researchPoints", x)
     end
 end
@@ -202,7 +202,7 @@ end
 function trigafford(y)
     local col = string.sub(y, 1, -16)
     local points
-    colnum = teamval[col]
+    local colnum = teamval[col]
 
     for _, ply in ipairs(player.GetAll()) do
         if ply:Team() == colnum then
@@ -225,7 +225,6 @@ function randomizeboxsub(box)
     -- local num = string.sub(box,-1,-1)
     local length = string.len(box) - 5
     local col = string.sub(box, 1, length)
-    colnum = teamval[col]
 
     for _, entity in ipairs(ents.GetAll()) do
         if entity:GetName() == (box .. "_tech_casein") then
@@ -240,80 +239,64 @@ function randomizeboxsub(box)
     end
 end
 
--- same shit here, why is it the same for loop over and over? there must be a reason, cause otherwise this wastes time and creates errors
--- i literally cannot make this readable until tergative tells me EXACTLY what its doing because frankly i cannot decipher it with my currently limited knowledge
--- tl;dr DO NOT TOUCH
--- i touched it, untested but should work the same
--- this isn't too much better but at least i can read it
+-- i hate this func. i hate notepad++. i hate hammer.
 function randafford(boxname)
     -- local num = string.sub(boxname,-1,-1)
     local length = string.len(boxname) - 5
     local col = string.sub(boxname, 1, length)
     local points = 0
-    local mobtechcost
-    local randomizeBox
+    local mobTechCost
+    local techCase
     local levelAvailable
     local maxLevel
-    local boxEntity
-    colnum = teamval[col]
-
-    for _, entity in ipairs(ents.GetAll()) do
-        if entity:GetName() == (boxname .. "_upgrade_case") then
-            -- check tech level
-            boxEntity = entity
-            if tonumber(entity:GetInternalVariable("Case16")) < 5 then
-                mobtechcost = entity:GetInternalVariable("Case16") * 6 -- why * 6?
-            else
-                maxLevel = true
-            end
-        end
-
-        if boxEntity and tonumber(entity:GetInternalVariable("Case01")) == 2 then
-            levelAvailable = 2
-        elseif boxEntity and tonumber(entity:GetInternalVariable("Case01")) == 1 then
-            levelAvailable = 1
-        else
-            levelAvailable = tonumber(entity:GetInternalVariable("Case01"))
-            print("Warning! Var levelAvailable set to " .. levelAvailable .. ". This should never happen!!!")
-        end
-
-        if entity:GetName() == (col .. "_raradd_trig") then
-            randomizeBox = entity
-        end
-    end
+    local upgradeCase
+    local rarAddTrigger
+    local colnum = teamval[col]
 
     for _, ply in ipairs(player.GetAll()) do
         if ply:Team() == colnum then
             points = tonumber(ply:GetNWInt("researchPoints"))
-
-            if randomizeBox then
-                if levelAvailable == 2 then
-                    if points >= mobtechcost then
-                        randomizeBox:Fire("Enable")
-                    elseif maxLevel then
-                        ply:PrintMessage(HUD_PRINTTALK, ".\n\n\n\n\n\n\n\n\n\nMax Level\n-------------\n\n\n\n")
-                    elseif points < mobtechcost then
-                        ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCan't Afford\n-------------\n\n\n\n")
-                    else
-                        ply:PrintMessage(HUD_PRINTTALK, "Congrats! You've found a bug, please screenshot this and send it along with a description of what you were doing to the developers.")
-                    end
-                elseif levelAvailable == 1 then
-                    ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nTech Level Not Available\n-------------\n\n\n\n")
-                else
-                    ply:PrintMessage(HUD_PRINTTALK, "Congrats! You've found a bug, please screenshot this and send it along with a description of what you were doing to the developers.")
+            for _, entity in ipairs(ents.GetAll()) do
+                if entity:GetName() == (boxname .. "_tech_casein") then
+                    techCase = entity
                 end
+                if entity:GetName() == (boxname .. "_upgrade_case") then
+                    upgradeCase = entity
+                end
+                if entity:GetName() == (col .. "_raradd_trig") then
+                    rarAddTrigger = entity
+                end
+            end
+            levelAvailable = tonumber(techCase:GetInternalVariable("Case16"))
+            if levelAvailable >= 5 then
+                ply:PrintMessage(HUD_PRINTTALK, ".\n\n\n\n\n\n\n\n\n\nMax Level\n-------------\n\n\n\n")
+                return
+            end
+            mobTechCost = levelAvailable * 6
+            maxLevel = tonumber(upgradeCase:GetInternalVariable("Case01"))
+            if maxLevel == 2 then
+                if points >= mobTechCost then
+                    rarAddTrigger:Fire("Enable")
+                else
+                    ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCan't Afford\n-------------\n\n\n\n")
+                end
+            elseif maxLevel == 1 then
+                ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nTech Level Not Available\n-------------\n\n\n\n")
+            else
+                ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCongrats! You've found a bug, please screenshot this and send it along with a description of what you were doing to the developers.\n\n\n\n")
             end
         end
     end
 end
 
+
 --RESEARCH POINTS EDITING
 function pointsub(x)
     local amount = string.sub(x, -2, -1)
     local col = string.sub(x, 1, string.len(x) - 2)
-    colnum = teamval[col]
+    local colnum = teamval[col]
 
-    for i, ply in ipairs(player.GetAll()) do
+    for entity, ply in ipairs(player.GetAll()) do
         if ply:Team() == colnum then
             ply:SetNWInt("researchPoints", ply:GetNWInt("researchPoints") - tonumber(amount))
         end
@@ -323,9 +306,9 @@ end
 function pointadd(x)
     local amount = string.sub(x, -2, -1)
     local col = string.sub(x, 1, string.len(x) - 2)
-    colnum = teamval[col]
+    local colnum = teamval[col]
 
-    for i, ply in ipairs(player.GetAll()) do
+    for entity, ply in ipairs(player.GetAll()) do
         if ply:Team() == colnum then
             ply:SetNWInt("researchPoints", tostring(tonumber(ply:GetNWInt("researchPoints")) + tonumber(amount)))
         end
@@ -333,7 +316,7 @@ function pointadd(x)
 end
 
 function survpointadd(x)
-    for i, ply in ipairs(player.GetAll()) do
+    for entity, ply in ipairs(player.GetAll()) do
         if ply:Team() == x then
             ply:SetNWInt("researchPoints", ply:GetNWInt("researchPoints") + 10)
         end
@@ -379,7 +362,7 @@ function colortest()
         if k ~= "empty" then
             if team.NumPlayers(entity) == 0 then
                 --print(k.." "..team.NumPlayers(entity))
-                for i, l in ipairs(ents.GetAll()) do
+                for _, l in ipairs(ents.GetAll()) do
                     if l:GetName() == (k .. "_excl_branch_round") then
                         l:Fire("SetValue", "0")
                     elseif l:GetName() == (k .. "_excl_branch_lobby") then
@@ -390,7 +373,7 @@ function colortest()
 
             if team.NumPlayers(entity) ~= 0 then
                 --print(k.." "..team.NumPlayers(entity))
-                for i, l in ipairs(ents.GetAll()) do
+                for _, l in ipairs(ents.GetAll()) do
                     if l:GetName() == (k .. "_excl_branch_round") then
                         l:Fire("SetValue", "1")
                     elseif l:GetName() == (k .. "_excl_branch_lobby") then
