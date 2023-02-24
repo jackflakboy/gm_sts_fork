@@ -22,21 +22,54 @@ end
 RunConsoleCommand("sv_gravity", "600")
 RunConsoleCommand("sk_combine_s_kick", "6")
 
--- ensure bonus rounds get turned on, hammer logic broken on map load despite best efforts
-for _, entity in ipairs(ents.GetAll()) do
-    if entity:GetName() == "newround_counter" then
-        entity:Fire("Disable")
-        entity:Fire("Enable")
-    end
+-- this is a bodge. remove when hammer issues figured out
+function setCorrectBonusRoundState()
+    local lever
+    local counter
+    local relay
+    local leverClass
+    local leverState
 
-    if entity:GetName() == "bonusround_disable_relay" then
-        entity:Fire("Enable")
-        entity:Fire("Disable")
+    for _, entity in ipairs(ents.GetAll()) do
+        if entity:GetName() == "newround_counter" then
+            counter = entity
+        end
+
+        if entity:GetName() == "bonusround_disable_relay" then
+            relay = entity
+        end
+
+        if entity:GetName() == "waiting_lobby_brtoggle_lever" then
+            lever = entity
+        end
+    end
+    -- https://wiki.facepunch.com/gmod/Entity:GetInternalVariable
+    leverClass = lever:GetClass()
+
+    if ( leverClass == "func_door" or leverClass == "func_door_rotating" ) then
+        leverState = lever:GetInternalVariable( "m_toggle_state" ) == 0
+    elseif ( leverClass == "prop_door_rotating" ) then
+        leverState = lever:GetInternalVariable( "m_eDoorState" ) ~= 0
+    else
+        leverState = false
+    end
+    -- lever up means the door is closed (false) and bonus rounds should be on. 
+    if leverState == false then
+        counter:Fire("Disable")
+        relay:Fire("Enable")
+        counter:Fire("Enable")
+        relay:Fire("Disable")
+    else
+        counter:Fire("Disable")
+        relay:Fire("Enable")
+        counter:Fire("Enable")
+        relay:Fire("Disable")
     end
 end
 
 function GM:PlayerInitialSpawn(ply)
     allgonened()
+    setCorrectBonusRoundState()
     ply:SetMaxHealth(100)
     ply:SetHealth(100)
     ply:SetRunSpeed(400)
@@ -52,6 +85,7 @@ end
 
 function GM:PlayerSpawn(ply)
     checkbegin(ply)
+    setCorrectBonusRoundState()
 end
 
 function checkbegin(ply)
@@ -130,18 +164,22 @@ end
 function GM:PlayerUse(ply, ent)
     if ent:GetName() == "waiting_blueteambutt" then
         ply:ConCommand("set_team 1")
+        setCorrectBonusRoundState()
     end
 
     if ent:GetName() == "waiting_redteambutt" then
         ply:ConCommand("set_team 2")
+        setCorrectBonusRoundState()
     end
 
     if ent:GetName() == "waiting_greenteambutt" then
         ply:ConCommand("set_team 3")
+        setCorrectBonusRoundState()
     end
 
     if ent:GetName() == "waiting_yellowteambutt" then
         ply:ConCommand("set_team 4")
+        setCorrectBonusRoundState()
     end
 end
 
@@ -352,9 +390,11 @@ end
 
 --TIMER STUFF
 function roundend()
+    setCorrectBonusRoundState()
 end
 
 function roundbegin()
+    setCorrectBonusRoundState()
 end
 
 function colortest()
