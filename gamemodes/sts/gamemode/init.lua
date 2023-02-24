@@ -461,5 +461,5 @@ function allgonened()
 end
 
 function gamereset()
-    RunConsoleCommand("map", "gm_sts") -- should've done this from the beginning
+    RunConsoleCommand("changelevel", "gm_sts") -- should've done this from the beginning
 end
