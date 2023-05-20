@@ -36,3 +36,7 @@ function GM:OnContextMenuOpen()
         return false
     end
 end
+
+hook.Add("PlayerSpawnProp", "RestrictSpawningProps", function(ply)
+    return false
+end)
