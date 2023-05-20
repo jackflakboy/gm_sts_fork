@@ -275,7 +275,7 @@ function trigafford(y)
                     end
                 end
             else
-                ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCan't Afford\n-------------\n\n\n\n")
+                ply:PrintMessage(HUD_PRINTTALK, "-------------\nCan't Afford\n-------------")
             end
         end
     end
@@ -329,7 +329,7 @@ function randafford(boxname)
             end
             levelAvailable = tonumber(techCase:GetInternalVariable("Case16"))
             if levelAvailable >= 5 then
-                ply:PrintMessage(HUD_PRINTTALK, ".\n\n\n\n\n\n\n\n\n\nMax Level\n-------------\n\n\n\n")
+                ply:PrintMessage(HUD_PRINTTALK, "-------------\nMax Level\n-------------")
                 return
             end
             mobTechCost = levelAvailable * 6
@@ -338,12 +338,12 @@ function randafford(boxname)
                 if points >= mobTechCost then
                     rarAddTrigger:Fire("Enable")
                 else
-                    ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCan't Afford\n-------------\n\n\n\n")
+                    ply:PrintMessage(HUD_PRINTTALK, "-------------\nCan't Afford\n-------------")
                 end
             elseif maxLevel == 1 then
-                ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nTech Level Not Available\n-------------\n\n\n\n")
-            else
-                ply:PrintMessage(HUD_PRINTTALK, "\n\n\n\n\n\n\n\n\n\nCongrats! You've found a bug, please screenshot this and send it along with a description of what you were doing to the developers.\n\n\n\n")
+                ply:PrintMessage(HUD_PRINTTALK, "------------------------\nTech Level Not Available\n------------------------")
+            else --                                                  ------------------------
+                ply:PrintMessage(HUD_PRINTTALK, "Congrats! You've found a bug, please screenshot this and send it along with a description of what you were doing to the developers in the discord.")
             end
         end
     end

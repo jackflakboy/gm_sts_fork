@@ -102,19 +102,19 @@ function deathmatchkill(victim, inflictor, attacker)
         else
             for _, ply in ipairs(player.GetAll()) do
                 if teamnum == 1 then
-                    ply:PrintMessage(HUD_PRINTTALK, ".\n\n\n\n\n\n\n\n\n\nBlue Team Gained a Point!\n\n\n\n")
+                    ply:PrintMessage(HUD_PRINTTALK, "Blue Team Gained a Point!")
                 end
 
                 if teamnum == 2 then
-                    ply:PrintMessage(HUD_PRINTTALK, ".\n\n\n\n\n\n\n\n\n\nRed Team Gained a Point!\n\n\n\n")
+                    ply:PrintMessage(HUD_PRINTTALK, "Red Team Gained a Point!")
                 end
 
                 if teamnum == 3 then
-                    ply:PrintMessage(HUD_PRINTTALK, ".\n\n\n\n\n\n\n\n\n\nGreen Team Gained a Point!\n\n\n\n")
+                    ply:PrintMessage(HUD_PRINTTALK, "Green Team Gained a Point!")
                 end
 
                 if teamnum == 4 then
-                    ply:PrintMessage(HUD_PRINTTALK, ".\n\n\n\n\n\n\n\n\n\nYellow Team Gained a Point!\n\n\n\n")
+                    ply:PrintMessage(HUD_PRINTTALK, "Yellow Team Gained a Point!")
                 end
 
                 if ply:Team() == teamnum then
