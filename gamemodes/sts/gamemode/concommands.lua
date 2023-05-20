@@ -1,14 +1,11 @@
 local models = {"models/player/group01/female_01.mdl", "models/player/group01/female_02.mdl", "models/player/group01/female_03.mdl", "models/player/group01/female_04.mdl", "models/player/group01/female_05.mdl", "models/player/group01/female_06.mdl", "models/player/group01/male_01.mdl", "models/player/group01/male_02.mdl", "models/player/group01/male_03.mdl", "models/player/group01/male_04.mdl", "models/player/group01/male_05.mdl", "models/player/group01/male_06.mdl", "models/player/group01/male_07.mdl", "models/player/group01/male_08.mdl", "models/player/group01/male_09.mdl", "models/player/group02/male_02.mdl", "models/player/group02/male_04.mdl", "models/player/group02/male_06.mdl", "models/player/group02/male_08.mdl", "models/player/group03/female_01.mdl", "models/player/group03/female_02.mdl", "models/player/group03/female_03.mdl", "models/player/group03/female_04.mdl", "models/player/group03/female_05.mdl", "models/player/group03/female_06.mdl", "models/player/group03/male_01.mdl", "models/player/group03/male_02.mdl", "models/player/group03/male_03.mdl", "models/player/group03/male_04.mdl", "models/player/group03/male_05.mdl", "models/player/group03/male_06.mdl", "models/player/group03/male_07.mdl", "models/player/group03/male_08.mdl", "models/player/group03/male_09.mdl", "models/player/group03m/female_01.mdl", "models/player/group03m/female_02.mdl", "models/player/group03m/female_03.mdl", "models/player/group03m/female_04.mdl", "models/player/group03m/female_05.mdl", "models/player/group03m/female_06.mdl", "models/player/group03m/male_01.mdl", "models/player/group03m/male_02.mdl", "models/player/group03m/male_03.mdl", "models/player/group03m/male_04.mdl", "models/player/group03m/male_05.mdl", "models/player/group03m/male_06.mdl", "models/player/group03m/male_07.mdl", "models/player/group03m/male_08.mdl", "models/player/group03m/male_09.mdl"}
 
 concommand.Add("set_team", function(ply, cmd, args)
-    local inp = tonumber(args[1]) -- wtf is inp?
+    local inp = tonumber(args[1])
 
-    if inp == nil then
+    if inp == nil or (inp ~= nil and (inp > 4 or inp < 0)) then
         print("0 - No team\n1 - Blue\n2 - Red\n3 - Green\n4 - Yellow")
-    end
-
-    if inp ~= nil and inp > 4 then
-        print("0 - No team\n1 - Blue\n2 - Red\n3 - Green\n4 - Yellow")
+        return
     end
     if team.NumPlayers(inp) ~= 0 then
         print("The team you want to join is NOT empty.") -- clearer
@@ -87,8 +84,13 @@ concommand.Add("deathpnt", function(ply, cmd, args)
 end, nil, nil, FCVAR_CHEAT)
 
 concommand.Add("stsgod", function(ply, cmd, args)
+    if not args[1] then
+        print(ply:GetNWInt("stsgod"))
+        return
+    end
     local amount = args[1]
     ply:SetNWInt("stsgod", tonumber(amount))
+    print(ply:GetNWInt("stsgod"))
 end, nil, nil, FCVAR_CHEAT)
 
 concommand.Add("newround", function(args)

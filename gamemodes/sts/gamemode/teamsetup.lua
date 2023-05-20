@@ -31,5 +31,5 @@ function ply:SetupTeam(n)
     if not teams[n] then return end
     self:SetTeam(n)
     self:SetPlayerColor(teams[n].color)
-    self:SetModel(models[math.random(#models)])
+    self:SetModel(models[math.random(#models)]) -- this causes client lag but i kinda don't care
 end

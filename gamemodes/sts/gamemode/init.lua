@@ -11,16 +11,35 @@ include("custommenu.lua")
 include("shared.lua")
 include("teamsetup.lua")
 include("testhud.lua")
-
 --local beginon = 1
 -- Idk what they do but glualint insists they are unused
 --local open = false
+
+
+
+-- determines loadout. returning true means override default, this might be able to be used for minigames.
 function GM:PlayerLoadout(ply)
+    -- TODO: check if currently in a bonus round, then give weapons
+    -- if bonus round
+        -- if bonus round == round with gun
+            -- give guns
     return true
+end
+
+
+function GM:PlayerSpawnProp( ply, model )
+    if ply:GetNWInt("stsgod") == 1 then
+        print("ok.")
+        return true
+    else
+        print("nice try")
+        return false
+    end
 end
 
 RunConsoleCommand("sv_gravity", "600")
 RunConsoleCommand("sk_combine_s_kick", "6")
+RunConsoleCommand("sbox_noclip", "0")
 
 -- this is a bodge. remove when hammer issues figured out
 function setCorrectBonusRoundState()
@@ -116,6 +135,8 @@ end
 
 util.AddNetworkString("FMenu")
 
+-- no E's allowed i guess
+-- honest to god what does this do
 function scrnprint(x)
     local intype = string.sub(x, 1, 2)
     local inamount = string.sub(x, -2, -1)
@@ -140,18 +161,18 @@ function spawnteams()
 end
 
 --SCORE
-function scoreadd(x)
-    team.AddScore(x, 1)
+function scoreadd(teamId)
+    team.AddScore(teamId, 1)
 end
 
-function scorereset(x)
+function scorereset(teamID)
     team.SetScore(1, 0)
     team.SetScore(2, 0)
     team.SetScore(3, 0)
     team.SetScore(4, 0)
 
     for entity, ply in ipairs(player.GetAll()) do
-        ply:SetNWInt("researchPoints", x)
+        ply:SetNWInt("researchPoints", teamID)
     end
 end
 
@@ -160,7 +181,7 @@ function begin(x)
 end
 
 --PLAYER USING
--- ? button???
+-- happens when a player uses something
 function GM:PlayerUse(ply, ent)
     if ent:GetName() == "waiting_blueteambutt" then
         ply:ConCommand("set_team 1")
@@ -183,6 +204,7 @@ function GM:PlayerUse(ply, ent)
     end
 end
 
+-- when holding something
 function GM:OnPlayerPhysicsPickup(ply, ent)
     local enty = ent:GetName()
 
@@ -329,9 +351,11 @@ end
 
 
 --RESEARCH POINTS EDITING
-function pointsub(x)
-    local amount = string.sub(x, -2, -1)
-    local col = string.sub(x, 1, string.len(x) - 2)
+
+-- subtract points from team
+function pointsub(teamID)
+    local amount = string.sub(teamID, -2, -1)
+    local col = string.sub(teamID, 1, string.len(teamID) - 2)
     local colnum = teamval[col]
 
     for entity, ply in ipairs(player.GetAll()) do
@@ -341,9 +365,10 @@ function pointsub(x)
     end
 end
 
-function pointadd(x)
-    local amount = string.sub(x, -2, -1)
-    local col = string.sub(x, 1, string.len(x) - 2)
+-- add points to team
+function pointadd(teamID)
+    local amount = string.sub(teamID, -2, -1)
+    local col = string.sub(teamID, 1, string.len(teamID) - 2)
     local colnum = teamval[col]
 
     for entity, ply in ipairs(player.GetAll()) do
@@ -353,16 +378,18 @@ function pointadd(x)
     end
 end
 
-function survpointadd(x)
+-- adds points per person alive in survival
+function survpointadd(teamID)
     for entity, ply in ipairs(player.GetAll()) do
-        if ply:Team() == x then
+        if ply:Team() == teamID then
             ply:SetNWInt("researchPoints", ply:GetNWInt("researchPoints") + 10)
         end
     end
 end
 
-function broundtoggle(x)
-    local amount = x
+-- toggle the bonus round state
+function broundtoggle(state)
+    local amount = state
     if tonumber(amount) == 0 then
         print("Bonusrounds Disabled")
         for k, entity in ipairs(ents.GetAll()) do
@@ -389,6 +416,7 @@ function broundtoggle(x)
 end
 
 --TIMER STUFF
+
 function roundend()
     setCorrectBonusRoundState()
 end
@@ -397,13 +425,14 @@ function roundbegin()
     setCorrectBonusRoundState()
 end
 
+-- sets colors i think?
 function colortest()
     for k, entity in pairs(teamval) do
         if k ~= "empty" then
             if team.NumPlayers(entity) == 0 then
                 --print(k.." "..team.NumPlayers(entity))
                 for _, l in ipairs(ents.GetAll()) do
-                    if l:GetName() == (k .. "_excl_branch_round") then
+                    if l:GetName() == (k .. "_excl_branch_round") then -- wtf does this do?
                         l:Fire("SetValue", "0")
                     elseif l:GetName() == (k .. "_excl_branch_lobby") then
                         l:Fire("SetValue", "0")
@@ -431,6 +460,7 @@ function colortest()
     end
 end
 
+-- checks to see if server is empty on player disconnects
 function GM:PlayerDisconnected(ply)
     print("A player has disconnected")
     print(ply:Name() .. " has left the server.")
@@ -438,6 +468,7 @@ function GM:PlayerDisconnected(ply)
     timer.Simple(10, allgonecheck)
 end
 
+-- runs endtimerstart() if server is empty
 function allgonecheck()
     print(tonumber(player.GetCount()))
 
@@ -449,10 +480,12 @@ function allgonecheck()
     end
 end
 
+-- creates timer to run gamereset
 function endtimerstart()
     timer.Create("endtimer", 50, 1, gamereset)
 end
 
+-- unknown, timer stuff, might be deprecated
 function allgonened()
     if timer.Exists("endtimer") then
         print("Server Reloaded")
@@ -460,6 +493,7 @@ function allgonened()
     end
 end
 
+-- resets the game by reloading the map
 function gamereset()
     RunConsoleCommand("changelevel", "gm_sts") -- should've done this from the beginning
 end

@@ -4,17 +4,17 @@ AddCSLuaFile("descriptions.lua")
 function HUD()
     local client = LocalPlayer()
     descrip = client:GetNWInt("desc")
-    if client:Alive() == false then return end -- vscode is really unhappy about !client:Alive(), is this how you negate in lua?
-    draw.RoundedBox(5, 0, ScrH() - 240, 250, 240, Color(20, 20, 20, 225))
+    if client:Alive() == false then return end
+    draw.RoundedBox(5, 0, ScrH() - 140, 250, 240, Color(20, 20, 20, 225))
     --Health/Armor	
-    draw.SimpleText("Health: " .. client:Health() .. "%", "DermaDefaultBold", 10, ScrH() - 155, Color(255, 255, 255, 255), 0, 0)
-    draw.RoundedBox(3, 10, ScrH() - 140, 100 * 2.25, 15, Color(250, 0, 0, 30))
-    draw.RoundedBox(3, 10, ScrH() - 140, math.Clamp(client:Health(), 0, 100) * 2.25, 15, Color(255, 0, 0, 255))
-    draw.RoundedBox(3, 10, ScrH() - 140, math.Clamp(client:Health(), 0, 100) * 2.25, 4, Color(255, 50, 50, 255))
-    draw.SimpleText("Armor: " .. client:Armor() .. "%", "DermaDefaultBold", 10, ScrH() - 85, Color(255, 255, 255, 255), 0, 0)
-    draw.RoundedBox(3, 10, ScrH() - 70, 100 * 2.25, 15, Color(255, 0, 255, 30))
-    draw.RoundedBox(3, 10, ScrH() - 70, math.Clamp(client:Armor(), 0, 100) * 2.25, 15, Color(255, 0, 255, 255))
-    draw.RoundedBox(3, 10, ScrH() - 70, math.Clamp(client:Armor(), 0, 100) * 2.25, 4, Color(255, 50, 255, 255))
+    draw.SimpleText("Health: " .. client:Health() .. "%", "DermaDefaultBold", 10, ScrH() - 65, Color(255, 255, 255, 255), 0, 0)
+    draw.RoundedBox(3, 10, ScrH() - 50, 100 * 2.25, 15, Color(250, 0, 0, 30))
+    draw.RoundedBox(3, 10, ScrH() - 50, math.Clamp(client:Health(), 0, 100) * 2.25, 15, Color(255, 0, 0, 255))
+    draw.RoundedBox(3, 10, ScrH() - 50, math.Clamp(client:Health(), 0, 100) * 2.25, 4, Color(255, 50, 50, 255))
+    -- draw.SimpleText("Armor: " .. client:Armor() .. "%", "DermaDefaultBold", 10, ScrH() - 85, Color(255, 255, 255, 255), 0, 0)
+    -- draw.RoundedBox(3, 10, ScrH() - 70, 100 * 2.25, 15, Color(255, 0, 255, 30))
+    -- draw.RoundedBox(3, 10, ScrH() - 70, math.Clamp(client:Armor(), 0, 100) * 2.25, 15, Color(255, 0, 255, 255))
+    -- draw.RoundedBox(3, 10, ScrH() - 70, math.Clamp(client:Armor(), 0, 100) * 2.25, 4, Color(255, 50, 255, 255))
 
     --Beginning
     if client:GetNWInt("beginon") == 1 then
@@ -81,20 +81,20 @@ function HUD()
 
     --Team
     if client:Team() == 1 then
-        draw.RoundedBox(5, 5, ScrH() - 230, 140, 50, Color(10, 10, 10, 100))
-        draw.SimpleText("Blue Team", "CloseCaption_Bold", 20, ScrH() - 220, Color(0, 80, 255, 255), 0, 0)
+        draw.RoundedBox(5, 5, ScrH() - 130, 140, 50, Color(10, 10, 10, 100))
+        draw.SimpleText("Blue Team", "CloseCaption_Bold", 20, ScrH() - 120, Color(0, 80, 255, 255), 0, 0)
     elseif client:Team() == 2 then
-        draw.RoundedBox(5, 5, ScrH() - 230, 135, 50, Color(10, 10, 10, 100))
-        draw.SimpleText("Red Team", "CloseCaption_Bold", 20, ScrH() - 220, Color(255, 0, 0, 255), 0, 0)
+        draw.RoundedBox(5, 5, ScrH() - 130, 135, 50, Color(10, 10, 10, 100))
+        draw.SimpleText("Red Team", "CloseCaption_Bold", 20, ScrH() - 120, Color(255, 0, 0, 255), 0, 0)
     elseif client:Team() == 3 then
-        draw.RoundedBox(5, 5, ScrH() - 230, 155, 50, Color(10, 10, 10, 100))
-        draw.SimpleText("Green Team", "CloseCaption_Bold", 20, ScrH() - 220, Color(0, 255, 0, 255), 0, 0)
+        draw.RoundedBox(5, 5, ScrH() - 130, 155, 50, Color(10, 10, 10, 100))
+        draw.SimpleText("Green Team", "CloseCaption_Bold", 20, ScrH() - 120, Color(0, 255, 0, 255), 0, 0)
     elseif client:Team() == 4 then
-        draw.RoundedBox(5, 5, ScrH() - 230, 165, 50, Color(10, 10, 10, 100))
-        draw.SimpleText("Yellow Team", "CloseCaption_Bold", 20, ScrH() - 220, Color(255, 255, 0, 255), 0, 0)
+        draw.RoundedBox(5, 5, ScrH() - 130, 165, 50, Color(10, 10, 10, 100))
+        draw.SimpleText("Yellow Team", "CloseCaption_Bold", 20, ScrH() - 120, Color(255, 255, 0, 255), 0, 0)
     else
-        draw.RoundedBox(5, 5, ScrH() - 230, 140, 50, Color(10, 10, 10, 100))
-        draw.SimpleText("Pick Team", "CloseCaption_Bold", 20, ScrH() - 220, Color(130, 130, 130, 255), 0, 0)
+        draw.RoundedBox(5, 5, ScrH() - 130, 140, 50, Color(10, 10, 10, 100))
+        draw.SimpleText("Pick Team", "CloseCaption_Bold", 20, ScrH() - 120, Color(130, 130, 130, 255), 0, 0)
     end
 end
 
