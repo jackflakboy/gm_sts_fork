@@ -5,8 +5,10 @@ concommand.Add("set_team", function(ply, cmd, args)
 
     if inp == nil or (inp ~= nil and (inp > 4 or inp < 0)) then
         print("0 - No team\n1 - Blue\n2 - Red\n3 - Green\n4 - Yellow")
+
         return
     end
+
     if team.NumPlayers(inp) ~= 0 then
         print("The team you want to join is NOT empty.") -- clearer
 
@@ -86,8 +88,10 @@ end, nil, nil, FCVAR_CHEAT)
 concommand.Add("stsgod", function(ply, cmd, args)
     if not args[1] then
         print(ply:GetNWInt("stsgod"))
+
         return
     end
+
     local amount = args[1]
     ply:SetNWInt("stsgod", tonumber(amount))
     print(ply:GetNWInt("stsgod"))
@@ -133,24 +137,29 @@ concommand.Add("bround_interval", function(ply, cmd, args)
     end
 end, nil, nil, FCVAR_CHEAT)
 
-concommand.Add( "bround_toggle", function( ply, cmd, args)
+concommand.Add("bround_toggle", function(ply, cmd, args)
     local amount = args[1]
+
     if tonumber(amount) == 0 then
         print("Bonusrounds Disabled")
+
         for k, v in ipairs(ents.GetAll()) do
             if v:GetName() == "newround_counter" then
                 v:Fire("Disable")
             end
+
             if v:GetName() == "bonusround_disable_relay" then
-            v:Fire("Enable")
+                v:Fire("Enable")
             end
         end
     elseif tonumber(amount) == 1 then
         print("Bonusrounds Enabled")
+
         for k, v in ipairs(ents.GetAll()) do
             if v:GetName() == "newround_counter" then
                 v:Fire("Enable")
             end
+
             if v:GetName() == "bonusround_disable_relay" then
                 v:Fire("Disable")
             end
@@ -158,13 +167,14 @@ concommand.Add( "bround_toggle", function( ply, cmd, args)
     else
         print("Invalid Entry")
     end
-end, nil, nil, FCVAR_CHEAT )
+end, nil, nil, FCVAR_CHEAT)
 
 concommand.Add("reset_game", function(ply, cmd, args)
     gamereset()
 end, nil, nil, FCVAR_CHEAT)
 
-concommand.Add("reset_game_solo", function(ply, cmd, args) -- this func will make the gamemode unfriendly to dedicated servers, needs to be automated
+-- this func will make the gamemode unfriendly to dedicated servers, needs to be automated
+concommand.Add("reset_game_solo", function(ply, cmd, args)
     if tonumber(player.GetCount()) == 1 then
         print("\n\n\nYou are alone, so you can reset the map \nThanks for cleaning up the server! \n\n-Tergative\n\n\n\n")
         gamereset()

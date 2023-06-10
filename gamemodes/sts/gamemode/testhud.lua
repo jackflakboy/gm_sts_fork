@@ -6,15 +6,11 @@ function HUD()
     descrip = client:GetNWInt("desc")
     if client:Alive() == false then return end
     draw.RoundedBox(5, 0, ScrH() - 140, 250, 240, Color(20, 20, 20, 225))
-    --Health/Armor	
+    --Health
     draw.SimpleText("Health: " .. client:Health() .. "%", "DermaDefaultBold", 10, ScrH() - 65, Color(255, 255, 255, 255), 0, 0)
     draw.RoundedBox(3, 10, ScrH() - 50, 100 * 2.25, 15, Color(250, 0, 0, 30))
     draw.RoundedBox(3, 10, ScrH() - 50, math.Clamp(client:Health(), 0, 100) * 2.25, 15, Color(255, 0, 0, 255))
     draw.RoundedBox(3, 10, ScrH() - 50, math.Clamp(client:Health(), 0, 100) * 2.25, 4, Color(255, 50, 50, 255))
-    -- draw.SimpleText("Armor: " .. client:Armor() .. "%", "DermaDefaultBold", 10, ScrH() - 85, Color(255, 255, 255, 255), 0, 0)
-    -- draw.RoundedBox(3, 10, ScrH() - 70, 100 * 2.25, 15, Color(255, 0, 255, 30))
-    -- draw.RoundedBox(3, 10, ScrH() - 70, math.Clamp(client:Armor(), 0, 100) * 2.25, 15, Color(255, 0, 255, 255))
-    -- draw.RoundedBox(3, 10, ScrH() - 70, math.Clamp(client:Armor(), 0, 100) * 2.25, 4, Color(255, 50, 255, 255))
 
     --Beginning
     if client:GetNWInt("beginon") == 1 then

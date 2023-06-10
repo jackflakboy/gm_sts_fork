@@ -11,35 +11,34 @@ include("custommenu.lua")
 include("shared.lua")
 include("teamsetup.lua")
 include("testhud.lua")
+
 --local beginon = 1
 -- Idk what they do but glualint insists they are unused
 --local open = false
-
-
-
 -- determines loadout. returning true means override default, this might be able to be used for minigames.
 function GM:PlayerLoadout(ply)
-    -- TODO: check if currently in a bonus round, then give weapons
-    -- if bonus round
-        -- if bonus round == round with gun
-            -- give guns
     return true
 end
 
-
-function GM:PlayerSpawnProp( ply, model )
+-- TODO: check if currently in a bonus round, then give weapons
+-- if bonus round
+-- if bonus round == round with gun
+-- give guns
+function GM:PlayerSpawnProp(ply, model)
     if ply:GetNWInt("stsgod") == 1 then
         print("ok.")
+
         return true
     else
         print("nice try")
+
         return false
     end
 end
 
-RunConsoleCommand("sv_gravity", "600")
-RunConsoleCommand("sk_combine_s_kick", "6")
-RunConsoleCommand("sbox_noclip", "0")
+RunConsoleCommand("sv_gravity", "600") -- reset gravity
+RunConsoleCommand("sk_combine_s_kick", "6") -- change combine melee damage
+RunConsoleCommand("sbox_noclip", "0") -- disable ability to noclip
 
 -- this is a bodge. remove when hammer issues figured out
 function setCorrectBonusRoundState()
@@ -62,16 +61,18 @@ function setCorrectBonusRoundState()
             lever = entity
         end
     end
+
     -- https://wiki.facepunch.com/gmod/Entity:GetInternalVariable
     leverClass = lever:GetClass()
 
-    if ( leverClass == "func_door" or leverClass == "func_door_rotating" ) then
-        leverState = lever:GetInternalVariable( "m_toggle_state" ) == 0
-    elseif ( leverClass == "prop_door_rotating" ) then
-        leverState = lever:GetInternalVariable( "m_eDoorState" ) ~= 0
+    if leverClass == "func_door" or leverClass == "func_door_rotating" then
+        leverState = lever:GetInternalVariable("m_toggle_state") == 0
+    elseif leverClass == "prop_door_rotating" then
+        leverState = lever:GetInternalVariable("m_eDoorState") ~= 0
     else
         leverState = false
     end
+
     -- lever up means the door is closed (false) and bonus rounds should be on. 
     if leverState == false then
         counter:Fire("Disable")
@@ -316,24 +317,32 @@ function randafford(boxname)
     for _, ply in ipairs(player.GetAll()) do
         if ply:Team() == colnum then
             points = tonumber(ply:GetNWInt("researchPoints"))
+
             for _, entity in ipairs(ents.GetAll()) do
                 if entity:GetName() == (boxname .. "_tech_casein") then
                     techCase = entity
                 end
+
                 if entity:GetName() == (boxname .. "_upgrade_case") then
                     upgradeCase = entity
                 end
+
                 if entity:GetName() == (col .. "_raradd_trig") then
                     rarAddTrigger = entity
                 end
             end
+
             levelAvailable = tonumber(techCase:GetInternalVariable("Case16"))
+
             if levelAvailable >= 5 then
                 ply:PrintMessage(HUD_PRINTTALK, "-------------\nMax Level\n-------------")
+
                 return
             end
+
             mobTechCost = levelAvailable * 6
             maxLevel = tonumber(upgradeCase:GetInternalVariable("Case01"))
+
             if maxLevel == 2 then
                 if points >= mobTechCost then
                     rarAddTrigger:Fire("Enable")
@@ -349,9 +358,7 @@ function randafford(boxname)
     end
 end
 
-
 --RESEARCH POINTS EDITING
-
 -- subtract points from team
 function pointsub(teamID)
     local amount = string.sub(teamID, -2, -1)
@@ -390,22 +397,27 @@ end
 -- toggle the bonus round state
 function broundtoggle(state)
     local amount = state
+
     if tonumber(amount) == 0 then
         print("Bonusrounds Disabled")
+
         for k, entity in ipairs(ents.GetAll()) do
             if entity:GetName() == "newround_counter" then
                 entity:Fire("Disable")
             end
+
             if entity:GetName() == "bonusround_disable_relay" then
                 entity:Fire("Enable")
             end
         end
     elseif tonumber(amount) == 1 then
         print("Bonusrounds Enabled")
+
         for k, entity in ipairs(ents.GetAll()) do
             if entity:GetName() == "newround_counter" then
                 entity:Fire("Enable")
             end
+
             if entity:GetName() == "bonusround_disable_relay" then
                 entity:Fire("Disable")
             end
@@ -416,7 +428,6 @@ function broundtoggle(state)
 end
 
 --TIMER STUFF
-
 function roundend()
     setCorrectBonusRoundState()
 end
@@ -432,15 +443,14 @@ function colortest()
             if team.NumPlayers(entity) == 0 then
                 --print(k.." "..team.NumPlayers(entity))
                 for _, l in ipairs(ents.GetAll()) do
-                    if l:GetName() == (k .. "_excl_branch_round") then -- wtf does this do?
+                    -- wtf does this do?
+                    if l:GetName() == (k .. "_excl_branch_round") then
                         l:Fire("SetValue", "0")
                     elseif l:GetName() == (k .. "_excl_branch_lobby") then
                         l:Fire("SetValue", "0")
                     end
                 end
-            end
-
-            if team.NumPlayers(entity) ~= 0 then
+            else
                 --print(k.." "..team.NumPlayers(entity))
                 for _, l in ipairs(ents.GetAll()) do
                     if l:GetName() == (k .. "_excl_branch_round") then
