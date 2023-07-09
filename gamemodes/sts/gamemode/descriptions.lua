@@ -1,5 +1,3 @@
--- AINT NO WAYYYYYYYYYYYYYYYYYYYYY
--- Never used lua before but theres GOT to be a better way to do this
 -- Headcrab
 SetGlobalString("Headcrab_1", "Headcrabs are the default mob, mostly")
 SetGlobalString("Headcrab_2", "because they're the worst. Headcrabs")
@@ -318,7 +316,7 @@ SetGlobalString("Brute_2", "the 7 Hour War. Even after being taken")
 SetGlobalString("Brute_3", "over by a headcrab, this once football")
 SetGlobalString("Brute_4", "player scored higher on the SAT and")
 SetGlobalString("Brute_5", "almost graduated from community college")
-SetGlobalString("Brute_6", "when he got expelled for being socialist.") -- lol what??? | this joke doesn't make sense unless its like three layers deep in irony
+SetGlobalString("Brute_6", "when he got expelled for being socialist.") -- i just got the joke
 SetGlobalString("Brute_8", "    (Strengths): Great health, great DPS,")
 SetGlobalString("Brute_9", "                 will pull grenade if threatened")
 SetGlobalString("Brute_10", "(Weaknesses): Self-concious after getting")

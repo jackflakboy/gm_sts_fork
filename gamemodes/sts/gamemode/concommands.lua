@@ -1,5 +1,3 @@
-local models = {"models/player/group01/female_01.mdl", "models/player/group01/female_02.mdl", "models/player/group01/female_03.mdl", "models/player/group01/female_04.mdl", "models/player/group01/female_05.mdl", "models/player/group01/female_06.mdl", "models/player/group01/male_01.mdl", "models/player/group01/male_02.mdl", "models/player/group01/male_03.mdl", "models/player/group01/male_04.mdl", "models/player/group01/male_05.mdl", "models/player/group01/male_06.mdl", "models/player/group01/male_07.mdl", "models/player/group01/male_08.mdl", "models/player/group01/male_09.mdl", "models/player/group02/male_02.mdl", "models/player/group02/male_04.mdl", "models/player/group02/male_06.mdl", "models/player/group02/male_08.mdl", "models/player/group03/female_01.mdl", "models/player/group03/female_02.mdl", "models/player/group03/female_03.mdl", "models/player/group03/female_04.mdl", "models/player/group03/female_05.mdl", "models/player/group03/female_06.mdl", "models/player/group03/male_01.mdl", "models/player/group03/male_02.mdl", "models/player/group03/male_03.mdl", "models/player/group03/male_04.mdl", "models/player/group03/male_05.mdl", "models/player/group03/male_06.mdl", "models/player/group03/male_07.mdl", "models/player/group03/male_08.mdl", "models/player/group03/male_09.mdl", "models/player/group03m/female_01.mdl", "models/player/group03m/female_02.mdl", "models/player/group03m/female_03.mdl", "models/player/group03m/female_04.mdl", "models/player/group03m/female_05.mdl", "models/player/group03m/female_06.mdl", "models/player/group03m/male_01.mdl", "models/player/group03m/male_02.mdl", "models/player/group03m/male_03.mdl", "models/player/group03m/male_04.mdl", "models/player/group03m/male_05.mdl", "models/player/group03m/male_06.mdl", "models/player/group03m/male_07.mdl", "models/player/group03m/male_08.mdl", "models/player/group03m/male_09.mdl"}
-
 concommand.Add("set_team", function(ply, cmd, args)
     local inp = tonumber(args[1])
 
@@ -38,30 +36,32 @@ concommand.Add("set_team", function(ply, cmd, args)
 
     if ply:Team() == 1 then
         ply:SetKeyValue("targetname", "Blueply" .. ply:GetName())
-        ply:SetKeyValue("rendercolor", "28 141 255")
-        ply:SetModel(models[math.random(#models)])
+        ply:SetPlayerColor(Vector(1.0, 0, 0))
+        ply:SetModel("models/player/police.mdl")
     end
 
     if ply:Team() == 2 then
         ply:SetKeyValue("targetname", "Redply" .. ply:GetName())
-        ply:SetKeyValue("rendercolor", "255 30 30")
-        ply:SetModel(models[math.random(#models)])
+        ply:SetPlayerColor(Vector(1.0, 0, 0))
+        ply:SetModel("models/player/police.mdl")
     end
 
     if ply:Team() == 3 then
         ply:SetKeyValue("targetname", "Greenply" .. ply:GetName())
-        ply:SetKeyValue("rendercolor", "30 255 30")
-        ply:SetModel(models[math.random(#models)])
+        ply:SetPlayerColor(Vector(0.0, 1.0, 0.0))
+        ply:SetModel("models/player/police.mdl")
     end
 
     if ply:Team() == 4 then
         ply:SetKeyValue("targetname", "Yellowply" .. ply:GetName())
-        ply:SetKeyValue("rendercolor", "255 230 0")
-        ply:SetModel(models[math.random(#models)])
+        ply:SetPlayerColor(Vector(1.0, 1.0, 0.0))
+        ply:SetModel("models/player/police.mdl")
     end
 
     if ply:Team() == 0 then
         ply:SetKeyValue("targetname", ply:GetName())
+        ply:SetPlayerColor(Vector(0.0, 0.0, 0.0))
+        ply:SetModel("models/player/police.mdl")
     end
 
     colortest()

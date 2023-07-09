@@ -118,7 +118,7 @@ function deathmatchkill(victim, inflictor, attacker)
                 end
 
                 if ply:Team() == teamnum then
-                    ply:SetNWInt("researchPoints", ply:GetNWInt("researchPoints") + ply:GetNWInt("dmpnt"))
+                    teams[ply:Team()].points = teams[ply:Team()].points + 1
                 end
             end
         end

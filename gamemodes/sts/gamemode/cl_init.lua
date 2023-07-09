@@ -1,7 +1,9 @@
 include("shared.lua")
 include("testhud.lua")
 include("custommenu.lua")
+include("net.lua")
 local client = LocalPlayer()
+points = 0
 
 surface.CreateFont("timefont", {
     font = "Default", --  Use the font-name which is shown to you by your operating system Font Viewer, not the file name

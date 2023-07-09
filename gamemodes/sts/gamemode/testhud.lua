@@ -1,9 +1,10 @@
 include("descriptions.lua")
+include("teamsetup.lua")
 AddCSLuaFile("descriptions.lua")
 
 function HUD()
     local client = LocalPlayer()
-    descrip = client:GetNWInt("desc")
+    descriptionsEnabled = client:GetNWInt("desc")
     if client:Alive() == false then return end
     draw.RoundedBox(5, 0, ScrH() - 140, 250, 240, Color(20, 20, 20, 225))
     --Health
@@ -23,43 +24,43 @@ function HUD()
 
     --Timer
     if client:GetNWInt("timon") == 1 then
-        local timy = client:GetNWInt("timer")
+        local currentTimer = client:GetNWInt("timer")
         draw.RoundedBox(5, ScrW() / 2 - 80, 75, 150, 60, Color(10, 10, 10, 230))
 
-        if timy > 60 then
-            if timy < 70 then
-                draw.SimpleText("1:0" .. (tonumber(timy) - 60), "timefont", ScrW() / 2 - 50, 73, Color(255, 255, 255, 255), 0, 0)
+        if currentTimer > 60 then
+            if currentTimer < 70 then
+                draw.SimpleText("1:0" .. (tonumber(currentTimer) - 60), "timefont", ScrW() / 2 - 50, 73, Color(255, 255, 255, 255), 0, 0)
             else
-                draw.SimpleText("1:" .. (tonumber(timy) - 60), "timefont", ScrW() / 2 - 50, 73, Color(255, 255, 255, 255), 0, 0)
+                draw.SimpleText("1:" .. (tonumber(currentTimer) - 60), "timefont", ScrW() / 2 - 50, 73, Color(255, 255, 255, 255), 0, 0)
             end
-        elseif timy < 60 then
-            if timy < 10 then
-                draw.SimpleText("0:0" .. timy, "timefont", ScrW() / 2 - 50, 73, Color(255, 255, 255, 255), 0, 0)
+        elseif currentTimer < 60 then
+            if currentTimer < 10 then
+                draw.SimpleText("0:0" .. currentTimer, "timefont", ScrW() / 2 - 50, 73, Color(255, 255, 255, 255), 0, 0)
             else
-                draw.SimpleText("0:" .. timy, "timefont", ScrW() / 2 - 50, 73, Color(255, 255, 255, 255), 0, 0)
+                draw.SimpleText("0:" .. currentTimer, "timefont", ScrW() / 2 - 50, 73, Color(255, 255, 255, 255), 0, 0)
             end
-        elseif timy == 60 then
+        elseif currentTimer == 60 then
             draw.SimpleText("1:00", "timefont", ScrW() / 2 - 50, 73, Color(255, 255, 255, 255), 0, 0)
         end
     end
 
     --Research/Score/Team
     --Research
-    draw.RoundedBox(25, ScrW() - 350, ScrH() - (250 + 250 * descrip), 350, 250 + 250 * descrip, Color(20, 20, 20, 230))
-    draw.SimpleText("Research Points:  " .. client:GetNWInt("researchPoints"), "ChatFont", ScrW() - 330, (3.90 * ScrH() / 5) - 250 * descrip, Color(255, 255, 255, 255), 0, 0)
-    draw.SimpleText("Mob Info: ", "ChatFont", ScrW() - 330, (3.2 * ScrH() / 4) - 250 * descrip, Color(255, 255, 255, 255), 0, 0)
+    draw.RoundedBox(25, ScrW() - 350, ScrH() - (250 + 250 * descriptionsEnabled), 350, 250 + 250 * descriptionsEnabled, Color(20, 20, 20, 230))
+    draw.SimpleText("Research Points:  " .. client:GetNWInt("researchPoints"), "ChatFont", ScrW() - 330, (3.90 * ScrH() / 5) - 250 * descriptionsEnabled, Color(255, 255, 255, 255), 0, 0)
+    draw.SimpleText("Mob Info: ", "ChatFont", ScrW() - 330, (3.2 * ScrH() / 4) - 250 * descriptionsEnabled, Color(255, 255, 255, 255), 0, 0)
 
     --Mobstuff
     if client:GetNWInt("pickup") ~= 0 then
-        draw.SimpleText(" Tech Level:   " .. client:GetNWInt("pick_tech"), "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 275 - 250 * descrip, Color(255, 255, 255, 255, 255), 0, 0)
-        draw.SimpleText("  Mob Type:   " .. client:GetNWInt("pick_type"), "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 305 - 250 * descrip, Color(255, 255, 255, 255, 255), 0, 0)
-        draw.SimpleText("        Rarity:   " .. client:GetNWInt("pick_rar"), "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 335 - 250 * descrip, Color(255, 255, 255, 255, 255), 0, 0)
-        draw.SimpleText("    Strength:   " .. client:GetNWInt("pick_str"), "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 365 - 250 * descrip, Color(255, 255, 255, 255, 255), 0, 0)
-        local mobd = client:GetNWInt("pick_type")
+        draw.SimpleText(" Tech Level:   " .. client:GetNWInt("pick_tech"), "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 275 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
+        draw.SimpleText("  Mob Type:   " .. client:GetNWInt("pick_type"), "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 305 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
+        draw.SimpleText("        Rarity:   " .. client:GetNWInt("pick_rar"), "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 335 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
+        draw.SimpleText("    Strength:   " .. client:GetNWInt("pick_str"), "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 365 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
+        local mobDescription = client:GetNWInt("pick_type")
 
-        if descrip == 1 then
+        if descriptionsEnabled == 1 then
             for i = 1, 15 do
-                draw.SimpleText(GetGlobalString(mobd .. "_" .. i), "ChatFont", ScrW() - 330, (2.913 * ScrH() / 5) + 155 + 20 * i, Color(255, 255, 255, 255, 255), 0, 0)
+                draw.SimpleText(GetGlobalString(mobDescription .. "_" .. i), "ChatFont", ScrW() - 330, (2.913 * ScrH() / 5) + 155 + 20 * i, Color(255, 255, 255, 255, 255), 0, 0)
             end
         end
     end

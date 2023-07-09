@@ -11,10 +11,11 @@ include("custommenu.lua")
 include("shared.lua")
 include("teamsetup.lua")
 include("testhud.lua")
+include("cubes.lua")
+include("net.lua")
+AddCSLuaFile("net.lua")
+math.randomseed(os.time())
 
---local beginon = 1
--- Idk what they do but glualint insists they are unused
---local open = false
 -- determines loadout. returning true means override default, this might be able to be used for minigames.
 function GM:PlayerLoadout(ply)
     return true
@@ -38,7 +39,12 @@ end
 
 RunConsoleCommand("sv_gravity", "600") -- reset gravity
 RunConsoleCommand("sk_combine_s_kick", "6") -- change combine melee damage
-RunConsoleCommand("sbox_noclip", "0") -- disable ability to noclip
+RunConsoleCommand("sbox_noclip", "1") -- disable ability to noclip
+RunConsoleCommand("sv_noclipspeed", "50")
+RunConsoleCommand("sk_citizen_heal_player_min_pct", "100")
+RunConsoleCommand("sk_citizen_heal_player_min_forced", "1")
+RunConsoleCommand("sk_citizen_heal_ally", "40")
+RunConsoleCommand("sk_citizen_heal_ally_delay", "0.5") -- this might've not been set correctly prior and may cause a buff to medics
 
 -- this is a bodge. remove when hammer issues figured out
 function setCorrectBonusRoundState()
@@ -93,7 +99,8 @@ function GM:PlayerInitialSpawn(ply)
     ply:SetMaxHealth(100)
     ply:SetHealth(100)
     ply:SetRunSpeed(400)
-    ply:SetModel("models/player/group03m/male_07.mdl")
+    ply:SetModel("models/player/police.mdl")
+    ply:SetPlayerColor(Vector(0.0, 0.0, 0.0))
     ply:SetNWInt("combat", 0)
     ply:SetNWInt("stsgod", 0)
     ply:SetNWInt("dmpnt", 1)
@@ -184,24 +191,16 @@ end
 --PLAYER USING
 -- happens when a player uses something
 function GM:PlayerUse(ply, ent)
+    setCorrectBonusRoundState()
+
     if ent:GetName() == "waiting_blueteambutt" then
         ply:ConCommand("set_team 1")
-        setCorrectBonusRoundState()
-    end
-
-    if ent:GetName() == "waiting_redteambutt" then
+    elseif ent:GetName() == "waiting_redteambutt" then
         ply:ConCommand("set_team 2")
-        setCorrectBonusRoundState()
-    end
-
-    if ent:GetName() == "waiting_greenteambutt" then
+    elseif ent:GetName() == "waiting_greenteambutt" then
         ply:ConCommand("set_team 3")
-        setCorrectBonusRoundState()
-    end
-
-    if ent:GetName() == "waiting_yellowteambutt" then
+    elseif ent:GetName() == "waiting_yellowteambutt" then
         ply:ConCommand("set_team 4")
-        setCorrectBonusRoundState()
     end
 end
 
@@ -259,9 +258,9 @@ function boxprint(ply, boxnum, col)
     end
 end
 
--- trig???? trigonometry???? what does this mean???? trigger?????
-function trigafford(y)
-    local col = string.sub(y, 1, -16)
+-- determine if upgrade affordable
+function trigafford(team_entity)
+    local col = string.sub(team_entity, 1, -16)
     local points
     local colnum = teamval[col]
 
@@ -271,7 +270,7 @@ function trigafford(y)
 
             if points >= 1 then
                 for k, entity in ipairs(ents.GetAll()) do
-                    if entity:GetName() == y then
+                    if entity:GetName() == team_entity then
                         entity:Fire("Enable")
                     end
                 end
@@ -506,4 +505,31 @@ end
 -- resets the game by reloading the map
 function gamereset()
     RunConsoleCommand("changelevel", "gm_sts") -- should've done this from the beginning
+end
+
+function getTeamIDFromName(teamName1)
+    local teamIDs = {"blue", "red", "green", "yellow"}
+
+    for i, name in ipairs(teamIDs) do
+        if name == teamName1 then return i end
+    end
+end
+
+function addTeamPoints(teamName, change)
+    local points
+    local teamID = getTeamIDFromName(teamName)
+
+    for _, entity in ipairs(ents.GetAll()) do
+        if entity:GetName() == (teamName .. "_points") then
+            points = entity:GetNwInt("researchPoints")
+            entity:SetNWInt("researchPoints", points + change)
+            points = points + change
+        end
+    end
+
+    for _, ply in ipairs(player.GetAll()) do
+        if ply:Team() == teamID then
+            ply:SetNWInt("researchPoints", points)
+        end
+    end
 end
