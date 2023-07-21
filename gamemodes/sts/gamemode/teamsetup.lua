@@ -1,7 +1,6 @@
 local ply = FindMetaTable("Player")
 teams = {}
 
-
 teams[1] = {
     name = "Blue",
     color = Vector(0.2, 0.2, 1.0),
@@ -41,3 +40,7 @@ function ply:SetupTeam(n)
     self:SetPlayerColor(teams[n].color)
     self:SetModel("models/player/police.mdl")
 end
+
+if (teams[1].points) then
+    print("waaa")
+end 

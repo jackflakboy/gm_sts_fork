@@ -1,71 +1,37 @@
+-- Define team properties
+local teamProperties = {
+    [1] = {color = Vector(1.0, 0, 0), namePrefix = "Blueply"},
+    [2] = {color = Vector(1.0, 0, 0), namePrefix = "Redply"},
+    [3] = {color = Vector(0.0, 1.0, 0.0), namePrefix = "Greenply"},
+    [4] = {color = Vector(1.0, 1.0, 0.0), namePrefix = "Yellowply"},
+    [0] = {color = Vector(0.0, 0.0, 0.0), namePrefix = ""}
+}
+
 concommand.Add("set_team", function(ply, cmd, args)
     local inp = tonumber(args[1])
 
-    if inp == nil or (inp ~= nil and (inp > 4 or inp < 0)) then
+    if inp == nil or (inp > 4 or inp < 0) then
         print("0 - No team\n1 - Blue\n2 - Red\n3 - Green\n4 - Yellow")
-
         return
     end
 
-    if team.NumPlayers(inp) ~= 0 then
-        print("The team you want to join is NOT empty.") -- clearer
+    -- Clearer message
+    local teamEmpty = team.NumPlayers(inp) == 0
+    print("The team you want to join IS" .. (teamEmpty and "" or " NOT") .. " empty.")
 
-        for i, x in ipairs(player.GetAll()) do
-            if tonumber(x:Team()) == tonumber(inp) then
-                ply:SetNWInt("researchPoints", x:GetNWInt("researchPoints"))
-                break
-            end
-        end
-    end
 
-    if team.NumPlayers(inp) == 0 then
-        print("The team you want to join IS empty.") -- clearer
-
-        for k, v in ipairs(ents.GetAll()) do
-            if v:GetName() == "beginonoff" then
-                local defpnt = tonumber(v:GetInternalVariable("Case10"))
-
-                if defpnt ~= "" then
-                    ply:SetNWInt("researchPoints", defpnt)
-                end
-            end
-        end
-    end
-
+    -- Setting the team
     ply:SetTeam(inp)
 
-    if ply:Team() == 1 then
-        ply:SetKeyValue("targetname", "Blueply" .. ply:GetName())
-        ply:SetPlayerColor(Vector(1.0, 0, 0))
-        ply:SetModel("models/player/police.mdl")
-    end
-
-    if ply:Team() == 2 then
-        ply:SetKeyValue("targetname", "Redply" .. ply:GetName())
-        ply:SetPlayerColor(Vector(1.0, 0, 0))
-        ply:SetModel("models/player/police.mdl")
-    end
-
-    if ply:Team() == 3 then
-        ply:SetKeyValue("targetname", "Greenply" .. ply:GetName())
-        ply:SetPlayerColor(Vector(0.0, 1.0, 0.0))
-        ply:SetModel("models/player/police.mdl")
-    end
-
-    if ply:Team() == 4 then
-        ply:SetKeyValue("targetname", "Yellowply" .. ply:GetName())
-        ply:SetPlayerColor(Vector(1.0, 1.0, 0.0))
-        ply:SetModel("models/player/police.mdl")
-    end
-
-    if ply:Team() == 0 then
-        ply:SetKeyValue("targetname", ply:GetName())
-        ply:SetPlayerColor(Vector(0.0, 0.0, 0.0))
-        ply:SetModel("models/player/police.mdl")
-    end
+    -- Using team properties dictionary to reduce code repetition
+    local props = teamProperties[inp]
+    ply:SetKeyValue("targetname", props.namePrefix .. ply:GetName())
+    ply:SetPlayerColor(props.color)
+    ply:SetModel("models/player/police.mdl")
 
     colortest()
 end)
+
 
 concommand.Add("pntadd", function(ply, cmd, args)
     for i, v in ipairs(player.GetAll()) do
@@ -97,7 +63,7 @@ concommand.Add("stsgod", function(ply, cmd, args)
     print(ply:GetNWInt("stsgod"))
 end, nil, nil, FCVAR_CHEAT)
 
-concommand.Add("newround", function(args)
+concommand.Add("newround", function(args) -- broke
     for k, v in ipairs(ents.GetAll()) do
         if v:GetName() == "newround_relay_nodelay" then
             v:Fire("Trigger")
@@ -170,14 +136,14 @@ concommand.Add("bround_toggle", function(ply, cmd, args)
 end, nil, nil, FCVAR_CHEAT)
 
 concommand.Add("reset_game", function(ply, cmd, args)
-    gamereset()
+    gameReset()
 end, nil, nil, FCVAR_CHEAT)
 
 -- this func will make the gamemode unfriendly to dedicated servers, needs to be automated
 concommand.Add("reset_game_solo", function(ply, cmd, args)
     if tonumber(player.GetCount()) == 1 then
         print("\n\n\nYou are alone, so you can reset the map \nThanks for cleaning up the server! \n\n-Tergative\n\n\n\n")
-        gamereset()
+        gameReset()
     else
         print("You are not alone")
     end

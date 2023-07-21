@@ -27,12 +27,64 @@ end
 -- give guns
 function GM:PlayerSpawnProp(ply, model)
     if ply:GetNWInt("stsgod") == 1 then
-        print("ok.")
-
         return true
     else
-        print("nice try")
+        return false
+    end
+end
 
+function GM:PlayerSpawnEffect(ply, model)
+    if ply:GetNWInt("stsgod") == 1 then
+        return true
+    else
+        return false
+    end
+end
+
+function GM:PlayerSpawnNPC(ply, npc_type, weapon)
+    if ply:GetNWInt("stsgod") == 1 then
+        return true
+    else
+        return false
+    end
+end
+
+function GM:PlayerSpawnObject(ply, model, skin)
+    if ply:GetNWInt("stsgod") == 1 then
+        return true
+    else
+        return false
+    end
+end
+
+function GM:PlayerSpawnRagdoll(ply, model)
+    if ply:GetNWInt("stsgod") == 1 then
+        return true
+    else
+        return false
+    end
+end
+
+function GM:PlayerSpawnSENT(ply, class)
+    if ply:GetNWInt("stsgod") == 1 then
+        return true
+    else
+        return false
+    end
+end
+
+function GM:PlayerSpawnSWEP(ply, weapon, swep)
+    if ply:GetNWInt("stsgod") == 1 then
+        return true
+    else
+        return false
+    end
+end
+
+function GM:PlayerSpawnVehicle(ply, model, name, table)
+    if ply:GetNWInt("stsgod") == 1 then
+        return true
+    else
         return false
     end
 end
@@ -45,6 +97,12 @@ RunConsoleCommand("sk_citizen_heal_player_min_pct", "100")
 RunConsoleCommand("sk_citizen_heal_player_min_forced", "1")
 RunConsoleCommand("sk_citizen_heal_ally", "40")
 RunConsoleCommand("sk_citizen_heal_ally_delay", "0.5") -- this might've not been set correctly prior and may cause a buff to medics
+
+CreateConVar("sts_random_teams", "0", {FCVAR_NONE}, "0 - Allow players to choose teams\n1 - Random two teams\n2 - Random Four teams\n 3 - Random\nIf this is set to anything besides 0, the team selection will be locked. No effect after game start.", 0, 3)
+CreateConVar("sts_episodic_mobs", "1", {FCVAR_NONE}, "Whether or not to add episodic mobs to the mob pool. No effect after game start.", 0, 1)
+CreateConVar("sts_force_bonus_rounds", "-1", {FCVAR_NONE}, "1 - Force bonus rounds on\n0 - Force bonus rounds off\n -1 - Force nothing.")
+CreateConVar("sts_minimum_players", "2", {FCVAR_NONE}, "Minimum players required before game can start.")
+
 
 -- this is a bodge. remove when hammer issues figured out
 function setCorrectBonusRoundState()
@@ -166,26 +224,6 @@ function spawnteams()
     for _, ply in ipairs(player.GetAll()) do
         ply:Spawn()
     end
-end
-
---SCORE
-function scoreadd(teamId)
-    team.AddScore(teamId, 1)
-end
-
-function scorereset(teamID)
-    team.SetScore(1, 0)
-    team.SetScore(2, 0)
-    team.SetScore(3, 0)
-    team.SetScore(4, 0)
-
-    for entity, ply in ipairs(player.GetAll()) do
-        ply:SetNWInt("researchPoints", teamID)
-    end
-end
-
-function begin(x)
-    beginon = x
 end
 
 --PLAYER USING
@@ -435,40 +473,6 @@ function roundbegin()
     setCorrectBonusRoundState()
 end
 
--- sets colors i think?
-function colortest()
-    for k, entity in pairs(teamval) do
-        if k ~= "empty" then
-            if team.NumPlayers(entity) == 0 then
-                --print(k.." "..team.NumPlayers(entity))
-                for _, l in ipairs(ents.GetAll()) do
-                    -- wtf does this do?
-                    if l:GetName() == (k .. "_excl_branch_round") then
-                        l:Fire("SetValue", "0")
-                    elseif l:GetName() == (k .. "_excl_branch_lobby") then
-                        l:Fire("SetValue", "0")
-                    end
-                end
-            else
-                --print(k.." "..team.NumPlayers(entity))
-                for _, l in ipairs(ents.GetAll()) do
-                    if l:GetName() == (k .. "_excl_branch_round") then
-                        l:Fire("SetValue", "1")
-                    elseif l:GetName() == (k .. "_excl_branch_lobby") then
-                        l:Fire("SetValue", "1")
-                    end
-                end
-            end
-        end
-    end
-
-    for k, entity in ipairs(ents.GetAll()) do
-        if entity:GetName() == "colortest_relay" then
-            entity:Fire("Trigger")
-        end
-    end
-end
-
 -- checks to see if server is empty on player disconnects
 function GM:PlayerDisconnected(ply)
     print("A player has disconnected")
@@ -491,7 +495,7 @@ end
 
 -- creates timer to run gamereset
 function endtimerstart()
-    timer.Create("endtimer", 50, 1, gamereset)
+    timer.Create("endtimer", 50, 1, gameReset)
 end
 
 -- unknown, timer stuff, might be deprecated
@@ -503,7 +507,7 @@ function allgonened()
 end
 
 -- resets the game by reloading the map
-function gamereset()
+function gameReset()
     RunConsoleCommand("changelevel", "gm_sts") -- should've done this from the beginning
 end
 
@@ -530,6 +534,82 @@ function addTeamPoints(teamName, change)
     for _, ply in ipairs(player.GetAll()) do
         if ply:Team() == teamID then
             ply:SetNWInt("researchPoints", points)
+        end
+    end
+end
+
+local poisonZombies = {}
+
+hook.Add("OnEntityCreated", "AssignTeams", function(ent)
+    if (not ent:IsValid() or not ent:IsNpc()) then return end
+    AssignTeam(ent, ent:GetName())
+    local npcClass = ent:GetClass()
+    
+    if (npcClass == "npc_poisonzombie") then
+        local poisonZombieTeam = ent:GetName()
+        poisonZombies[ent:EntIndex()] = {
+            entity = ent,
+            team = poisonZombieTeam,
+            lastHeadcrabCount = 0
+        }
+
+        -- Start a timer that runs every second
+        timer.Create("CheckForHeadcrabs" .. ent:EntIndex(), 1, 0, function()
+            if (not ent:IsValid()) then
+                -- If the poison zombie is no longer valid, remove it from the table and stop the timer
+                poisonZombies[ent:EntIndex()] = nil
+                timer.Remove("CheckForHeadcrabs" .. ent:EntIndex())
+                return
+            end
+
+            local foundEntities = ents.FindInSphere(ent:GetPos(), 100) -- adjust radius as necessary
+            local headcrabCount = 0
+
+            for _, foundEnt in ipairs(foundEntities) do
+                if (foundEnt:GetClass() == "npc_headcrab_poison") then
+                    AssignTeam(foundEnt, poisonZombieTeam)
+                end
+            end
+
+            poisonZombies[ent:EntIndex()].lastHeadcrabCount = headcrabCount
+        end)
+    end
+end)
+
+
+hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
+    local zombieTypes = {"npc_zombie", "npc_zombie_torso", "npc_fastzombie", "npc_poisonzombie"}
+    for _, type in ipairs(zombieTypes) do
+        if (npc:GetClass() == type) then
+            local deadZombiePos = npc:GetPos()
+            local deadZombieTeam = npc:GetName()
+
+            -- timer might be necessary as headcrab might not exist on same tick
+            timer.Create("CheckForHeadcrab" .. npc:EntIndex(), 1, 3, function()
+                local foundEntities = ents.FindInSphere(deadZombiePos, 100) -- radius needs adjusting
+
+                for _, ent in ipairs(foundEntities) do
+                    if ((ent:GetClass() == "npc_headcrab" or ent:GetClass() == "npc_headcrab_fast" or ent:GetClass() == "npc_headcrab_black") and ent:GetName() == "") then
+                        AssignTeam(ent, deadZombieTeam)
+                        return
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+function AssignTeam(ent, team)
+    local npcColors = {"Redteam", "Blueteam", "Greenteam", "Yellowteam"}
+
+    for i, teamName in ipairs(npcColors) do
+        if (team == teamName) then
+            ent:AddEntityRelationship(teamName, D_LI, 10)
+            if (team ~= ent:GetName()) then
+                ent:SetName(teamName)
+            end
+        else
+            ent:AddEntityRelationship(teamName, D_HT, 10)
         end
     end
 end

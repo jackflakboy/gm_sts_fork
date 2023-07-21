@@ -47,7 +47,7 @@ function HUD()
     --Research/Score/Team
     --Research
     draw.RoundedBox(25, ScrW() - 350, ScrH() - (250 + 250 * descriptionsEnabled), 350, 250 + 250 * descriptionsEnabled, Color(20, 20, 20, 230))
-    draw.SimpleText("Research Points:  " .. client:GetNWInt("researchPoints"), "ChatFont", ScrW() - 330, (3.90 * ScrH() / 5) - 250 * descriptionsEnabled, Color(255, 255, 255, 255), 0, 0)
+    draw.SimpleText("Research Points:  " .. points, "ChatFont", ScrW() - 330, (3.90 * ScrH() / 5) - 250 * descriptionsEnabled, Color(255, 255, 255, 255), 0, 0)
     draw.SimpleText("Mob Info: ", "ChatFont", ScrW() - 330, (3.2 * ScrH() / 4) - 250 * descriptionsEnabled, Color(255, 255, 255, 255), 0, 0)
 
     --Mobstuff
