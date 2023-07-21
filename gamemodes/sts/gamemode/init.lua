@@ -547,11 +547,6 @@ hook.Add("OnEntityCreated", "AssignTeams", function(ent)
     
     if (npcClass == "npc_poisonzombie") then
         local poisonZombieTeam = ent:GetName()
-        poisonZombies[ent:EntIndex()] = {
-            entity = ent,
-            team = poisonZombieTeam,
-            lastHeadcrabCount = 0
-        }
 
         -- Start a timer that runs every second
         timer.Create("CheckForHeadcrabs" .. ent:EntIndex(), 1, 0, function()
@@ -563,15 +558,12 @@ hook.Add("OnEntityCreated", "AssignTeams", function(ent)
             end
 
             local foundEntities = ents.FindInSphere(ent:GetPos(), 100) -- adjust radius as necessary
-            local headcrabCount = 0
 
             for _, foundEnt in ipairs(foundEntities) do
                 if (foundEnt:GetClass() == "npc_headcrab_poison") then
                     AssignTeam(foundEnt, poisonZombieTeam)
                 end
             end
-
-            poisonZombies[ent:EntIndex()].lastHeadcrabCount = headcrabCount
         end)
     end
 end)
@@ -600,16 +592,28 @@ hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
 end)
 
 function AssignTeam(ent, team)
+    if ( not ent:IsValid() or not ent:IsNpc()) then return end
     local npcColors = {"Redteam", "Blueteam", "Greenteam", "Yellowteam"}
+    local teamEnts = {}
+    if ent:GetName() == "" then
+        ent:SetName(team)
+    end
 
     for i, teamName in ipairs(npcColors) do
-        if (team == teamName) then
-            ent:AddEntityRelationship(teamName, D_LI, 10)
-            if (team ~= ent:GetName()) then
-                ent:SetName(teamName)
+        teamEnts[i] = ents.FindByName(teamName)
+    end
+
+    for i, teamName in ipairs(npcColors) do
+        if (ent:GetName() == teamName) then
+            for _, sameTeamEnt in ipairs(teamEnts[i]) do
+                if ent ~= sameTeamEnt then -- to avoid self-love
+                    if string.find(ent:GetName(), teamName) then
+                        ent:AddEntityRelationship(sameTeamEnt, D_LI, 10)
+                    else
+                        ent:AddEntityRelationship(sameTeamEnt, D_HT, 10)
+                    end
+                end
             end
-        else
-            ent:AddEntityRelationship(teamName, D_HT, 10)
         end
     end
 end
