@@ -4,8 +4,8 @@ AddCSLuaFile("descriptions.lua")
 
 function HUD()
     local client = LocalPlayer()
-    descriptionsEnabled = client:GetNWInt("desc")
     if client:Alive() == false then return end
+    local descriptionsEnabled = GetConVar("sts_use_descriptions"):GetInt()
     draw.RoundedBox(5, 0, ScrH() - 140, 250, 240, Color(20, 20, 20, 225))
     --Health
     draw.SimpleText("Health: " .. client:Health() .. "%", "DermaDefaultBold", 10, ScrH() - 65, Color(255, 255, 255, 255), 0, 0)
@@ -14,12 +14,12 @@ function HUD()
     draw.RoundedBox(3, 10, ScrH() - 50, math.Clamp(client:Health(), 0, 100) * 2.25, 4, Color(255, 50, 50, 255))
 
     --Beginning
-    if client:GetNWInt("beginon") == 1 then
-        local sp = tostring(client:GetNWInt("strtpnt"))
-        local ro = tostring(client:GetNWInt("strtround"))
+    if GetConVar("sts_game_started"):GetInt() == 0 then
+        local startingPoints = tostring(GetConVar("sts_starting_points"):GetInt())
+        local totalRounds = tostring(GetConVar("sts_total_rounds"):GetInt())
         draw.RoundedBox(5, ScrW() / 2 - 225, 75, 450, 60, Color(10, 10, 10, 230))
-        draw.SimpleText("Starting Points: " .. sp, "CloseCaption_Bold", ScrW() / 2, 90, Color(255, 255, 255, 255), 0, 0)
-        draw.SimpleText("Rounds: " .. ro, "CloseCaption_Bold", ScrW() / 2 - 180, 90, Color(255, 255, 255, 255), 0, 0)
+        draw.SimpleText("Starting Points: " .. startingPoints, "CloseCaption_Bold", ScrW() / 2, 90, Color(255, 255, 255, 255), 0, 0)
+        draw.SimpleText("Rounds: " .. totalRounds, "CloseCaption_Bold", ScrW() / 2 - 180, 90, Color(255, 255, 255, 255), 0, 0)
     end
 
     --Timer

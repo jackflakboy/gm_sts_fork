@@ -5,6 +5,7 @@ AddCSLuaFile("custommenu.lua")
 AddCSLuaFile("shared.lua")
 AddCSLuaFile("teamsetup.lua")
 AddCSLuaFile("testhud.lua")
+AddCSLuaFile("cubes.lua")
 include("bonusround.lua")
 include("concommands.lua")
 include("custommenu.lua")
@@ -15,6 +16,7 @@ include("cubes.lua")
 include("net.lua")
 AddCSLuaFile("net.lua")
 math.randomseed(os.time())
+gameStarted = false
 
 -- determines loadout. returning true means override default, this might be able to be used for minigames.
 function GM:PlayerLoadout(ply)
@@ -98,31 +100,81 @@ RunConsoleCommand("sk_citizen_heal_player_min_forced", "1")
 RunConsoleCommand("sk_citizen_heal_ally", "40")
 RunConsoleCommand("sk_citizen_heal_ally_delay", "0.5") -- this might've not been set correctly prior and may cause a buff to medics
 
-CreateConVar("sts_random_teams", "0", {FCVAR_NONE}, "0 - Allow players to choose teams\n1 - Random two teams\n2 - Random Four teams\n 3 - Random\nIf this is set to anything besides 0, the team selection will be locked. No effect after game start.", 0, 3)
-CreateConVar("sts_episodic_mobs", "1", {FCVAR_NONE}, "Whether or not to add episodic mobs to the mob pool. No effect after game start.", 0, 1)
-CreateConVar("sts_force_bonus_rounds", "-1", {FCVAR_NONE}, "1 - Force bonus rounds on\n0 - Force bonus rounds off\n -1 - Force nothing.")
-CreateConVar("sts_minimum_players", "2", {FCVAR_NONE}, "Minimum players required before game can start.")
+CreateConVar("sts_random_teams", "0", {FCVAR_GAMEDLL}, "0 - Allow players to choose teams\n1 - Random two teams\n2 - Random Four teams\n 3 - Random\nIf this is set to anything besides 0, the team selection will be locked. No effect after game start.", 0, 3)
 
+cvars.AddChangeCallback("sts_random_teams", function(convarName, valueOld, valueNew)
+    print("TODO: Create team door and open and close it")
+end)
 
--- this is a bodge. remove when hammer issues figured out
-function setCorrectBonusRoundState()
+CreateConVar("sts_episodic_mobs", "1", {FCVAR_GAMEDLL}, "Whether or not to add episodic mobs to the mob pool. No effect after game start.", 0, 1)
+
+CreateConVar("sts_force_bonus_rounds", "-1", {FCVAR_GAMEDLL}, "1 - Force bonus rounds on\n0 - Force bonus rounds off\n-1 - Force nothing.")
+
+cvars.AddChangeCallback("sts_force_bonus_rounds", function(convarName, valueOld, valueNew)
+    print("TODO: Change lever and lock it")
+end)
+
+CreateConVar("sts_minimum_players", "2", {FCVAR_GAMEDLL}, "Minimum players required before game can start.")
+
+CreateConVar("sts_allow_playermodel_variation", "0", {FCVAR_GAMEDLL}, "Whether or not players should be able to change their playermodels or not.", 0, 1)
+
+CreateConVar("sts_forbid_dev_room", "0", {FCVAR_GAMEDLL}, "Whether or not to forbid access to the secret dev room.", 0, 1)
+
+CreateConVar("sts_disable_settings_buttons", "0", {FCVAR_GAMEDLL}, "Whether or not the lobby buttons should do anything.", 0, 1)
+
+cvars.AddChangeCallback("sts_disable_settings_buttons", function(convarName, valueOld, valueNew)
+    if GetConVar("sts_game_started"):GetInt() == 1 then return end
+
+    if valueNew == "1" then
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "waiting_lobby_ready_door" then
+                ent:Fire("open")
+            end
+        end
+    elseif valueNew == "0" then
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "waiting_lobby_ready_door" then
+                ent:Fire("close")
+            end
+        end
+    end
+end)
+
+CreateConVar("sts_game_started", "0", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Changing this value will cause bugs!!!", 0, 1)
+
+CreateConVar("sts_starting_points", "20", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Starting points, no affect after game start.", 1, 80)
+
+CreateConVar("sts_total_rounds", "5", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Amount of rounds to play. No affect after game start.", 1, 24)
+
+function getChosenBonusRounds()
     local lever
-    local counter
-    local relay
     local leverClass
     local leverState
+    local bonusRoundDesired
+
+    local bonusRounds = {"waiting_lobby_mapleverb_lake", "waiting_lobby_mapleverb_blue", "waiting_lobby_mapleverb_green", "waiting_lobby_mapleverb_boomstick", "waiting_lobby_mapleverb_ctf", "waiting_lobby_mapleverb_battery", "waiting_lobby_mapleverb_ravsurv", "waiting_lobby_mapleverb_rav", "waiting_lobby_mapleverb_cit", "waiting_lobby_mapleverb_square"}
+
+    local selectedBonusRounds = {}
 
     for _, entity in ipairs(ents.GetAll()) do
-        if entity:GetName() == "newround_counter" then
-            counter = entity
-        end
-
-        if entity:GetName() == "bonusround_disable_relay" then
-            relay = entity
-        end
-
         if entity:GetName() == "waiting_lobby_brtoggle_lever" then
             lever = entity
+        else
+            for _, bonusRoundLever in ipairs(bonusRounds) do
+                if entity:GetName() == bonusRoundLever then
+                    if entity:GetClass() == "func_door" or entity:GetClass() == "func_door_rotating" then
+                        bonusRoundDesired = entity:GetInternalVariable("m_toggle_state") == 0
+                    elseif entity:GetClass() == "prop_door_rotating" then
+                        bonusRoundDesired = entity:GetInternalVariable("m_eDoorState") ~= 0
+                    else
+                        bonusRoundDesired = false
+                    end
+
+                    if bonusRoundDesired == false then
+                        table.insert(selectedBonusRounds, entity:GetName())
+                    end
+                end
+            end
         end
     end
 
@@ -139,67 +191,77 @@ function setCorrectBonusRoundState()
 
     -- lever up means the door is closed (false) and bonus rounds should be on. 
     if leverState == false then
-        counter:Fire("Disable")
-        relay:Fire("Enable")
-        counter:Fire("Enable")
-        relay:Fire("Disable")
+        return selectedBonusRounds
     else
-        counter:Fire("Disable")
-        relay:Fire("Enable")
-        counter:Fire("Enable")
-        relay:Fire("Disable")
+        return {}
     end
+end
+
+function getChosenMaps()
+    local mapDesired
+
+    local maps = {"waiting_lobby_maplever_square", "waiting_lobby_maplever_cit", "waiting_lobby_maplever_rav", "waiting_lobby_maplever_rail", "waiting_lobby_maplever_lake", "waiting_lobby_maplever_yellow", "waiting_lobby_maplever_green", "waiting_lobby_maplever_blue"}
+
+    local selectedMaps = {}
+
+    for _, entity in ipairs(ents.GetAll()) do
+        if entity:GetName() == "waiting_lobby_brtoggle_lever" then
+            lever = entity
+        else
+            for _, bonusRoundLever in ipairs(maps) do
+                if entity:GetName() == bonusRoundLever then
+                    if entity:GetClass() == "func_door" or entity:GetClass() == "func_door_rotating" then
+                        mapDesired = entity:GetInternalVariable("m_toggle_state") == 0
+                    elseif entity:GetClass() == "prop_door_rotating" then
+                        mapDesired = entity:GetInternalVariable("m_eDoorState") ~= 0
+                    else
+                        mapDesired = false
+                    end
+
+                    if mapDesired == false then
+                        table.insert(selectedMaps, entity:GetName())
+                    end
+                end
+            end
+        end
+    end
+
+    return selectedMaps
 end
 
 function GM:PlayerInitialSpawn(ply)
-    allgonened()
-    setCorrectBonusRoundState()
     ply:SetMaxHealth(100)
     ply:SetHealth(100)
     ply:SetRunSpeed(400)
-    ply:SetModel("models/player/police.mdl")
     ply:SetPlayerColor(Vector(0.0, 0.0, 0.0))
     ply:SetNWInt("combat", 0)
     ply:SetNWInt("stsgod", 0)
-    ply:SetNWInt("dmpnt", 1)
-    ply:SetNWInt("pickup", 0)
-    ply:SetNWInt("desc", 1)
-    ply:SetNWInt("researchPoints", 0)
     ply:ConCommand("set_team " .. 0)
+
+    if GetConVar("sts_disable_settings_buttons"):GetInt() == 0 then
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "waiting_lobby_ready_door" then
+                ent:Fire("close")
+            end
+        end
+    end
 end
 
 function GM:PlayerSpawn(ply)
-    checkbegin(ply)
-    setCorrectBonusRoundState()
+    ply:SetModel("models/player/police.mdl")
+    ply:SetupHands()
 end
 
-function checkbegin(ply)
-    for _, entity in ipairs(ents.GetAll()) do
-        if entity:GetName() == "beginonoff" then
-            local var = tonumber(entity:GetInternalVariable("Case16"))
-            ply:SetNWInt("beginon", var)
-        end
+function GM:PlayerSetHandsModel(ply, ent)
+    local simplemodel = player_manager.TranslateToPlayerModelName(ply:GetModel())
+    local info = player_manager.TranslatePlayerHands(simplemodel)
 
-        if entity:GetName() == "waiting_startpnt_case" then
-            local var = tonumber(entity:GetInternalVariable("Case16"))
-            ply:SetNWInt("strtpnt", var)
-        end
-
-        if entity:GetName() == "waiting_score_case" then
-            local var = tonumber(entity:GetInternalVariable("Case16"))
-            ply:SetNWInt("strtround", var)
-        end
+    if info then
+        ent:SetModel(info.model)
+        ent:SetSkin(info.skin)
+        ent:SetBodyGroups(info.body)
     end
 end
-
--- why no e???
-function bgin(x)
-    for _, ply in ipairs(player.GetAll()) do
-        ply:SetNWInt("beginon", tonumber(x))
-    end
-end
-
-util.AddNetworkString("FMenu")
 
 -- no E's allowed i guess
 -- honest to god what does this do
@@ -220,7 +282,7 @@ function scrnprint(x)
     end
 end
 
-function spawnteams()
+function spawnTeams()
     for _, ply in ipairs(player.GetAll()) do
         ply:Spawn()
     end
@@ -229,8 +291,6 @@ end
 --PLAYER USING
 -- happens when a player uses something
 function GM:PlayerUse(ply, ent)
-    setCorrectBonusRoundState()
-
     if ent:GetName() == "waiting_blueteambutt" then
         ply:ConCommand("set_team 1")
     elseif ent:GetName() == "waiting_redteambutt" then
@@ -466,11 +526,9 @@ end
 
 --TIMER STUFF
 function roundend()
-    setCorrectBonusRoundState()
 end
 
 function roundbegin()
-    setCorrectBonusRoundState()
 end
 
 -- checks to see if server is empty on player disconnects
@@ -538,51 +596,58 @@ function addTeamPoints(teamName, change)
     end
 end
 
-local poisonZombies = {}
-
 hook.Add("OnEntityCreated", "AssignTeams", function(ent)
-    if (not ent:IsValid() or not ent:IsNpc()) then return end
+    if not ent:IsValid() or not ent:IsNPC() then return end
+    PrintMessage(HUD_PRINTTALK, "Entity creation")
     AssignTeam(ent, ent:GetName())
+    PrintMessage(HUD_PRINTTALK, "Done Entity creation")
     local npcClass = ent:GetClass()
-    
-    if (npcClass == "npc_poisonzombie") then
-        local poisonZombieTeam = ent:GetName()
 
+    if npcClass == "npc_poisonzombie" and (ent:EntIndex() ~= 0) then
+        local poisonZombieTeam = ent:GetName()
         -- Start a timer that runs every second
-        timer.Create("CheckForHeadcrabs" .. ent:EntIndex(), 1, 0, function()
-            if (not ent:IsValid()) then
-                -- If the poison zombie is no longer valid, remove it from the table and stop the timer
-                poisonZombies[ent:EntIndex()] = nil
+        PrintMessage(HUD_PRINTTALK, "Starting poison zombie check" .. ent:EntIndex())
+
+        timer.Create("CheckForHeadcrabs" .. ent:EntIndex(), 0.1, 600, function()
+            if not ent:IsValid() or ent:EntIndex() == 0 then
                 timer.Remove("CheckForHeadcrabs" .. ent:EntIndex())
+
                 return
             end
 
             local foundEntities = ents.FindInSphere(ent:GetPos(), 100) -- adjust radius as necessary
 
             for _, foundEnt in ipairs(foundEntities) do
-                if (foundEnt:GetClass() == "npc_headcrab_poison") then
+                if foundEnt:GetClass() == "npc_headcrab_poison" then
                     AssignTeam(foundEnt, poisonZombieTeam)
+                    foundEnt:SetKeyValue("rendercolor", "255 30 30")
+                    PrintMessage(HUD_PRINTTALK, "Assigned headcrab team.")
                 end
             end
         end)
     end
 end)
 
-
 hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
     local zombieTypes = {"npc_zombie", "npc_zombie_torso", "npc_fastzombie", "npc_poisonzombie"}
+
     for _, type in ipairs(zombieTypes) do
-        if (npc:GetClass() == type) then
+        if npc:GetClass() == type then
             local deadZombiePos = npc:GetPos()
             local deadZombieTeam = npc:GetName()
 
             -- timer might be necessary as headcrab might not exist on same tick
-            timer.Create("CheckForHeadcrab" .. npc:EntIndex(), 1, 3, function()
-                local foundEntities = ents.FindInSphere(deadZombiePos, 100) -- radius needs adjusting
+            timer.Create("CheckForHeadcrab" .. npc:EntIndex(), 0, 3, function()
+                PrintMessage(HUD_PRINTTALK, "Death headcrab check.")
+                local foundEntities = ents.FindInSphere(deadZombiePos, 25) -- radius needs adjusting
 
                 for _, ent in ipairs(foundEntities) do
-                    if ((ent:GetClass() == "npc_headcrab" or ent:GetClass() == "npc_headcrab_fast" or ent:GetClass() == "npc_headcrab_black") and ent:GetName() == "") then
+                    if (ent:GetClass() == "npc_headcrab" or ent:GetClass() == "npc_headcrab_fast" or ent:GetClass() == "npc_headcrab_black") and ent:GetName() == "" then
                         AssignTeam(ent, deadZombieTeam)
+                        ent:SetKeyValue("rendercolor", "255 30 30")
+                        PrintMessage(HUD_PRINTTALK, "Assigned headcrab team.")
+                        timer.Remove("CheckForHeadcrab" .. npc:EntIndex())
+
                         return
                     end
                 end
@@ -592,9 +657,14 @@ hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
 end)
 
 function AssignTeam(ent, team)
-    if ( not ent:IsValid() or not ent:IsNpc()) then return end
+    if not ent:IsValid() or not ent:IsNPC() then return end
+    team = team or ""
+
     local npcColors = {"Redteam", "Blueteam", "Greenteam", "Yellowteam"}
+
     local teamEnts = {}
+
+    -- for some reason which I cannot diagnose or explain despite my best attempts, this is always true. running the same check in game is not always true. i don't get it!
     if ent:GetName() == "" then
         ent:SetName(team)
     end
@@ -604,9 +674,10 @@ function AssignTeam(ent, team)
     end
 
     for i, teamName in ipairs(npcColors) do
-        if (ent:GetName() == teamName) then
+        if ent:GetName() == teamName then
             for _, sameTeamEnt in ipairs(teamEnts[i]) do
-                if ent ~= sameTeamEnt then -- to avoid self-love
+                -- to avoid self-love
+                if ent ~= sameTeamEnt then
                     if string.find(ent:GetName(), teamName) then
                         ent:AddEntityRelationship(sameTeamEnt, D_LI, 10)
                     else
@@ -616,4 +687,19 @@ function AssignTeam(ent, team)
             end
         end
     end
+end
+
+function roundLimitChange(amount)
+    local roundLimitConvar = GetConVar("sts_total_rounds")
+    local roundLimit = roundLimitConvar:GetInt()
+    roundLimitConvar:SetInt(roundLimit + amount)
+end
+
+function startingPointsChange(amount)
+    local startingPointsConvar = GetConVar("sts_starting_points")
+    local startingPoints = startingPointsConvar:GetInt()
+    startingPointsConvar:SetInt(startingPoints + (amount * 5))
+end
+
+function startGame()
 end

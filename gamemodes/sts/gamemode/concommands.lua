@@ -1,10 +1,25 @@
 -- Define team properties
 local teamProperties = {
-    [1] = {color = Vector(1.0, 0, 0), namePrefix = "Blueply"},
-    [2] = {color = Vector(1.0, 0, 0), namePrefix = "Redply"},
-    [3] = {color = Vector(0.0, 1.0, 0.0), namePrefix = "Greenply"},
-    [4] = {color = Vector(1.0, 1.0, 0.0), namePrefix = "Yellowply"},
-    [0] = {color = Vector(0.0, 0.0, 0.0), namePrefix = ""}
+    [1] = {
+        color = Vector(0, 0, 1.0),
+        namePrefix = "Blueply"
+    },
+    [2] = {
+        color = Vector(1.0, 0, 0),
+        namePrefix = "Redply"
+    },
+    [3] = {
+        color = Vector(0.0, 1.0, 0.0),
+        namePrefix = "Greenply"
+    },
+    [4] = {
+        color = Vector(1.0, 1.0, 0.0),
+        namePrefix = "Yellowply"
+    },
+    [0] = {
+        color = Vector(0.0, 0.0, 0.0),
+        namePrefix = ""
+    }
 }
 
 concommand.Add("set_team", function(ply, cmd, args)
@@ -12,26 +27,21 @@ concommand.Add("set_team", function(ply, cmd, args)
 
     if inp == nil or (inp > 4 or inp < 0) then
         print("0 - No team\n1 - Blue\n2 - Red\n3 - Green\n4 - Yellow")
+
         return
     end
 
     -- Clearer message
     local teamEmpty = team.NumPlayers(inp) == 0
     print("The team you want to join IS" .. (teamEmpty and "" or " NOT") .. " empty.")
-
-
     -- Setting the team
     ply:SetTeam(inp)
-
     -- Using team properties dictionary to reduce code repetition
     local props = teamProperties[inp]
     ply:SetKeyValue("targetname", props.namePrefix .. ply:GetName())
     ply:SetPlayerColor(props.color)
     ply:SetModel("models/player/police.mdl")
-
-    colortest()
 end)
-
 
 concommand.Add("pntadd", function(ply, cmd, args)
     for i, v in ipairs(player.GetAll()) do
@@ -63,7 +73,8 @@ concommand.Add("stsgod", function(ply, cmd, args)
     print(ply:GetNWInt("stsgod"))
 end, nil, nil, FCVAR_CHEAT)
 
-concommand.Add("newround", function(args) -- broke
+-- broke
+concommand.Add("newround", function(args)
     for k, v in ipairs(ents.GetAll()) do
         if v:GetName() == "newround_relay_nodelay" then
             v:Fire("Trigger")

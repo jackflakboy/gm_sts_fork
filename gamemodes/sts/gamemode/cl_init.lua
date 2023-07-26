@@ -2,8 +2,13 @@ include("shared.lua")
 include("testhud.lua")
 include("custommenu.lua")
 include("net.lua")
-local client = LocalPlayer()
+include("cubes.lua")
+-- local client = LocalPlayer()
 points = 0
+startingPoints = 20
+startingRounds = 5
+gameStarted = false
+CreateClientConVar("sts_use_descriptions", "1", true, true, "Enables mob descriptions", 0, 1)
 
 surface.CreateFont("timefont", {
     font = "Default", --  Use the font-name which is shown to you by your operating system Font Viewer, not the file name
