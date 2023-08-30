@@ -6,6 +6,8 @@ AddCSLuaFile("shared.lua")
 AddCSLuaFile("teamsetup.lua")
 AddCSLuaFile("testhud.lua")
 AddCSLuaFile("cubes.lua")
+AddCSLuaFile("misc.lua")
+AddCSLuaFile("mobs.lua")
 include("bonusround.lua")
 include("concommands.lua")
 include("custommenu.lua")
@@ -14,9 +16,10 @@ include("teamsetup.lua")
 include("testhud.lua")
 include("cubes.lua")
 include("net.lua")
+include("misc.lua")
+include("mobs.lua")
 AddCSLuaFile("net.lua")
 math.randomseed(os.time())
-gameStarted = false
 
 -- determines loadout. returning true means override default, this might be able to be used for minigames.
 function GM:PlayerLoadout(ply)
@@ -27,100 +30,15 @@ end
 -- if bonus round
 -- if bonus round == round with gun
 -- give guns
-function GM:PlayerSpawnProp(ply, model)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
-end
-
-function GM:PlayerSpawnEffect(ply, model)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
-end
-
-function GM:PlayerSpawnNPC(ply, npc_type, weapon)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
-end
-
-function GM:PlayerSpawnObject(ply, model, skin)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
-end
-
-function GM:PlayerSpawnRagdoll(ply, model)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
-end
-
-function GM:PlayerSpawnSENT(ply, class)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
-end
-
-function GM:PlayerSpawnSWEP(ply, weapon, swep)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
-end
-
-function GM:PlayerSpawnVehicle(ply, model, name, table)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
-end
-
-RunConsoleCommand("sv_gravity", "600") -- reset gravity
-RunConsoleCommand("sk_combine_s_kick", "6") -- change combine melee damage
-RunConsoleCommand("sbox_noclip", "1") -- disable ability to noclip
-RunConsoleCommand("sv_noclipspeed", "50")
-RunConsoleCommand("sk_citizen_heal_player_min_pct", "100")
-RunConsoleCommand("sk_citizen_heal_player_min_forced", "1")
-RunConsoleCommand("sk_citizen_heal_ally", "40")
-RunConsoleCommand("sk_citizen_heal_ally_delay", "0.5") -- this might've not been set correctly prior and may cause a buff to medics
-
-CreateConVar("sts_random_teams", "0", {FCVAR_GAMEDLL}, "0 - Allow players to choose teams\n1 - Random two teams\n2 - Random Four teams\n 3 - Random\nIf this is set to anything besides 0, the team selection will be locked. No effect after game start.", 0, 3)
 
 cvars.AddChangeCallback("sts_random_teams", function(convarName, valueOld, valueNew)
     print("TODO: Create team door and open and close it")
 end)
 
-CreateConVar("sts_episodic_mobs", "1", {FCVAR_GAMEDLL}, "Whether or not to add episodic mobs to the mob pool. No effect after game start.", 0, 1)
-
-CreateConVar("sts_force_bonus_rounds", "-1", {FCVAR_GAMEDLL}, "1 - Force bonus rounds on\n0 - Force bonus rounds off\n-1 - Force nothing.")
-
 cvars.AddChangeCallback("sts_force_bonus_rounds", function(convarName, valueOld, valueNew)
     print("TODO: Change lever and lock it")
 end)
 
-CreateConVar("sts_minimum_players", "2", {FCVAR_GAMEDLL}, "Minimum players required before game can start.")
-
-CreateConVar("sts_allow_playermodel_variation", "0", {FCVAR_GAMEDLL}, "Whether or not players should be able to change their playermodels or not.", 0, 1)
-
-CreateConVar("sts_forbid_dev_room", "0", {FCVAR_GAMEDLL}, "Whether or not to forbid access to the secret dev room.", 0, 1)
-
-CreateConVar("sts_disable_settings_buttons", "0", {FCVAR_GAMEDLL}, "Whether or not the lobby buttons should do anything.", 0, 1)
 
 cvars.AddChangeCallback("sts_disable_settings_buttons", function(convarName, valueOld, valueNew)
     if GetConVar("sts_game_started"):GetInt() == 1 then return end
@@ -140,11 +58,136 @@ cvars.AddChangeCallback("sts_disable_settings_buttons", function(convarName, val
     end
 end)
 
-CreateConVar("sts_game_started", "0", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Changing this value will cause bugs!!!", 0, 1)
+cvars.AddChangeCallback("sts_starting_points", function(convarName, valueOld, valueNew)
+    if valueNew == "80" then
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "waiting_startpnt_up" then
+                ent:Fire("lock")
+            end
+        end
+    else
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "waiting_startpnt_up" then
+                ent:Fire("unlock")
+            end
+        end
+    end
+    if valueNew == "5" then
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "waiting_startpnt_down" then
+                ent:Fire("lock")
+            end
+        end
+    else
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "waiting_startpnt_down" then
+                ent:Fire("unlock")
+            end
+        end
+    end
+end)
 
-CreateConVar("sts_starting_points", "20", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Starting points, no affect after game start.", 1, 80)
+cvars.AddChangeCallback("sts_total_rounds", function(convarName, valueOld, valueNew)
+    if valueNew == "24" then
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "waiting_score_up" then
+                ent:Fire("lock")
+            end
+        end
+    else
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "waiting_score_up" then
+                ent:Fire("unlock")
+            end
+        end
+    end
+    if valueNew == "1" then
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "waiting_score_down" then
+                ent:Fire("lock")
+            end
+        end
+    else
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "waiting_score_down" then
+                ent:Fire("unlock")
+            end
+        end
+    end
+end)
 
-CreateConVar("sts_total_rounds", "5", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Amount of rounds to play. No affect after game start.", 1, 24)
+cvars.AddChangeCallback("sts_game_started", function(convarName, valueOld, valueNew)
+    if valueNew == "1" then
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "waiting_score_up" then
+                ent:Fire("lock")
+            elseif ent:GetName() == "waiting_score_down" then
+                ent:Fire("lock")
+            elseif ent:GetName() == "waiting_startpnt_down" then
+                ent:Fire("lock")
+            elseif ent:GetName() == "waiting_startpnt_up" then
+                ent:Fire("lock")
+            end
+        end
+    end
+end)
+
+cvars.AddChangeCallback("sts_forbid_dev_room", function(convarName, valueOld, valueNew)
+    if valueNew == "0" then
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "dev_secret_button" then
+                ent:Fire("unlock")
+                break
+            end
+        end
+    else
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "dev_secret_button" then
+                ent:Fire("lock")
+                break
+            end
+        end
+    end
+end)
+
+cvars.AddChangeCallback("sts_minimum_players", function(convarName, valueOld, valueNew)
+    shouldStartLeverBeLocked()
+end)
+
+
+
+function getAmountOfTeamedPlayers()
+    local teamedPlayers = 0
+    for i, teamLoop in ipairs(team.GetAllTeams()) do
+        if team.GetName(i) ~= "Spectator" and team.GetName(i) ~= "Empty" then
+            for _, _ in ipairs(team.GetPlayers(i)) do
+                teamedPlayers = teamedPlayers + 1
+            end
+        end
+    end
+    return teamedPlayers
+end
+
+function shouldStartLeverBeLocked()
+    PrintMessage(HUD_PRINTTALK, "Checking!")
+    local teamedPlayers = getAmountOfTeamedPlayers()
+    local minimumRequired = GetConVar("sts_minimum_players"):GetInt()
+    local gameStarted = GetConVar("sts_game_started"):GetInt()
+
+    for _, ent in ipairs(ents.GetAll()) do
+        if ent:GetName() == "waiting_lobby_readylever" then
+            if teamedPlayers >= minimumRequired and gameStarted == 0 then
+                ent:Fire("Unlock")
+                PrintMessage(HUD_PRINTTALK, "Unlocked!")
+                return false
+            else
+                ent:Fire("Lock")
+                PrintMessage(HUD_PRINTTALK, "Locked!")
+                return true
+            end
+        end
+    end
+end
 
 function getChosenBonusRounds()
     local lever
@@ -293,30 +336,41 @@ end
 function GM:PlayerUse(ply, ent)
     if ent:GetName() == "waiting_blueteambutt" then
         ply:ConCommand("set_team 1")
+        shouldStartLeverBeLocked()
     elseif ent:GetName() == "waiting_redteambutt" then
         ply:ConCommand("set_team 2")
+        shouldStartLeverBeLocked()
     elseif ent:GetName() == "waiting_greenteambutt" then
         ply:ConCommand("set_team 3")
+        shouldStartLeverBeLocked()
     elseif ent:GetName() == "waiting_yellowteambutt" then
         ply:ConCommand("set_team 4")
+        shouldStartLeverBeLocked()
     end
 end
 
 -- when holding something
 function GM:OnPlayerPhysicsPickup(ply, ent)
     local enty = ent:GetName()
+    local boxEnt
 
     if string.sub(enty, -4, -2) == "box" then
-        ply:SetNWInt("pickup", 1)
-        local num = string.sub(enty, -1, -1)
-        local length = string.len(enty) - 5
-        local col = string.sub(enty, 1, length)
-        boxprint(ply, num, col)
+        for _, teamID in pairs(teams) do
+            for _, box in pairs(teamID.cubes) do
+                if box.entity == enty then
+                    boxEnt = box
+                end
+            end
+        end
+        if boxEnt then
+            PrintMessage(HUD_PRINTTALK, boxEnt.entity)
+            SendBoxInfoToPlayer(ply, boxEnt)
+        end
     end
 end
 
 function GM:OnPlayerPhysicsDrop(ply, ent)
-    ply:SetNWInt("pickup", 0)
+    ClearBox(ply)
 end
 
 -- this has been edited, instead of 4 for loops looping the same things in themselves
@@ -357,8 +411,8 @@ function boxprint(ply, boxnum, col)
 end
 
 -- determine if upgrade affordable
-function trigafford(team_entity)
-    local col = string.sub(team_entity, 1, -16)
+function trigafford(teamEntity)
+    local col = string.sub(teamEntity, 1, -16)
     local points
     local colnum = teamval[col]
 
@@ -368,7 +422,7 @@ function trigafford(team_entity)
 
             if points >= 1 then
                 for k, entity in ipairs(ents.GetAll()) do
-                    if entity:GetName() == team_entity then
+                    if entity:GetName() == teamEntity then
                         entity:Fire("Enable")
                     end
                 end
@@ -383,7 +437,7 @@ function randomizeboxsub(box)
     -- local num = string.sub(box,-1,-1)
     local length = string.len(box) - 5
     local col = string.sub(box, 1, length)
-
+    print("running randomizeboxsub")
     for _, entity in ipairs(ents.GetAll()) do
         if entity:GetName() == (box .. "_tech_casein") then
             local subamount = tonumber(entity:GetInternalVariable("Case16")) * 6
@@ -482,48 +536,6 @@ function pointadd(teamID)
     end
 end
 
--- adds points per person alive in survival
-function survpointadd(teamID)
-    for entity, ply in ipairs(player.GetAll()) do
-        if ply:Team() == teamID then
-            ply:SetNWInt("researchPoints", ply:GetNWInt("researchPoints") + 10)
-        end
-    end
-end
-
--- toggle the bonus round state
-function broundtoggle(state)
-    local amount = state
-
-    if tonumber(amount) == 0 then
-        print("Bonusrounds Disabled")
-
-        for k, entity in ipairs(ents.GetAll()) do
-            if entity:GetName() == "newround_counter" then
-                entity:Fire("Disable")
-            end
-
-            if entity:GetName() == "bonusround_disable_relay" then
-                entity:Fire("Enable")
-            end
-        end
-    elseif tonumber(amount) == 1 then
-        print("Bonusrounds Enabled")
-
-        for k, entity in ipairs(ents.GetAll()) do
-            if entity:GetName() == "newround_counter" then
-                entity:Fire("Enable")
-            end
-
-            if entity:GetName() == "bonusround_disable_relay" then
-                entity:Fire("Disable")
-            end
-        end
-    else
-        print("Invalid Entry")
-    end
-end
-
 --TIMER STUFF
 function roundend()
 end
@@ -533,10 +545,14 @@ end
 
 -- checks to see if server is empty on player disconnects
 function GM:PlayerDisconnected(ply)
+    shouldStartLeverBeLocked()
     print("A player has disconnected")
     print(ply:Name() .. " has left the server.")
-    colortest()
     timer.Simple(10, allgonecheck)
+end
+
+function GM:PlayerConnect(name, ip)
+    shouldStartLeverBeLocked()
 end
 
 -- runs endtimerstart() if server is empty
@@ -595,11 +611,11 @@ function addTeamPoints(teamName, change)
         end
     end
 end
-
+-- needs significant testing
 hook.Add("OnEntityCreated", "AssignTeams", function(ent)
-    if not ent:IsValid() or not ent:IsNPC() then return end
+    if not ent:IsValid() or not ent:IsNPC() or engine.TickCount() < 1980 then return end
     PrintMessage(HUD_PRINTTALK, "Entity creation")
-    AssignTeam(ent, ent:GetName())
+    timer.Simple(1 / 66, function() AssignTeam(ent, ent:GetName()) end )
     PrintMessage(HUD_PRINTTALK, "Done Entity creation")
     local npcClass = ent:GetClass()
 
@@ -656,19 +672,21 @@ hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
     end
 end)
 
-function AssignTeam(ent, team)
+function AssignTeam(ent, teamInput)
     if not ent:IsValid() or not ent:IsNPC() then return end
-    team = team or ""
+    teamInput = teamInput or ""
 
     local npcColors = {"Redteam", "Blueteam", "Greenteam", "Yellowteam"}
 
     local teamEnts = {}
 
-    -- for some reason which I cannot diagnose or explain despite my best attempts, this is always true. running the same check in game is not always true. i don't get it!
+    -- for some reason which I cannot diagnose or explain despite my best attempts, 
+    -- this check is always true. running the same check in game is not always true. i don't get it!
+    -- Too Bad!
     if ent:GetName() == "" then
-        ent:SetName(team)
+        ent:SetName(teamInput)
     end
-
+    PrintMessage(HUD_PRINTTALK, "Name is" .. ent:GetName())
     for i, teamName in ipairs(npcColors) do
         teamEnts[i] = ents.FindByName(teamName)
     end
@@ -702,4 +720,43 @@ function startingPointsChange(amount)
 end
 
 function startGame()
+    PrintMessage(HUD_PRINTCENTER, "Ready!")
+    GetConVar("sts_game_started"):SetInt(1)
 end
+
+function upgradeABox(cubeName)
+    PrintMessage(HUD_PRINTTALK, "Upgrading!!!")
+    randomizeABox(cubeName)
+    -- a lot of checks can be skipped like team validation as that essentially handled
+    -- by the game world itself, and if bypassed (via noclip), its probably for a good reason
+    -- only checks required should be checking affordability
+end
+
+function randomizeABox(cubeName)
+    PrintMessage(HUD_PRINTTALK, "Randomizing!!!")
+    local desiredCube
+    local availablePoints
+
+    for _, teamName in ipairs(teams) do
+        for _, cube in pairs(teamName.cubes) do
+            if cube.entity == cubeName then
+                desiredCube = cube
+                availablePoints = teamName.points
+            end
+        end
+    end
+
+    if availablePoints <= 0 then
+        PrintMessage(HUD_PRINTTALK, "Cannot afford")
+        return
+    end
+
+    if desiredCube then
+        desiredCube:randomize()
+    else
+        PrintMessage(HUD_PRINTTALK, "Could not find cube in random func!")
+    end
+
+end
+
+hook.Add("PlayerDeath", "Deathmatch Add Points", deathmatchKill)
