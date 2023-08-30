@@ -98,59 +98,11 @@ concommand.Add("batteryspwn", function(args)
     end
 end, nil, nil, FCVAR_CHEAT)
 
-concommand.Add("mob_descriptions", function(ply, cmd, args)
-    local onoff = args[1]
-    ply:SetNWInt("desc", tonumber(onoff))
-end)
-
-concommand.Add("bround_interval", function(ply, cmd, args)
-    local amount = args[1]
-    print("After every " .. amount .. " regular rounds, a bonus round will start")
-
-    for k, v in ipairs(ents.GetAll()) do
-        if v:GetName() == "newround_counter" then
-            v:Fire("SetHitMax", tostring(amount))
-        end
-    end
-end, nil, nil, FCVAR_CHEAT)
-
-concommand.Add("bround_toggle", function(ply, cmd, args)
-    local amount = args[1]
-
-    if tonumber(amount) == 0 then
-        print("Bonusrounds Disabled")
-
-        for k, v in ipairs(ents.GetAll()) do
-            if v:GetName() == "newround_counter" then
-                v:Fire("Disable")
-            end
-
-            if v:GetName() == "bonusround_disable_relay" then
-                v:Fire("Enable")
-            end
-        end
-    elseif tonumber(amount) == 1 then
-        print("Bonusrounds Enabled")
-
-        for k, v in ipairs(ents.GetAll()) do
-            if v:GetName() == "newround_counter" then
-                v:Fire("Enable")
-            end
-
-            if v:GetName() == "bonusround_disable_relay" then
-                v:Fire("Disable")
-            end
-        end
-    else
-        print("Invalid Entry")
-    end
-end, nil, nil, FCVAR_CHEAT)
-
 concommand.Add("reset_game", function(ply, cmd, args)
     gameReset()
 end, nil, nil, FCVAR_CHEAT)
 
--- this func will make the gamemode unfriendly to dedicated servers, needs to be automated
+-- this func will make the gamemode unfriendly to dedicated servers, needs to be automated or have additional checks
 concommand.Add("reset_game_solo", function(ply, cmd, args)
     if tonumber(player.GetCount()) == 1 then
         print("\n\n\nYou are alone, so you can reset the map \nThanks for cleaning up the server! \n\n-Tergative\n\n\n\n")

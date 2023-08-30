@@ -7,23 +7,39 @@ teams[1] = {
     color = Vector(0.2, 0.2, 1.0),
     cubes = {
         cube1 = Cube.new{
-            entity = "blue_cube1",
+            entity = "blue_box1",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "blue_npc_headcrab"
         },
         cube2 = Cube.new{
-            entity = "blue_cube2",
+            entity = "blue_box2",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "blue_npc_headcrab"
         },
         cube3 = Cube.new{
-            entity = "blue_cube3",
+            entity = "blue_box3",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "blue_npc_headcrab"
         },
         cube4 = Cube.new{
-            entity = "blue_cube4",
+            entity = "blue_box4",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "blue_npc_headcrab"
         }
     },
-    points = 0
+    points = 999
 }
 
 teams[2] = {
@@ -31,19 +47,35 @@ teams[2] = {
     color = Vector(1.0, 0, 0),
     cubes = {
         cube1 = Cube.new{
-            entity = "red_cube1",
+            entity = "red_box1",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "red_npc_headcrab"
         },
         cube2 = Cube.new{
-            entity = "red_cube2",
+            entity = "red_box2",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "red_npc_headcrab"
         },
         cube3 = Cube.new{
-            entity = "red_cube3",
+            entity = "red_box3",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "red_npc_headcrab"
         },
         cube4 = Cube.new{
-            entity = "red_cube4",
+            entity = "red_box4",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "red_npc_headcrab"
         }
     },
@@ -55,19 +87,35 @@ teams[3] = {
     color = Vector(0.0, 1.0, 0.0),
     cubes = {
         cube1 = Cube.new{
-            entity = "green_cube1",
+            entity = "green_box1",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "green_npc_headcrab"
         },
         cube2 = Cube.new{
-            entity = "green_cube2",
+            entity = "green_box2",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "green_npc_headcrab"
         },
         cube3 = Cube.new{
-            entity = "green_cube3",
+            entity = "green_box3",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "green_npc_headcrab"
         },
         cube4 = Cube.new{
-            entity = "green_cube4",
+            entity = "green_box4",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "green_npc_headcrab"
         }
     },
@@ -79,19 +127,35 @@ teams[4] = {
     color = Vector(1.0, 1.0, 0.0),
     cubes = {
         cube1 = Cube.new{
-            entity = "yellow_cube1",
+            entity = "yellow_box1",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "yellow_npc_headcrab"
         },
         cube2 = Cube.new{
-            entity = "yellow_cube2",
+            entity = "yellow_box2",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "yellow_npc_headcrab"
         },
         cube3 = Cube.new{
-            entity = "yellow_cube3",
+            entity = "yellow_box3",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "yellow_npc_headcrab"
         },
         cube4 = Cube.new{
-            entity = "yellow_cube4",
+            entity = "yellow_box4",
+            level = 1,
+            rarity = 1,
+            strength = 1,
+            multiplier = 1,
             mob = "yellow_npc_headcrab"
         }
     },
@@ -101,11 +165,13 @@ teams[4] = {
 teams[0] = {
     name = "Empty",
     color = Vector(1.0, 1.0, 1.0),
+    cubes = {}
 }
 
 teams[5] = {
     name = "Spectator",
-    color = Vector(0.0, 0.0, 0.0)
+    color = Vector(0.0, 0.0, 0.0),
+    cubes = {}
 }
 
 function ply:SetupTeam(n)
