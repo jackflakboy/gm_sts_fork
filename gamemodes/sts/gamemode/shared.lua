@@ -8,6 +8,7 @@ team.SetUp(2, "Red", Color(255, 0, 0))
 team.SetUp(3, "Green", Color(0, 255, 0))
 team.SetUp(4, "Yellow", Color(255, 255, 0))
 team.SetUp(0, "Empty", Color(50, 50, 50))
+team.SetUp(5, "Spectator", Color(0, 0, 0))
 teamval = {}
 teamval["blue"] = 1
 teamval["red"] = 2

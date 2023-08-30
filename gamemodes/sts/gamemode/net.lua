@@ -37,7 +37,7 @@ if SERVER then
         end
     end
 
-    -- Synchronizing points to team members every 10 seconds, will be removed when no longer needed.
+    -- Synchronizing points to team members every 10 seconds, mostly for late joiners because i am lazy
     timer.Create("PointsSyncTimer", 10, 0, function()
         for teamIndex = 1, 4 do
             SendPointsToTeamMembers(teamIndex)
@@ -49,18 +49,40 @@ if SERVER then
     util.AddNetworkString("SendBoxInfo")
 
     function SendBoxInfoToPlayer(player, box)
-        net.start("SendBoxInfo")
+        net.Start("SendBoxInfo")
         net.WriteString(box.mob)
-        net.WriteInt(box.rarity)
-        net.WriteInt(box.strength)
-        net.WriteInt(box.level)
-        net.send(player)
+        net.WriteInt(box.rarity, 4)
+        net.WriteInt(box.strength, 4)
+        net.WriteInt(box.level, 4)
+        net.Send(player)
     end
 end
 
-if SERVER then
-    util.AddNetworkString("SendGameStartInfo")
-
-    function SendGameStartInfoToPlayer(player, rounds, startPoints)
+if CLIENT then
+    local function GetBoxInfo(len)
+        boxMob = net.ReadString()
+        boxRarity = net.ReadInt(4)
+        boxStrength = net.ReadInt(4)
+        boxLevel = net.ReadInt(4)
     end
+    net.Receive("SendBoxInfo", GetBoxInfo)
+end
+
+if SERVER then
+    util.AddNetworkString("ClearBoxInfo")
+
+    function ClearBox(player)
+        net.Start("ClearBoxInfo")
+        net.Send(player)
+    end
+end
+
+if CLIENT then
+    local function CleanBox(len)
+        boxMob = ""
+        boxRarity = 0
+        boxStrength = 0
+        boxLevel = 0
+    end
+    net.Receive("ClearBoxInfo", CleanBox)
 end
