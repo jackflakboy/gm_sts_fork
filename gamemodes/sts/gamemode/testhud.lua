@@ -51,12 +51,15 @@ function HUD()
     draw.SimpleText("Mob Info: ", "ChatFont", ScrW() - 330, (3.2 * ScrH() / 4) - 250 * descriptionsEnabled, Color(255, 255, 255, 255), 0, 0)
 
     --Mobstuff
-    if client:GetNWInt("pickup") ~= 0 then
-        draw.SimpleText(" Tech Level:   " .. client:GetNWInt("pick_tech"), "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 275 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
-        draw.SimpleText("  Mob Type:   " .. client:GetNWInt("pick_type"), "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 305 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
-        draw.SimpleText("        Rarity:   " .. client:GetNWInt("pick_rar"), "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 335 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
-        draw.SimpleText("    Strength:   " .. client:GetNWInt("pick_str"), "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 365 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
-        local mobDescription = client:GetNWInt("pick_type")
+    if boxMob ~= "" then
+        local lookup = string.sub(boxMob, mobPrefixes[client:Team()]:len() + 5, boxMob:len())
+        print(lookup)
+        boxName = mobs[boxRarity][lookup].name
+        draw.SimpleText(" Tech Level:   " .. boxLevel, "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 275 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
+        draw.SimpleText("  Mob Type:   " .. boxName, "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 305 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
+        draw.SimpleText("        Rarity:   " .. boxRarity, "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 335 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
+        draw.SimpleText("    Strength:   " .. boxStrength, "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 365 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
+        local mobDescription = boxName
 
         if descriptionsEnabled == 1 then
             for i = 1, 15 do

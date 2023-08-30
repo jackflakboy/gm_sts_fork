@@ -1,14 +1,16 @@
+include("mobs.lua")
+
 Cube = {
     mob = "",
     level = 1,
     rarity = 1,
     strength = 1,
+    multiplier = 1,
     entity = ""
 }
 
--- RARITY NUMBERS NOT ACCURATE. ASK TERGATIVE.
+-- RARITY NUMBERS ACCURATE. REFER TO NOTHING.
 function Cube.randomize()
-    Cube.mob = math.random(1, 9)
 
     if Cube.level == 1 then
         Cube.rarity = 1
@@ -17,15 +19,17 @@ function Cube.randomize()
     elseif Cube.level == 3 then
         Cube.rarity = math.random(2, 3)
     elseif Cube.level == 4 then
-        Cube.rarity = math.random(2, 4)
-    elseif Cube.level == 5 then
         Cube.rarity = math.random(3, 4)
+    elseif Cube.level == 5 then
+        Cube.rarity = 4
     else
-        print("Malformed cube at " .. Cube.entity .. "\nPlease screenshot and report in the discord!")
+        PrintMessage(HUD_PRINTTALK, "Malformed cube at " .. Cube.entity .. "\nPlease screenshot and report in the discord!")
 
         return false
     end
 
+    Cube.mob = mobs[Cube.rarity][math.random(#mobs[Cube.rarity])].mobPrefixes
+    print("randomized")
     return true
 end
 
@@ -72,10 +76,13 @@ function Cube.getEntity()
     end
 end
 
+-- this is partly broken, can't set default level rarity etc
 function Cube.new(o)
     o = o or {} -- create object if user does not provide one
     setmetatable(o, Cube)
     Cube.__index = Cube
-
+    Cube.level = 1
+    Cube.rarity = 1
+    Cube.strength = 1
     return o
 end

@@ -3,7 +3,8 @@ include("testhud.lua")
 include("custommenu.lua")
 include("net.lua")
 include("cubes.lua")
--- local client = LocalPlayer()
+include("mobs.lua")
+local client = LocalPlayer()
 points = 0
 startingPoints = 20
 startingRounds = 5
@@ -43,6 +44,12 @@ function GM:OnContextMenuOpen()
         return false
     end
 end
+
+boxMob = ""
+boxName = ""
+boxRarity = 0
+boxStrength = 0
+boxLevel = 0
 
 hook.Add("PlayerSpawnProp", "RestrictSpawningProps", function(ply)
     return false
