@@ -53,11 +53,18 @@ function HUD()
     --Mobstuff
     if boxMob ~= "" then
         local lookup = string.sub(boxMob, mobPrefixes[client:Team()]:len() + 5, boxMob:len())
-        print(lookup)
+        --print(lookup)
+        local rarityNames = {
+            [1] = "Common",
+            [2] = "Uncommon",
+            [3] = "Rare",
+            [4] = "Legendary"
+        }
+        local formattedBoxRarity = rarityNames[boxRarity]
         boxName = mobs[boxRarity][lookup].name
         draw.SimpleText(" Tech Level:   " .. boxLevel, "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 275 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
         draw.SimpleText("  Mob Type:   " .. boxName, "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 305 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
-        draw.SimpleText("        Rarity:   " .. boxRarity, "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 335 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
+        draw.SimpleText("        Rarity:   " .. formattedBoxRarity, "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 335 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
         draw.SimpleText("    Strength:   " .. boxStrength, "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 365 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
         local mobDescription = boxName
 

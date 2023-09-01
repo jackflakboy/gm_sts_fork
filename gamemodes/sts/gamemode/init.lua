@@ -134,6 +134,7 @@ end)
 
 cvars.AddChangeCallback("sts_forbid_dev_room", function(convarName, valueOld, valueNew)
     if valueNew == "0" then
+        print("gyas")
         for _, ent in ipairs(ents.GetAll()) do
             if ent:GetName() == "dev_secret_button" then
                 ent:Fire("unlock")
@@ -730,6 +731,28 @@ function upgradeABox(cubeName)
     -- a lot of checks can be skipped like team validation as that essentially handled
     -- by the game world itself, and if bypassed (via noclip), its probably for a good reason
     -- only checks required should be checking affordability
+    local desiredCube
+    local availablePoints
+
+    for _, teamName in ipairs(teams) do
+        for _, cube in pairs(teamName.cubes) do
+            if cube.entity == cubeName then
+                desiredCube = cube
+                availablePoints = teamName.points
+                break
+            end
+        end
+    end
+
+    if desiredCube:canUpgrade(availablePoints) then
+        desiredCube:upgrade()
+    else
+        PrintMessage(HUD_PRINTTALK, "Cannot afford")
+    end
+
+    for teamIndex = 1, 4 do
+        SendPointsToTeamMembers(teamIndex)
+    end
 end
 
 function randomizeABox(cubeName)
@@ -742,6 +765,7 @@ function randomizeABox(cubeName)
             if cube.entity == cubeName then
                 desiredCube = cube
                 availablePoints = teamName.points
+                break
             end
         end
     end
@@ -753,8 +777,20 @@ function randomizeABox(cubeName)
 
     if desiredCube then
         desiredCube:randomize()
+        for _, teamName in ipairs(teams) do
+            for _, cube in pairs(teamName.cubes) do
+                if cube.entity == cubeName then
+                    teamName.points = teamName.points - 1
+                    break
+                end
+            end
+        end
     else
         PrintMessage(HUD_PRINTTALK, "Could not find cube in random func!")
+    end
+
+    for teamIndex = 1, 4 do
+        SendPointsToTeamMembers(teamIndex)
     end
 
 end
