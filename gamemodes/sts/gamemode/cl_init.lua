@@ -1,6 +1,5 @@
 include("shared.lua")
 include("testhud.lua")
-include("custommenu.lua")
 include("net.lua")
 include("cubes.lua")
 include("mobs.lua")
@@ -50,6 +49,8 @@ boxName = ""
 boxRarity = 0
 boxStrength = 0
 boxLevel = 0
+boxKey = ""
+currentTimer = 0
 
 hook.Add("PlayerSpawnProp", "RestrictSpawningProps", function(ply)
     return false

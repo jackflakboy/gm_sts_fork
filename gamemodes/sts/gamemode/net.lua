@@ -54,6 +54,7 @@ if SERVER then
         net.WriteInt(box.rarity, 4)
         net.WriteInt(box.strength, 4)
         net.WriteInt(box.level, 4)
+        net.WriteString(box.key)
         net.Send(player)
     end
 end
@@ -64,6 +65,7 @@ if CLIENT then
         boxRarity = net.ReadInt(4)
         boxStrength = net.ReadInt(4)
         boxLevel = net.ReadInt(4)
+        boxKey = net.ReadString()
     end
     net.Receive("SendBoxInfo", GetBoxInfo)
 end
@@ -80,9 +82,11 @@ end
 if CLIENT then
     local function CleanBox(len)
         boxMob = ""
+        boxName = ""
         boxRarity = 0
         boxStrength = 0
         boxLevel = 0
+        boxKey = ""
     end
     net.Receive("ClearBoxInfo", CleanBox)
 end

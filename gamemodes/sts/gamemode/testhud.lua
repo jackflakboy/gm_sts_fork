@@ -23,8 +23,8 @@ function HUD()
     end
 
     --Timer
-    if client:GetNWInt("timon") == 1 then
-        local currentTimer = client:GetNWInt("timer")
+    if currentTimer ~= 0 then
+        --local currentTimer = client:GetNWInt("timer")
         draw.RoundedBox(5, ScrW() / 2 - 80, 75, 150, 60, Color(10, 10, 10, 230))
 
         if currentTimer > 60 then
@@ -52,8 +52,6 @@ function HUD()
 
     --Mobstuff
     if boxMob ~= "" then
-        local lookup = string.sub(boxMob, mobPrefixes[client:Team()]:len() + 5, boxMob:len())
-        --print(lookup)
         local rarityNames = {
             [1] = "Common",
             [2] = "Uncommon",
@@ -61,12 +59,12 @@ function HUD()
             [4] = "Legendary"
         }
         local formattedBoxRarity = rarityNames[boxRarity]
-        boxName = mobs[boxRarity][lookup].name
+        boxName = mobs[boxRarity][boxKey].name
         draw.SimpleText(" Tech Level:   " .. boxLevel, "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 275 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
         draw.SimpleText("  Mob Type:   " .. boxName, "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 305 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
         draw.SimpleText("        Rarity:   " .. formattedBoxRarity, "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 335 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
         draw.SimpleText("    Strength:   " .. boxStrength, "ChatFont", ScrW() - 300, (2.913 * ScrH() / 5) + 365 - 250 * descriptionsEnabled, Color(255, 255, 255, 255, 255), 0, 0)
-        local mobDescription = boxName
+        local mobDescription = boxKey
 
         if descriptionsEnabled == 1 then
             for i = 1, 15 do

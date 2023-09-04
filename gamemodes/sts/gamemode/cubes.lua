@@ -3,14 +3,15 @@ include("mobs.lua")
 Cube = {}
 Cube.__index = Cube
 
-function Cube.new(entity, level, rarity, strength, multiplier, mob)
+function Cube.new(entity, level, rarity, strength, multiplier, mob, key)
     local EmptyCube = {
         entity = entity or "",
         level = level or 1,
         rarity = rarity or 1,
         strength = strength or 1,
         multiplier = multiplier or 1,
-        mob = mob or ""
+        mob = mob or "",
+        key = key or ""
     }
 
     setmetatable( EmptyCube, Cube )
@@ -20,6 +21,7 @@ end
 -- RARITY NUMBERS ACCURATE. REFER TO NOTHING.
 function Cube:randomize()
     local desiredTeam
+    local chosenMob
 
     if self.level == 1 then
         self.rarity = 1
@@ -37,8 +39,6 @@ function Cube:randomize()
         return false
     end
 
-    --Cube.mob = mobs[Cube.rarity][math.random(#mobs[Cube.rarity])].mobPrefixes
-
     -- iterate over whole table to get all keys
     local keyset = {}
     for k in pairs(mobs[self.rarity]) do
@@ -46,7 +46,7 @@ function Cube:randomize()
     end
     PrintTable(keyset)
 
-    -- this is a bad way of doing this! Too Bad!
+    -- this is a bad way of doing this... Too Bad!
     for _, prefix in ipairs(mobPrefixes) do
         if string.find(self.entity, prefix) then
             desiredTeam = prefix
@@ -54,7 +54,11 @@ function Cube:randomize()
         end
     end
 
-    self.mob = desiredTeam .. mobs[self.rarity][keyset[math.random(#keyset)]].templates[1]
+    chosenMob = keyset[math.random(#keyset)]
+    PrintMessage(HUD_PRINTTALK, chosenMob)
+
+    self.mob = desiredTeam .. mobs[self.rarity][chosenMob].templates[1]
+    self.key = chosenMob
     PrintMessage(HUD_PRINTTALK, self.mob)
     self.strength = math.random(1, 4)
 
@@ -65,7 +69,8 @@ end
 function Cube:upgrade()
     if self.level ~= 5 then
         self.level = self.level + 1
-        self.randomize()
+        self:randomize() -- a
+        self:changeColor()
         return true
     end
     return false
@@ -75,7 +80,6 @@ function Cube:canUpgrade(points)
     local cost = self.level * 6
 
     if points >= cost then
-        self:changeColor()
         return true
     else
         return false
@@ -83,18 +87,18 @@ function Cube:canUpgrade(points)
 end
 
 function Cube:changeColor()
-    local ent = self.getEntity()
+    local ent = self:getEntity()
 
     if self.level == 1 then
-        ent:SetColor(138, 21, 255, 255)
+        ent:SetColor(Color(138, 21, 255, 255))
     elseif self.level == 2 then
-        ent:SetColor(0, 0, 255, 255)
+        ent:SetColor(Color(0, 0, 255, 255))
     elseif self.level == 3 then
-        ent:SetColor(0, 255, 0, 255)
+        ent:SetColor(Color(0, 255, 0, 255))
     elseif self.level == 4 then
-        ent:SetColor(4, 186, 255, 255)
+        ent:SetColor(Color(4, 186, 255, 255))
     elseif self.level == 5 then
-        ent:SetColor(185, 185, 255, 255)
+        ent:SetColor(Color(185, 185, 255, 255))
     else
         ent:SetColor(0, 0, 0, 255)
     end

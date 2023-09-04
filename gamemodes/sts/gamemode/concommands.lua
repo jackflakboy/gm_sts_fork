@@ -43,22 +43,14 @@ concommand.Add("set_team", function(ply, cmd, args)
     ply:SetModel("models/player/police.mdl")
 end)
 
+
+-- broke
 concommand.Add("pntadd", function(ply, cmd, args)
     for i, v in ipairs(player.GetAll()) do
         v:SetNWInt("researchPoints", v:GetNWInt("researchPoints") + 100)
     end
 
     print("Point Boost")
-end, nil, nil, FCVAR_CHEAT)
-
-concommand.Add("deathpnt", function(ply, cmd, args)
-    local amount = args[1]
-
-    for i, x in ipairs(player.GetAll()) do
-        x:SetNWInt("dmpnt", amount)
-    end
-
-    print("Each deathmatch kill will give you " .. amount .. " points")
 end, nil, nil, FCVAR_CHEAT)
 
 concommand.Add("stsgod", function(ply, cmd, args)

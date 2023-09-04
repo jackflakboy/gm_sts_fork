@@ -18,9 +18,11 @@ CreateConVar("sts_force_bonus_rounds", "-1", {FCVAR_GAMEDLL}, "1 - Force bonus r
 
 CreateConVar("sts_random_teams", "0", {FCVAR_GAMEDLL}, "0 - Allow players to choose teams\n1 - Random two teams\n2 - Random Four teams\n3 - Random\nIf this is set to anything besides 0, the team selection will be locked. No effect after game start.", 0, 3)
 
-CreateConVar("sts_classic", "0", {FCVAR_GAMEDLL}, "0 - Use new soundtrack and announcer\n1 - Use old soundtrack and announcer (not royalty free)")
+CreateConVar("sts_classic", "0", {FCVAR_GAMEDLL}, "0 - Use new soundtrack and announcer\n1 - Use old soundtrack and announcer (not royalty free)", 0, 1)
 
-CreateConVar("sts_allow_team_swapping", "0", {FCVAR_GAMEDLL}, "0 - Do not allow swapping teams midgame\n 1 - Allow swapping teams mid game")
+CreateConVar("sts_allow_team_swapping", "0", {FCVAR_GAMEDLL}, "0 - Do not allow swapping teams midgame\n 1 - Allow swapping teams mid game", 0, 1)
+
+CreateConVar("sts_deathmatch_points", "1", {FCVAR_GAMEDLL}, "Determine point reward for kills in bonus rounds.")
 
 RunConsoleCommand("sv_gravity", "600") -- reset gravity
 RunConsoleCommand("sk_combine_s_kick", "6") -- change combine melee damage

@@ -44,7 +44,7 @@ mobs[2] = {
     ["cop"] = Mob.new("Metrocop", {"npc_cop"}, 1),
     ["zombie"] = Mob.new("Zombie", {"npc_zombie"}, 1),
     ["antlion"] = Mob.new("Antlion", {"npc_antlion"}, 1),
-    ["fastheadcrab"] = Mob.new("Fast Headcrab (x3)", {"npc_fastheadcrab"}, 3),
+    ["triplefastheadcrab"] = Mob.new("Fast Headcrab (x3)", {"npc_fastheadcrab"}, 3),
     ["doublestun"] = Mob.new("Stop Resisting (x2)", {"npc_stun"}, 2),
     ["triplemanhack"] = Mob.new("Manhack (x3)", {"npc_manhack"}, 3)
 }
@@ -56,7 +56,7 @@ mobs[3] = {
     ["vort"] = Mob.new("Vortigaunt", {"npc_vort"}, 1),
     ["monk"] = Mob.new("Monk", {"npc_monk"}, 1),
     ["suicide"] = Mob.new("Suicide", {"npc_suicide"}, 1),
-    ["brute"] = Mob.new("Brute", {"npc_brute"}, 1),
+    ["brute"] = Mob.new("Brute", {"npc_brute"}, 1), -- TODO: episodic
     ["healer"] = Mob.new("Healer", {"npc_healer"}, 1),
     ["doublezombie"] = Mob.new("Zombie (x2)", {"npc_zombie"}, 1),
     ["beefcake"] = Mob.new("Beefcake", {"npc_beefcake"}, 1)
@@ -65,10 +65,11 @@ mobs[3] = {
 -- Explicitly defining each entry for mobs[4]
 mobs[4] = {
     ["doublerocket"] = Mob.new("Rocketeer (x2)", {"npc_rocket"}, 2),
-    ["zombie"] = Mob.new("Zombie (x5)", {"npc_zombie"}, 5),
+    ["quinzombie"] = Mob.new("Zombie (x5)", {"npc_zombie"}, 5),
     ["antguard"] = Mob.new("Antlion Guard", {"npc_antguard"}, 1),
     ["valkyrie"] = Mob.new("Valkyrie", {"npc_valkyrie"}, 1),
     ["antlion"] = Mob.new("Antlion (x5)", {"npc_antlion"}, 5),
     ["healer"] = Mob.new("Healer (x3)", {"npc_healer"}, 3),
+    ["bombsquad"] = Mob.new("Bombing Squad", {"npc_bombsquad"}, 5),
     ["elitesquad"] = Mob.new("Elite Squad", {"npc_elitesquad_ar", "npc_elitesquad_shotgun"}, 1, 1, 2)
 }

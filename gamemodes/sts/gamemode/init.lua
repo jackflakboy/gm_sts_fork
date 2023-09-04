@@ -1,7 +1,6 @@
 AddCSLuaFile("bonusround.lua")
 AddCSLuaFile("concommands.lua")
 AddCSLuaFile("cl_init.lua")
-AddCSLuaFile("custommenu.lua")
 AddCSLuaFile("shared.lua")
 AddCSLuaFile("teamsetup.lua")
 AddCSLuaFile("testhud.lua")
@@ -10,7 +9,6 @@ AddCSLuaFile("misc.lua")
 AddCSLuaFile("mobs.lua")
 include("bonusround.lua")
 include("concommands.lua")
-include("custommenu.lua")
 include("shared.lua")
 include("teamsetup.lua")
 include("testhud.lua")
@@ -307,25 +305,6 @@ function GM:PlayerSetHandsModel(ply, ent)
     end
 end
 
--- no E's allowed i guess
--- honest to god what does this do
-function scrnprint(x)
-    local intype = string.sub(x, 1, 2)
-    local inamount = string.sub(x, -2, -1)
-
-    if intype == "ro" then
-        for _, ply in ipairs(player.GetAll()) do
-            ply:SetNWInt("strtround", inamount)
-        end
-    end
-
-    if intype == "sp" then
-        for _, ply in ipairs(player.GetAll()) do
-            ply:SetNWInt("strtpnt", inamount)
-        end
-    end
-end
-
 function spawnTeams()
     for _, ply in ipairs(player.GetAll()) do
         ply:Spawn()
@@ -372,169 +351,6 @@ end
 
 function GM:OnPlayerPhysicsDrop(ply, ent)
     ClearBox(ply)
-end
-
--- this has been edited, instead of 4 for loops looping the same things in themselves
-function boxprint(ply, boxnum, col)
-    local mobrarstr
-    local mobrarval
-    local mobtype
-    local mobnum
-    local mobtech
-
-    for _, entity in ipairs(ents.GetAll()) do
-        if entity:GetName() == (col .. "_box" .. boxnum .. "_rarity_case") then
-            mobrarstr = entity:GetInternalVariable("Case16")
-            mobrarval = entity:GetInternalVariable("Case15")
-        end
-
-        if mobrarval and entity:GetName() == (col .. "_box" .. boxnum .. "_mobcase_" .. mobrarval) then
-            mobtype = entity:GetInternalVariable("Case16")
-        end
-
-        if entity:GetName() == (col .. "_box" .. boxnum .. "_amountcounter_rand") then
-            mobnum = entity:GetInternalVariable("Case16")
-        end
-
-        if entity:GetName() == (col .. "_box" .. boxnum .. "_tech_casein") then
-            mobtech = entity:GetInternalVariable("Case16")
-        end
-    end
-
-    -- essentially making sure these all have a value
-    if mobrarstr and mobrarval and mobtype and mobnum and mobtech then
-        ply:SetNWInt("pick_type", mobtype)
-        ply:SetNWInt("pick_rar", mobrarstr)
-        ply:SetNWInt("pick_tech", mobtech)
-        ply:SetNWInt("pick_str", mobnum)
-        ply:SetNWInt("pick_col", col)
-    end
-end
-
--- determine if upgrade affordable
-function trigafford(teamEntity)
-    local col = string.sub(teamEntity, 1, -16)
-    local points
-    local colnum = teamval[col]
-
-    for _, ply in ipairs(player.GetAll()) do
-        if ply:Team() == colnum then
-            points = tonumber(ply:GetNWInt("researchPoints"))
-
-            if points >= 1 then
-                for k, entity in ipairs(ents.GetAll()) do
-                    if entity:GetName() == teamEntity then
-                        entity:Fire("Enable")
-                    end
-                end
-            else
-                ply:PrintMessage(HUD_PRINTTALK, "-------------\nCan't Afford\n-------------")
-            end
-        end
-    end
-end
-
-function randomizeboxsub(box)
-    -- local num = string.sub(box,-1,-1)
-    local length = string.len(box) - 5
-    local col = string.sub(box, 1, length)
-    print("running randomizeboxsub")
-    for _, entity in ipairs(ents.GetAll()) do
-        if entity:GetName() == (box .. "_tech_casein") then
-            local subamount = tonumber(entity:GetInternalVariable("Case16")) * 6
-
-            if string.len(tostring(subamount)) == 1 then
-                pointsub(tostring(col) .. "0" .. subamount)
-            elseif string.len(tostring(subamount)) == 2 then
-                pointsub(tostring(col) .. subamount)
-            end
-        end
-    end
-end
-
--- i hate this func. i hate notepad++. i hate hammer.
-function randafford(boxname)
-    -- local num = string.sub(boxname,-1,-1)
-    local length = string.len(boxname) - 5
-    local col = string.sub(boxname, 1, length)
-    local points = 0
-    local mobTechCost
-    local techCase
-    local levelAvailable
-    local maxLevel
-    local upgradeCase
-    local rarAddTrigger
-    local colnum = teamval[col]
-
-    for _, ply in ipairs(player.GetAll()) do
-        if ply:Team() == colnum then
-            points = tonumber(ply:GetNWInt("researchPoints"))
-
-            for _, entity in ipairs(ents.GetAll()) do
-                if entity:GetName() == (boxname .. "_tech_casein") then
-                    techCase = entity
-                end
-
-                if entity:GetName() == (boxname .. "_upgrade_case") then
-                    upgradeCase = entity
-                end
-
-                if entity:GetName() == (col .. "_raradd_trig") then
-                    rarAddTrigger = entity
-                end
-            end
-
-            levelAvailable = tonumber(techCase:GetInternalVariable("Case16"))
-
-            if levelAvailable >= 5 then
-                ply:PrintMessage(HUD_PRINTTALK, "-------------\nMax Level\n-------------")
-
-                return
-            end
-
-            mobTechCost = levelAvailable * 6
-            maxLevel = tonumber(upgradeCase:GetInternalVariable("Case01"))
-
-            if maxLevel == 2 then
-                if points >= mobTechCost then
-                    rarAddTrigger:Fire("Enable")
-                else
-                    ply:PrintMessage(HUD_PRINTTALK, "-------------\nCan't Afford\n-------------")
-                end
-            elseif maxLevel == 1 then
-                ply:PrintMessage(HUD_PRINTTALK, "------------------------\nTech Level Not Available\n------------------------")
-            else --                                                  ------------------------
-                ply:PrintMessage(HUD_PRINTTALK, "Congrats! You've found a bug, please screenshot this and send it along with a description of what you were doing to the developers in the discord.")
-            end
-        end
-    end
-end
-
---RESEARCH POINTS EDITING
--- subtract points from team
-function pointsub(teamID)
-    local amount = string.sub(teamID, -2, -1)
-    local col = string.sub(teamID, 1, string.len(teamID) - 2)
-    local colnum = teamval[col]
-
-    for entity, ply in ipairs(player.GetAll()) do
-        if ply:Team() == colnum then
-            ply:SetNWInt("researchPoints", ply:GetNWInt("researchPoints") - tonumber(amount))
-        end
-    end
-end
-
--- add points to team
-function pointadd(teamID)
-    local amount = string.sub(teamID, -2, -1)
-    local col = string.sub(teamID, 1, string.len(teamID) - 2)
-    local colnum = teamval[col]
-
-    for entity, ply in ipairs(player.GetAll()) do
-        if ply:Team() == colnum then
-            ply:SetNWInt("researchPoints", tostring(tonumber(ply:GetNWInt("researchPoints")) + tonumber(amount)))
-        end
-    end
 end
 
 --TIMER STUFF
@@ -727,16 +543,17 @@ end
 
 function upgradeABox(cubeName)
     PrintMessage(HUD_PRINTTALK, "Upgrading!!!")
-    randomizeABox(cubeName)
     -- a lot of checks can be skipped like team validation as that essentially handled
     -- by the game world itself, and if bypassed (via noclip), its probably for a good reason
     -- only checks required should be checking affordability
     local desiredCube
     local availablePoints
+    local currentTeam
 
     for _, teamName in ipairs(teams) do
         for _, cube in pairs(teamName.cubes) do
             if cube.entity == cubeName then
+                currentTeam = teamName
                 desiredCube = cube
                 availablePoints = teamName.points
                 break
@@ -744,12 +561,31 @@ function upgradeABox(cubeName)
         end
     end
 
+    if desiredCube.level == 5 then
+        PrintMessage(HUD_PRINTTALK, "Max tech level reached!")
+    end
+
+    for _, cube in pairs(currentTeam.cubes) do
+        if cube ~= desiredCube and cube.level < desiredCube.level then
+            PrintMessage(HUD_PRINTTALK, "Tech Level not Available!")
+            return
+        end
+    end
+
     if desiredCube:canUpgrade(availablePoints) then
         desiredCube:upgrade()
+        for _, teamName in ipairs(teams) do
+            for _, cube in pairs(teamName.cubes) do
+                if cube.entity == cubeName then
+                    teamName.points = teamName.points - (desiredCube.level * 6)
+                    break
+                end
+            end
+        end
     else
         PrintMessage(HUD_PRINTTALK, "Cannot afford")
     end
-
+    -- lazy
     for teamIndex = 1, 4 do
         SendPointsToTeamMembers(teamIndex)
     end
@@ -788,7 +624,7 @@ function randomizeABox(cubeName)
     else
         PrintMessage(HUD_PRINTTALK, "Could not find cube in random func!")
     end
-
+    -- lazy
     for teamIndex = 1, 4 do
         SendPointsToTeamMembers(teamIndex)
     end
