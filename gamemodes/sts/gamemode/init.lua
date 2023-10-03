@@ -16,6 +16,7 @@ include("cubes.lua")
 include("net.lua")
 include("misc.lua")
 include("mobs.lua")
+include("triggers.lua")
 AddCSLuaFile("net.lua")
 math.randomseed(os.time())
 
@@ -431,9 +432,7 @@ end
 -- needs significant testing
 hook.Add("OnEntityCreated", "AssignTeams", function(ent)
     if not ent:IsValid() or not ent:IsNPC() or engine.TickCount() < 1980 then return end
-    PrintMessage(HUD_PRINTTALK, "Entity creation")
     timer.Simple(1 / 66, function() AssignTeam(ent, ent:GetName()) end )
-    PrintMessage(HUD_PRINTTALK, "Done Entity creation")
     local npcClass = ent:GetClass()
 
     if npcClass == "npc_poisonzombie" and (ent:EntIndex() ~= 0) then
@@ -543,9 +542,9 @@ end
 
 function upgradeABox(cubeName)
     PrintMessage(HUD_PRINTTALK, "Upgrading!!!")
-    -- a lot of checks can be skipped like team validation as that essentially handled
-    -- by the game world itself, and if bypassed (via noclip), its probably for a good reason
-    -- only checks required should be checking affordability
+    -- A lot of checks can be skipped like team validation as that essentially handled
+    -- by the game world itself, and if bypassed (i.e. thru noclip), its probably for a good reason.
+    -- The only checks required should be checking affordability and tech level
     local desiredCube
     local availablePoints
     local currentTeam
@@ -563,6 +562,7 @@ function upgradeABox(cubeName)
 
     if desiredCube.level == 5 then
         PrintMessage(HUD_PRINTTALK, "Max tech level reached!")
+        return
     end
 
     for _, cube in pairs(currentTeam.cubes) do

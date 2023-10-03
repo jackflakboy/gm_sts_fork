@@ -19,7 +19,7 @@ function Mob.new(name, templates, multiplier, delay, amount)
     return EmptyMob -- Return the 'EmptyMob' table, whose metatable is 'Mob'. This is our object
 end
 
--- Spawn function for the Mob
+-- Dummy spawn function for the Mob
 function Mob:spawn()
     print("Spawning " .. self.name .. " with a multiplier of " .. self.mult)
 end
@@ -31,7 +31,7 @@ mobs[1] = {
     ["fastheadcrab"] = Mob.new("Fast Headcrab", {"npc_fastheadcrab"}, 1),
     ["manhack"] = Mob.new("Manhack", {"npc_manhack"}, 1),
     ["crowbar"] = Mob.new("Crowbar Guy", {"npc_crowbar"}, 1),
-    ["fasttorso"] = Mob.new("Fast Torso", {"npc_fasttorso"}, 1),
+    ["fasttorso"] = Mob.new("Fast Torso", {"npc_fasttorso"}, 1), -- TODO: episodic
     ["stun"] = Mob.new("Stop Resisting", {"npc_stun"}, 1),
     ["torso"] = Mob.new("Zombie Torso", {"npc_torso"}, 1)
 }

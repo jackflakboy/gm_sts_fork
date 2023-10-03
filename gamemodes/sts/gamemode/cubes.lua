@@ -44,7 +44,6 @@ function Cube:randomize()
     for k in pairs(mobs[self.rarity]) do
         table.insert(keyset, k)
     end
-    PrintTable(keyset)
 
     -- this is a bad way of doing this... Too Bad!
     for _, prefix in ipairs(mobPrefixes) do

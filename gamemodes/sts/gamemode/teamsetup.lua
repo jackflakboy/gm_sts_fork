@@ -10,7 +10,13 @@ teams[1] = {
         cube3 = Cube.new("blue_box3", 1, 1, 1, 1, "blue_npc_headcrab", "headcrab"),
         cube4 = Cube.new("blue_box4", 1, 1, 1, 1, "blue_npc_headcrab", "headcrab")
     },
-    points = 999
+    spawners = {
+        [1] = {},
+        [2] = {},
+        [3] = {},
+        [4] = {}
+    },
+    points = 999 -- TEMP: Reset me to 0 for release!!!!
 }
 
 teams[2] = {
@@ -22,6 +28,7 @@ teams[2] = {
         cube3 = Cube.new("red_box3", 1, 1, 1, 1, "red_npc_headcrab", "headcrab"),
         cube4 = Cube.new("red_box4", 1, 1, 1, 1, "red_npc_headcrab", "headcrab")
     },
+    spawners = {},
     points = 0
 }
 
@@ -34,6 +41,7 @@ teams[3] = {
         cube3 = Cube.new("green_box3", 1, 1, 1, 1, "green_npc_headcrab", "headcrab"),
         cube4 = Cube.new("green_box4", 1, 1, 1, 1, "green_npc_headcrab", "headcrab")
     },
+    spawners = {},
     points = 0
 }
 
@@ -46,6 +54,7 @@ teams[4] = {
         cube3 = Cube.new("yellow_box3", 1, 1, 1, 1, "yellow_npc_headcrab", "headcrab"),
         cube4 = Cube.new("yellow_box4", 1, 1, 1, 1, "yellow_npc_headcrab", "headcrab")
     },
+    spawners = {},
     points = 0
 }
 
