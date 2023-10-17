@@ -61,14 +61,13 @@ function Cube:randomize()
     PrintMessage(HUD_PRINTTALK, self.mob)
     self.strength = math.random(1, 4)
 
-    PrintMessage(HUD_PRINTTALK, "randomized")
     return true
 end
 
 function Cube:upgrade()
     if self.level ~= 5 then
         self.level = self.level + 1
-        self:randomize() -- a
+        self:randomize()
         self:changeColor()
         return true
     end

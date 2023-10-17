@@ -3,6 +3,7 @@ include("testhud.lua")
 include("net.lua")
 include("cubes.lua")
 include("mobs.lua")
+include("sound.lua")
 local client = LocalPlayer()
 points = 0
 startingPoints = 20

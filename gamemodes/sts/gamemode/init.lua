@@ -7,6 +7,7 @@ AddCSLuaFile("testhud.lua")
 AddCSLuaFile("cubes.lua")
 AddCSLuaFile("misc.lua")
 AddCSLuaFile("mobs.lua")
+AddCSLuaFile("sound.lua")
 include("bonusround.lua")
 include("concommands.lua")
 include("shared.lua")
@@ -17,8 +18,18 @@ include("net.lua")
 include("misc.lua")
 include("mobs.lua")
 include("triggers.lua")
+include("sound.lua")
 AddCSLuaFile("net.lua")
 math.randomseed(os.time())
+nextMap = ""
+nextBR = ""
+currentMap = ""
+maps = {"square", "cit", "rav", "rail", "lake", "yellow", "green", "blue"}
+gameState = 0
+-- 0 - game not started
+-- 1 - Randomizing
+-- 2 - battle
+-- 3 - minigame
 
 -- determines loadout. returning true means override default, this might be able to be used for minigames.
 function GM:PlayerLoadout(ply)
@@ -243,15 +254,14 @@ end
 function getChosenMaps()
     local mapDesired
 
-    local maps = {"waiting_lobby_maplever_square", "waiting_lobby_maplever_cit", "waiting_lobby_maplever_rav", "waiting_lobby_maplever_rail", "waiting_lobby_maplever_lake", "waiting_lobby_maplever_yellow", "waiting_lobby_maplever_green", "waiting_lobby_maplever_blue"}
+    local mapLevers = {"waiting_lobby_maplever_square", "waiting_lobby_maplever_cit", "waiting_lobby_maplever_rav", "waiting_lobby_maplever_rail", "waiting_lobby_maplever_lake", "waiting_lobby_maplever_yellow", "waiting_lobby_maplever_green", "waiting_lobby_maplever_blue"}
 
     local selectedMaps = {}
 
+
     for _, entity in ipairs(ents.GetAll()) do
-        if entity:GetName() == "waiting_lobby_brtoggle_lever" then
-            lever = entity
-        else
-            for _, bonusRoundLever in ipairs(maps) do
+        if entity:GetName() ~= "waiting_lobby_brtoggle_lever" then
+            for _, bonusRoundLever in ipairs(mapLevers) do
                 if entity:GetName() == bonusRoundLever then
                     if entity:GetClass() == "func_door" or entity:GetClass() == "func_door_rotating" then
                         mapDesired = entity:GetInternalVariable("m_toggle_state") == 0
@@ -268,8 +278,12 @@ function getChosenMaps()
             end
         end
     end
+    local goodSelectedMaps = {}
+    for _, k in ipairs(selectedMaps) do
+        table.insert(goodSelectedMaps, getMapFromWhatever(k))
+    end
 
-    return selectedMaps
+    return goodSelectedMaps
 end
 
 function GM:PlayerInitialSpawn(ply)
@@ -277,7 +291,6 @@ function GM:PlayerInitialSpawn(ply)
     ply:SetHealth(100)
     ply:SetRunSpeed(400)
     ply:SetPlayerColor(Vector(0.0, 0.0, 0.0))
-    ply:SetNWInt("combat", 0)
     ply:SetNWInt("stsgod", 0)
     ply:ConCommand("set_team " .. 0)
 
@@ -293,6 +306,18 @@ end
 function GM:PlayerSpawn(ply)
     ply:SetModel("models/player/police.mdl")
     ply:SetupHands()
+    if ply:Team() ~= 0 then
+        local teams = {"waiting_bluetp", "waiting_redtp", "waiting_greentp", "waiting_yellowtp"}
+        local spawnPoint = teams[ply:Team()]
+        if GetConVar("sts_game_started"):GetInt() == 1 then
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == spawnPoint then
+                    ply:SetPos(ent:GetPos())
+                    break
+                end
+            end
+        end
+    end
 end
 
 function GM:PlayerSetHandsModel(ply, ent)
@@ -538,10 +563,12 @@ end
 function startGame()
     PrintMessage(HUD_PRINTCENTER, "Ready!")
     GetConVar("sts_game_started"):SetInt(1)
+    nextMap = chooseNextMap()
+    nextBR = chooseBonusRound()
+    setNextMapScreen(getMapScreen(nextMap))
 end
 
 function upgradeABox(cubeName)
-    PrintMessage(HUD_PRINTTALK, "Upgrading!!!")
     -- A lot of checks can be skipped like team validation as that essentially handled
     -- by the game world itself, and if bypassed (i.e. thru noclip), its probably for a good reason.
     -- The only checks required should be checking affordability and tech level
@@ -574,16 +601,20 @@ function upgradeABox(cubeName)
 
     if desiredCube:canUpgrade(availablePoints) then
         desiredCube:upgrade()
-        for _, teamName in ipairs(teams) do
-            for _, cube in pairs(teamName.cubes) do
-                if cube.entity == cubeName then
-                    teamName.points = teamName.points - (desiredCube.level * 6)
-                    break
-                end
-            end
-        end
+        currentTeam.points = currentTeam.points - (desiredCube.level * 6)
     else
         PrintMessage(HUD_PRINTTALK, "Cannot afford")
+    end
+
+    if currentTeam.cubes["cube1"].level == currentTeam.cubes["cube2"].level and currentTeam.cubes["cube3"].level == currentTeam.cubes["cube4"].level and currentTeam.cubes["cube2"].level == currentTeam.cubes["cube3"].level then
+        PrintMessage(HUD_PRINTTALK, "New Tech Level!")
+        local funny = math.random(1, 100)
+        if funny == 1 then
+            playGlobalSound("sts_sounds_new/newtechlevel_funny.wav", getTeamIDFromName(currentTeam))
+        else
+            local variant = math.random(1, 3)
+            playGlobalSound("sts_sounds_new/newtechlevel" .. variant .. ".wav", getTeamIDFromName(currentTeam))
+        end
     end
     -- lazy
     for teamIndex = 1, 4 do
@@ -592,7 +623,7 @@ function upgradeABox(cubeName)
 end
 
 function randomizeABox(cubeName)
-    PrintMessage(HUD_PRINTTALK, "Randomizing!!!")
+    PrintMessage(HUD_PRINTTALK, "Randomizing " .. cubeName .. "!")
     local desiredCube
     local availablePoints
 
@@ -629,6 +660,81 @@ function randomizeABox(cubeName)
         SendPointsToTeamMembers(teamIndex)
     end
 
+end
+
+function chooseNextMap()
+    local options = getChosenMaps()
+    local map = options[math.random(#options)]
+    return map
+end
+
+function chooseBonusRound()
+    local options = getChosenBonusRounds()
+    if options == {} then return {} end
+    local bonusRound = options[math.random(#options)]
+    return bonusRound
+end
+
+function setNextMapScreen(map)
+    local waitingScreens = {
+        "waiting_screen_mapblue",
+        "waiting_screen_mapyellow",
+        "waiting_screen_mapgreen",
+        "waiting_screen_maplake",
+        "waiting_screen_maprail",
+        "waiting_screen_maprav",
+        "waiting_screen_mapcit",
+        "waiting_screen_mapsquare"
+    }
+    for _, ent in ipairs(ents.GetAll()) do
+        for _, mapScreen in ipairs(waitingScreens) do
+            if ent:GetName() == map then
+                ent:Fire("Alpha", 255)
+            else if ent:GetName() == mapScreen then
+                ent:Fire("Alpha", 0)
+            end
+            end
+        end
+    end
+end
+
+function getMapFromWhatever(whatever)
+    local mapLevers = {
+        ["waiting_lobby_maplever_square"] = "square",
+        ["waiting_lobby_maplever_cit"] =    "cit",
+        ["waiting_lobby_maplever_rav"] =    "rav",
+        ["waiting_lobby_maplever_rail"] =   "rail",
+        ["waiting_lobby_maplever_lake"] =   "lake",
+        ["waiting_lobby_maplever_yellow"] = "yellow",
+        ["waiting_lobby_maplever_green"] =  "green",
+        ["waiting_lobby_maplever_blue"] =   "blue"
+    }
+    if mapLevers[whatever] then return mapLevers[whatever] end
+    local mapScreens = {
+        ["waiting_screen_mapblue"] =    "blue",
+        ["waiting_screen_mapyellow"] =  "yellow",
+        ["waiting_screen_mapgreen"] =   "green",
+        ["waiting_screen_maplake"] =    "lake",
+        ["waiting_screen_maprail"] =    "rail",
+        ["waiting_screen_maprav"] =     "rav",
+        ["waiting_screen_mapcit"] =     "cit",
+        ["waiting_screen_mapsquare"] =  "square"
+    }
+    if mapScreens[whatever] then return mapScreens[whatever] end
+end
+
+function getMapScreen(map)
+    local info = {
+        ["blue"] =  "waiting_screen_mapblue",
+        ["yellow"] = "waiting_screen_mapyellow",
+        ["green"] = "waiting_screen_mapgreen",
+        ["lake"] = "waiting_screen_maplake",
+        ["rail"] = "waiting_screen_maprail",
+        ["rav"] = "waiting_screen_maprav",
+        ["cit"] = "waiting_screen_mapcit",
+        ["square"] = "waiting_screen_mapsquare"
+    }
+    return info[map]
 end
 
 hook.Add("PlayerDeath", "Deathmatch Add Points", deathmatchKill)

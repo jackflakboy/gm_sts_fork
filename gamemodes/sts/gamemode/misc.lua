@@ -6,7 +6,7 @@ CreateConVar("sts_total_rounds", "5", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Amount
 
 CreateConVar("sts_minimum_players", "1", {FCVAR_GAMEDLL}, "Minimum players required before game can start.")
 
-CreateConVar("sts_allow_playermodel_variation", "0", {FCVAR_GAMEDLL}, "Whether or not players should be able to change their playermodels or not.", 0, 1)
+CreateConVar("sts_outfitter_support", "0", {FCVAR_GAMEDLL}, "Change how team recognition is handled if using outfitter.", 0, 1)
 
 CreateConVar("sts_forbid_dev_room", "1", {FCVAR_GAMEDLL}, "Whether or not to forbid access to the secret dev room.", 0, 1)
 

@@ -36,7 +36,6 @@ mobs[1] = {
     ["torso"] = Mob.new("Zombie Torso", {"npc_torso"}, 1)
 }
 
--- Explicitly defining each entry for mobs[2]
 mobs[2] = {
     ["medic"] = Mob.new("Medic", {"npc_medic"}, 1),
     ["shotgun"] = Mob.new("Shotgun", {"npc_shotgun"}, 1),
@@ -49,7 +48,6 @@ mobs[2] = {
     ["triplemanhack"] = Mob.new("Manhack (x3)", {"npc_manhack"}, 3)
 }
 
--- Explicitly defining each entry for mobs[3]
 mobs[3] = {
     ["rocket"] = Mob.new("Rocketeer", {"npc_rocket"}, 1),
     ["barney"] = Mob.new("Barney", {"npc_barney"}, 1),
@@ -62,7 +60,6 @@ mobs[3] = {
     ["beefcake"] = Mob.new("Beefcake", {"npc_beefcake"}, 1)
 }
 
--- Explicitly defining each entry for mobs[4]
 mobs[4] = {
     ["doublerocket"] = Mob.new("Rocketeer (x2)", {"npc_rocket"}, 2),
     ["quinzombie"] = Mob.new("Zombie (x5)", {"npc_zombie"}, 5),
