@@ -10,7 +10,7 @@ function Cube.new(entity, level, rarity, strength, multiplier, mob, key)
         rarity = rarity or 1,
         strength = strength or 1,
         multiplier = multiplier or 1,
-        mob = mob or "",
+        mob = mob,
         key = key or ""
     }
 
@@ -18,7 +18,6 @@ function Cube.new(entity, level, rarity, strength, multiplier, mob, key)
     return EmptyCube
 end
 
--- RARITY NUMBERS ACCURATE. REFER TO NOTHING.
 function Cube:randomize()
     local desiredTeam
     local chosenMob
@@ -56,7 +55,7 @@ function Cube:randomize()
     chosenMob = keyset[math.random(#keyset)]
     PrintMessage(HUD_PRINTTALK, chosenMob)
 
-    self.mob = desiredTeam .. mobs[self.rarity][chosenMob].templates[1]
+    self.mob = desiredTeam .. mobs[self.rarity][chosenMob]
     self.key = chosenMob
     PrintMessage(HUD_PRINTTALK, self.mob)
     self.strength = math.random(1, 4)

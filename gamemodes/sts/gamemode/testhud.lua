@@ -51,7 +51,7 @@ function HUD()
     draw.SimpleText("Mob Info: ", "ChatFont", ScrW() - 330, (3.2 * ScrH() / 4) - 250 * descriptionsEnabled, Color(255, 255, 255, 255), 0, 0)
 
     --Mobstuff
-    if boxMob ~= "" then
+    if boxKey ~= "" then
         local rarityNames = {
             [1] = "Common",
             [2] = "Uncommon",

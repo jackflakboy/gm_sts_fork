@@ -50,7 +50,6 @@ if SERVER then
 
     function SendBoxInfoToPlayer(player, box)
         net.Start("SendBoxInfo")
-        net.WriteString(box.mob)
         net.WriteInt(box.rarity, 4)
         net.WriteInt(box.strength, 4)
         net.WriteInt(box.level, 4)
@@ -61,7 +60,6 @@ end
 
 if CLIENT then
     local function GetBoxInfo(len)
-        boxMob = net.ReadString()
         boxRarity = net.ReadInt(4)
         boxStrength = net.ReadInt(4)
         boxLevel = net.ReadInt(4)
@@ -81,7 +79,6 @@ end
 
 if CLIENT then
     local function CleanBox(len)
-        boxMob = ""
         boxName = ""
         boxRarity = 0
         boxStrength = 0

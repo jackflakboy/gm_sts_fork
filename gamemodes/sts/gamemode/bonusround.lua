@@ -1,6 +1,4 @@
 function deathmatchKill(victim, inflictor, attacker)
-    victim:SetNWInt("survive", 0) -- change to new shit
-
     if attacker == victim then
         print("Quit killing yourself")
     elseif attacker:IsPlayer() then

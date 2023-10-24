@@ -15,12 +15,14 @@ teamval["red"] = 2
 teamval["green"] = 3
 teamval["yellow"] = 4
 teamval["empty"] = 0
+teamval["spectator"] = 5
 teamnums = {}
 teamnums[1] = "blue"
 teamnums[2] = "red"
 teamnums[3] = "green"
 teamnums[4] = "yellow"
 teamnums[0] = "empty"
+teamnums[5] = "spectator"
 
 function GM:Initialize()
 end

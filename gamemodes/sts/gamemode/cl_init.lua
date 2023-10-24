@@ -45,7 +45,6 @@ function GM:OnContextMenuOpen()
     end
 end
 
-boxMob = ""
 boxName = ""
 boxRarity = 0
 boxStrength = 0

@@ -22,25 +22,28 @@ local teamProperties = {
     }
 }
 
-concommand.Add("set_team", function(ply, cmd, args)
-    local inp = tonumber(args[1])
-
-    if inp == nil or (inp > 4 or inp < 0) then
-        print("0 - No team\n1 - Blue\n2 - Red\n3 - Green\n4 - Yellow")
-
-        return
-    end
-
+function setTeamFull(ply, teamID)
     -- Clearer message
-    local teamEmpty = team.NumPlayers(inp) == 0
+    local teamEmpty = team.NumPlayers(teamID) == 0
     print("The team you want to join IS" .. (teamEmpty and "" or " NOT") .. " empty.")
     -- Setting the team
-    ply:SetTeam(inp)
+    ply:SetTeam(teamID)
     -- Using team properties dictionary to reduce code repetition
-    local props = teamProperties[inp]
+    local props = teamProperties[teamID]
     ply:SetKeyValue("targetname", props.namePrefix .. ply:GetName())
     ply:SetPlayerColor(props.color)
     ply:SetModel("models/player/police.mdl")
+end
+
+concommand.Add("set_team", function(ply, cmd, args)
+    local input = tonumber(args[1])
+
+    if input == nil or (input > 4 or input < 0) then
+        print("0 - No team\n1 - Blue\n2 - Red\n3 - Green\n4 - Yellow")
+        return
+    end
+
+    setTeamFull(ply, input)
 end)
 
 
@@ -103,17 +106,3 @@ concommand.Add("reset_game_solo", function(ply, cmd, args)
         print("You are not alone")
     end
 end)
-
-concommand.Add("time_survival", function(ply, cmd, args)
-    local amount = args[1]
-    timeset(1, amount)
-end, nil, nil, FCVAR_CHEAT)
-
-concommand.Add("time_deathmatch", function(ply, cmd, args)
-    local amount = args[1]
-    timeset(2, amount)
-end, nil, nil, FCVAR_CHEAT)
-
-concommand.Add("tst", function(ply, cmd, args)
-    allgonetest()
-end, nil, nil, FCVAR_CHEAT)

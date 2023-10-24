@@ -1,5 +1,5 @@
-﻿mobPrefixes = {"blue_", "red_", "green_", "yellow_"}
-mobSuffix = "_template"
+﻿local mobPrefixes = {"blue_", "red_", "green_", "yellow_"}
+local mobSuffix = "_template"
 mobs = {}
 -- Define the Mob object
 Mob = {}
@@ -20,8 +20,15 @@ function Mob.new(name, templates, multiplier, delay, amount)
 end
 
 -- Dummy spawn function for the Mob
-function Mob:spawn()
-    print("Spawning " .. self.name .. " with a multiplier of " .. self.mult)
+function Mob:spawn(teamID)
+    PrintMessage(HUD_PRINTTALK, "Spawning " .. self.name .. " with a multiplier of " .. self.multiplier)
+    for _, ent in ipairs(ents.GetAll()) do
+        for _, template in ipairs(self.templates) do
+            if ent:GetName() == mobPrefixes[teamID] .. template .. mobSuffix then
+                ent:Fire("ForceSpawn")
+            end
+        end
+    end
 end
 
 

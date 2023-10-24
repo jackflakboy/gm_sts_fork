@@ -337,20 +337,18 @@ function spawnTeams()
     end
 end
 
---PLAYER USING
--- happens when a player uses something
 function GM:PlayerUse(ply, ent)
     if ent:GetName() == "waiting_blueteambutt" then
-        ply:ConCommand("set_team 1")
+        setTeamFull(ply, 1)
         shouldStartLeverBeLocked()
     elseif ent:GetName() == "waiting_redteambutt" then
-        ply:ConCommand("set_team 2")
+        setTeamFull(ply, 2)
         shouldStartLeverBeLocked()
     elseif ent:GetName() == "waiting_greenteambutt" then
-        ply:ConCommand("set_team 3")
+        setTeamFull(ply, 3)
         shouldStartLeverBeLocked()
     elseif ent:GetName() == "waiting_yellowteambutt" then
-        ply:ConCommand("set_team 4")
+        setTeamFull(ply, 4)
         shouldStartLeverBeLocked()
     end
 end
@@ -690,9 +688,8 @@ function setNextMapScreen(map)
         for _, mapScreen in ipairs(waitingScreens) do
             if ent:GetName() == map then
                 ent:Fire("Alpha", 255)
-            else if ent:GetName() == mapScreen then
+            elseif ent:GetName() == mapScreen then
                 ent:Fire("Alpha", 0)
-            end
             end
         end
     end
@@ -735,6 +732,30 @@ function getMapScreen(map)
         ["square"] = "waiting_screen_mapsquare"
     }
     return info[map]
+end
+
+function ReadyLeverPulled(teamName)
+    local levers = {"waiting_blue_ready_lever", "waiting_red_ready_lever", "waiting_green_ready_lever", "waiting_yellow_ready_lever"}
+    local pulled = 0
+    local required = 0
+
+    playGlobalSound("sts_sounds_new/" .. teamName .. "_ready.wav")
+
+    for i = 1, 4 do
+        if #team.GetPlayers(i) > 0 then
+            required = required + 1
+        end
+    end
+    for _, ent in ipairs(ents.GetAll()) do
+        for _, lever in ipairs(levers) do
+            if ent:GetName() == lever and ent:GetInternalVariable("m_toggle_state") == 0 then
+                pulled = pulled + 1
+            end
+        end
+    end
+    if required == pulled then
+        PrintMessage(HUD_PRINTTALK, "All teams ready!")
+    end
 end
 
 hook.Add("PlayerDeath", "Deathmatch Add Points", deathmatchKill)

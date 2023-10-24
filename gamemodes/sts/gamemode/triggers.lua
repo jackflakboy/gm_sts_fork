@@ -3,8 +3,14 @@ local function SetupMapLua()
 	MapLua:SetName( "triggerhook" )
 	MapLua:Spawn()
 
+	local mobTeleporters = {"red_teleporter", "blue_teleporter", "green_teleporter", "yellow_teleporter"}
+
 	for _, v in ipairs( ents.FindByClass( "trigger_teleport" ) ) do
-		v:Fire( "AddOutput", "OnStartTouch triggerhook:RunPassedCode:hook.Run( 'OnTeleport' ):0:-1" )
+		for _, teleporterName in ipairs(mobTeleporters) do
+			if string.find( v:GetName(), teleporterName ) then
+				v:Fire( "AddOutput", "OnStartTouch triggerhook:RunPassedCode:hook.Run( 'OnTeleport' ):0:-1" )
+			end
+		end
 	end
 
 	for _, ent in ipairs ( ents.FindByClass( "trigger_push" ) ) do
