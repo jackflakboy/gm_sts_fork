@@ -36,67 +36,35 @@ RunConsoleCommand("sk_citizen_heal_ally_delay", "0.5") -- this might've not been
 
 
 function GM:PlayerSpawnProp(ply, model)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
+    return false
 end
 
 function GM:PlayerSpawnEffect(ply, model)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
+    return false
 end
 
 function GM:PlayerSpawnNPC(ply, npc_type, weapon)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
+    return false
 end
 
 function GM:PlayerSpawnObject(ply, model, skin)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
+    return false
 end
 
 function GM:PlayerSpawnRagdoll(ply, model)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
+    return false
 end
 
 function GM:PlayerSpawnSENT(ply, class)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
+    return false
 end
 
 function GM:PlayerSpawnSWEP(ply, weapon, swep)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
+    return false
 end
 
 function GM:PlayerSpawnVehicle(ply, model, name, table)
-    if ply:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
+    return false
 end
 
 mapSpawners = {
@@ -113,10 +81,10 @@ mapSpawners = {
         ["yellow"] = {"cit_yellow_1", "cit_yellow_2", "cit_yellow_3", "cit_yellow_4", "cit_yellow_5"}
     },
     ["rav"] = {
-        ["blue"] = {"rav_blue_1", "rav_blue_2", "rav_blue_3", "rav_blue_4", "rav_blue_5"},
-        ["red"] = {"rav_red_1", "rav_red_2", "rav_red_3", "rav_red_4", "rav_red_5"},
-        ["green"] = {"rav_green_1", "rav_green_2", "rav_green_3", "rav_green_4", "rav_green_5"},
-        ["yellow"] = {"rav_yellow_1", "rav_yellow_2", "rav_yellow_3", "rav_yellow_4", "rav_yellow_5"}
+        ["blue"] = {"maprav_bluespawn1", "maprav_bluespawn2", "maprav_bluespawn3", "maprav_bluespawn4", "maprav_bluespawn5"},
+        ["red"] = {"maprav_redspawn1", "maprav_redspawn2", "maprav_redspawn3", "maprav_redspawn4", "maprav_redspawn5"},
+        ["green"] = {"maprav_greenspawn1", "maprav_greenspawn2", "maprav_greenspawn3", "maprav_greenspawn4", "maprav_greenspawn5"},
+        ["yellow"] = {"maprav_yellowspawn1", "maprav_yellowspawn2", "maprav_yellowspawn3", "maprav_yellowspawn4", "maprav_yellowspawn5"}
     },
     ["rail"] = {
         ["blue"] = {"rail_blue_1", "rail_blue_2", "rail_blue_3", "rail_blue_4", "rail_blue_5"},
@@ -148,4 +116,11 @@ mapSpawners = {
         ["green"] = {"blue_green_1", "blue_green_2", "blue_green_3", "blue_green_4", "blue_green_5"},
         ["yellow"] = {"blue_yellow_1", "blue_yellow_2", "blue_yellow_3", "blue_yellow_4", "blue_yellow_5"}
     }
+}
+
+nextMapSpawnLocations = {
+    ["blue"] = {},
+    ["red"] = {},
+    ["green"] = {},
+    ["yellow"] = {}
 }

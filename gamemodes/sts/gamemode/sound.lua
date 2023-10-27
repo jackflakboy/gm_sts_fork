@@ -3,6 +3,9 @@ if CLIENT then
     LoadedSounds = {} -- this table caches existing CSoundPatches
 end
 
+mainTrack = nil
+mainTrackSound = 1
+
 function playGlobalSound( FileName, teamID )
     local sound
     local filter
@@ -35,4 +38,29 @@ function playGlobalSound( FileName, teamID )
         sound:Play()
     end
     return sound -- useful if you want to stop the sound yourself
+end
+
+
+function beginPlayingMainTrack()
+    mainTrack = playGlobalSound("bm_sts_sounds/miami sky-hq.wav")
+    hook.Add("Think", "MainTrack", function()
+        if (mainTrack == nil or not mainTrack:IsPlaying()) then
+            mainTrack = playGlobalSound("bm_sts_sounds/miami sky-hq.wav")
+            mainTrack:ChangeVolume(mainTrackSound, 0)
+        end
+    end)
+end
+
+function muteMainTrack()
+    mainTrackSound = 0
+    if mainTrack then
+        mainTrack:ChangeVolume(0, 2)
+    end
+end
+
+function unmuteMainTrack()
+    mainTrackSound = 1
+    if mainTrack then
+        mainTrack:ChangeVolume(1, 2)
+    end
 end
