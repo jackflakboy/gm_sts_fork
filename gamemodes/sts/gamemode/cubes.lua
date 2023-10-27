@@ -19,7 +19,7 @@ function Cube.new(entity, level, rarity, strength, multiplier, mob, key)
 end
 
 function Cube:randomize()
-    local desiredTeam
+    -- local desiredTeam
     local chosenMob
 
     if self.level == 1 then
@@ -55,9 +55,9 @@ function Cube:randomize()
     chosenMob = keyset[math.random(#keyset)]
     PrintMessage(HUD_PRINTTALK, chosenMob)
 
-    self.mob = desiredTeam .. mobs[self.rarity][chosenMob]
+    self.mob = mobs[self.rarity][chosenMob]
     self.key = chosenMob
-    PrintMessage(HUD_PRINTTALK, self.mob)
+    PrintTable(self.mob)
     self.strength = math.random(1, 4)
 
     return true

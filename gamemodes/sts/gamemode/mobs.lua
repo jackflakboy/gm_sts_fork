@@ -1,18 +1,17 @@
-﻿local mobPrefixes = {"blue_", "red_", "green_", "yellow_"}
-local mobSuffix = "_template"
+﻿mobPrefixes = {"blue_", "red_", "green_", "yellow_"}
+mobSuffix = "_template"
 mobs = {}
 -- Define the Mob object
 Mob = {}
 Mob.__index = Mob
 -- Constructor for the Mob
-function Mob.new(name, templates, multiplier, delay, amount)
+function Mob.new(name, templates, multiplier, delay)
     -- This is the table we will return
     local EmptyMob = {
         name = name or "",
         templates = templates or {},
-        multiplier = multiplier or 1,
-        delay = delay or 1,
-        amount = amount or 1
+        multiplier = multiplier or 1, -- x3
+        delay = delay or 1, -- spawning delay for groups
     }
 
     setmetatable( EmptyMob, Mob ) -- Set the metatable of 'EmptyMob' to 'Mob'
@@ -20,12 +19,15 @@ function Mob.new(name, templates, multiplier, delay, amount)
 end
 
 -- Dummy spawn function for the Mob
-function Mob:spawn(teamID)
-    PrintMessage(HUD_PRINTTALK, "Spawning " .. self.name .. " with a multiplier of " .. self.multiplier)
-    for _, ent in ipairs(ents.GetAll()) do
-        for _, template in ipairs(self.templates) do
+function Mob:spawn(teamID, strength)
+    local amount = self.multiplier * strength
+    PrintMessage(HUD_PRINTTALK, "Spawning " .. self.name .. " with a multiplier of " .. amount .. " for team " .. teamID)
+    for _, template in ipairs(self.templates) do
+        for _, ent in ipairs(ents.GetAll()) do
             if ent:GetName() == mobPrefixes[teamID] .. template .. mobSuffix then
-                ent:Fire("ForceSpawn")
+                timer.Create( "spawner" .. tostring(teamID), self.delay, amount, function()
+                    ent:Fire("ForceSpawn")
+                end)
             end
         end
     end
@@ -75,5 +77,5 @@ mobs[4] = {
     ["antlion"] = Mob.new("Antlion (x5)", {"npc_antlion"}, 5),
     ["healer"] = Mob.new("Healer (x3)", {"npc_healer"}, 3),
     ["bombsquad"] = Mob.new("Bombing Squad", {"npc_bombsquad"}, 5),
-    ["elitesquad"] = Mob.new("Elite Squad", {"npc_elitesquad_ar", "npc_elitesquad_shotgun"}, 1, 1, 2)
+    ["elitesquad"] = Mob.new("Elite Squad", {"npc_elitesquad_ar", "npc_elitesquad_shotgun"}, 1, 1)
 }

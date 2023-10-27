@@ -291,8 +291,7 @@ function GM:PlayerInitialSpawn(ply)
     ply:SetHealth(100)
     ply:SetRunSpeed(400)
     ply:SetPlayerColor(Vector(0.0, 0.0, 0.0))
-    ply:SetNWInt("stsgod", 0)
-    ply:ConCommand("set_team " .. 0)
+    setTeamFull(ply, 0)
 
     if GetConVar("sts_disable_settings_buttons"):GetInt() == 0 then
         for _, ent in ipairs(ents.GetAll()) do
@@ -313,6 +312,7 @@ function GM:PlayerSpawn(ply)
             for _, ent in ipairs(ents.GetAll()) do
                 if ent:GetName() == spawnPoint then
                     ply:SetPos(ent:GetPos())
+                    ply:SetEyeAngles(ent:GetAngles())
                     break
                 end
             end
@@ -452,36 +452,51 @@ function addTeamPoints(teamName, change)
         end
     end
 end
--- needs significant testing
-hook.Add("OnEntityCreated", "AssignTeams", function(ent)
-    if not ent:IsValid() or not ent:IsNPC() or engine.TickCount() < 1980 then return end
-    timer.Simple(1 / 66, function() AssignTeam(ent, ent:GetName()) end )
-    local npcClass = ent:GetClass()
 
-    if npcClass == "npc_poisonzombie" and (ent:EntIndex() ~= 0) then
-        local poisonZombieTeam = ent:GetName()
-        -- Start a timer that runs every second
-        PrintMessage(HUD_PRINTTALK, "Starting poison zombie check" .. ent:EntIndex())
+function beginTeamAssignment()
+    -- needs significant testing
+    -- hook.remove would probably be best for bonus rounds
+    hook.Add("OnEntityCreated", "AssignTeams", function(ent)
+        if not ent:IsValid() or not ent:IsNPC() or engine.TickCount() < 1980 then return end
+        print(ent:GetName() .. " created")
+        timer.Simple(1 / 66, function() AssignTeam(ent, ent:GetName()) end )
+        local npcClass = ent:GetClass()
 
-        timer.Create("CheckForHeadcrabs" .. ent:EntIndex(), 0.1, 600, function()
-            if not ent:IsValid() or ent:EntIndex() == 0 then
-                timer.Remove("CheckForHeadcrabs" .. ent:EntIndex())
+        if (npcClass == "npc_headcrab" or npcClass == "npc_headcrab_fast" or npcClass == "npc_headcrab_black") and ent:GetName() == "" then return end
 
-                return
-            end
+        -- timer.Simple(1 / 66, function()
+        --     ent:SetPos(nextMapSpawnLocations[string.sub( ent:GetName(), 1, string.find( ent:GetName(), "_" ) - 1 )][math.random(1, nextMapSpawnLocations[string.sub( ent:GetName(), 1, string.find( ent:GetName(), "_" ) - 1 )])])
+        -- end)
 
-            local foundEntities = ents.FindInSphere(ent:GetPos(), 100) -- adjust radius as necessary
+        if npcClass == "npc_poisonzombie" and (ent:EntIndex() ~= 0) then
+            local poisonZombieTeam = ent:GetName()
+            -- Start a timer that runs every second
+            print("Starting poison zombie check" .. ent:EntIndex())
 
-            for _, foundEnt in ipairs(foundEntities) do
-                if foundEnt:GetClass() == "npc_headcrab_poison" then
-                    AssignTeam(foundEnt, poisonZombieTeam)
-                    foundEnt:SetKeyValue("rendercolor", "255 30 30")
-                    PrintMessage(HUD_PRINTTALK, "Assigned headcrab team.")
+            timer.Create("CheckForHeadcrabs" .. ent:EntIndex(), 0.1, 600, function()
+                if not ent:IsValid() or ent:EntIndex() == 0 then
+                    timer.Remove("CheckForHeadcrabs" .. ent:EntIndex())
+
+                    return
                 end
-            end
-        end)
-    end
-end)
+
+                local foundEntities = ents.FindInSphere(ent:GetPos(), 100) -- adjust radius as necessary
+
+                for _, foundEnt in ipairs(foundEntities) do
+                    if foundEnt:GetClass() == "npc_headcrab_poison" then
+                        AssignTeam(foundEnt, poisonZombieTeam)
+                        foundEnt:SetKeyValue("rendercolor", "255 30 30")
+                        print("Assigned headcrab team.")
+                    end
+                end
+            end)
+        end
+    end)
+end
+
+function endTeamAssignment()
+    hook.Remove("OnEntityCreated", "AssignTeams")
+end
 
 hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
     local zombieTypes = {"npc_zombie", "npc_zombie_torso", "npc_fastzombie", "npc_poisonzombie"}
@@ -502,7 +517,6 @@ hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
                         ent:SetKeyValue("rendercolor", "255 30 30")
                         PrintMessage(HUD_PRINTTALK, "Assigned headcrab team.")
                         timer.Remove("CheckForHeadcrab" .. npc:EntIndex())
-
                         return
                     end
                 end
@@ -525,21 +539,23 @@ function AssignTeam(ent, teamInput)
     if ent:GetName() == "" then
         ent:SetName(teamInput)
     end
-    PrintMessage(HUD_PRINTTALK, "Name is" .. ent:GetName())
+    print("Name is" .. ent:GetName())
     for i, teamName in ipairs(npcColors) do
         teamEnts[i] = ents.FindByName(teamName)
     end
 
     for i, teamName in ipairs(npcColors) do
-        if ent:GetName() == teamName then
-            for _, sameTeamEnt in ipairs(teamEnts[i]) do
-                -- to avoid self-love
-                if ent ~= sameTeamEnt then
-                    if string.find(ent:GetName(), teamName) then
-                        ent:AddEntityRelationship(sameTeamEnt, D_LI, 10)
-                    else
-                        ent:AddEntityRelationship(sameTeamEnt, D_HT, 10)
-                    end
+        for _, teamEntity in ipairs(teamEnts[i]) do
+            -- to avoid self-love
+            if ent ~= teamEntity and teamEntity:IsNPC() then
+                if string.find(ent:GetName(), teamName) then
+                    ent:AddEntityRelationship(teamEntity, D_LI, 10)
+                    teamEntity:AddEntityRelationship(ent, D_LI, 10)
+                    print(ent:GetClass() .. " now likes " .. teamEntity:GetClass() .. "!")
+                else
+                    ent:AddEntityRelationship(teamEntity, D_HT, 10)
+                    teamEntity:AddEntityRelationship(ent, D_HT, 10)
+                    print(ent:GetClass() .. " now hates " .. teamEntity:GetClass() .. "!")
                 end
             end
         end
@@ -564,6 +580,7 @@ function startGame()
     nextMap = chooseNextMap()
     nextBR = chooseBonusRound()
     setNextMapScreen(getMapScreen(nextMap))
+    beginPlayingMainTrack()
 end
 
 function upgradeABox(cubeName)
