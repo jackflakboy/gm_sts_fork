@@ -21,3 +21,5 @@ function deathmatchKill(victim, inflictor, attacker)
     end
     return 0
 end
+
+hook.Add("PlayerDeath", "Deathmatch Add Points", deathmatchKill)

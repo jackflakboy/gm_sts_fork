@@ -18,7 +18,7 @@ function Mob.new(name, templates, multiplier, delay)
     return EmptyMob -- Return the 'EmptyMob' table, whose metatable is 'Mob'. This is our object
 end
 
--- Dummy spawn function for the Mob
+-- deprecated
 function Mob:spawn(teamID, strength)
     local amount = self.multiplier * strength
     PrintMessage(HUD_PRINTTALK, "Spawning " .. self.name .. " with a multiplier of " .. amount .. " for team " .. teamID)
@@ -31,6 +31,21 @@ function Mob:spawn(teamID, strength)
             end
         end
     end
+end
+
+function Mob:getSpawns(teamID, strength)
+    local amount = self.multiplier * strength
+    local mobsToSpawn = {}
+    for _, template in ipairs(self.templates) do
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == mobPrefixes[teamID] .. template .. mobSuffix then
+                for i = 1, amount do
+                    table.insert(mobsToSpawn, {ent, self.delay})
+                end
+            end
+        end
+    end
+    return mobsToSpawn
 end
 
 
@@ -71,10 +86,10 @@ mobs[3] = {
 
 mobs[4] = {
     ["doublerocket"] = Mob.new("Rocketeer (x2)", {"npc_rocket"}, 2),
-    ["quinzombie"] = Mob.new("Zombie (x5)", {"npc_zombie"}, 5),
+    ["quinzombie"] = Mob.new("Zombie (x5)", {"npc_zombie"}, 5, 0.5),
     ["antguard"] = Mob.new("Antlion Guard", {"npc_antguard"}, 1),
     ["valkyrie"] = Mob.new("Valkyrie", {"npc_valkyrie"}, 1),
-    ["antlion"] = Mob.new("Antlion (x5)", {"npc_antlion"}, 5),
+    ["antlion"] = Mob.new("Antlion (x5)", {"npc_antlion"}, 5, 0.5),
     ["healer"] = Mob.new("Healer (x3)", {"npc_healer"}, 3),
     ["bombsquad"] = Mob.new("Bombing Squad", {"npc_bombsquad"}, 5),
     ["elitesquad"] = Mob.new("Elite Squad", {"npc_elitesquad_ar", "npc_elitesquad_shotgun"}, 1, 1)

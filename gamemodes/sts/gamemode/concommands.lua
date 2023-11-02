@@ -33,6 +33,7 @@ function setTeamFull(ply, teamID)
     ply:SetKeyValue("targetname", props.namePrefix .. ply:GetName())
     ply:SetPlayerColor(props.color)
     ply:SetModel("models/player/police.mdl")
+    shouldStartLeverBeLocked()
 end
 
 concommand.Add("set_team", function(ply, cmd, args)
@@ -46,26 +47,19 @@ concommand.Add("set_team", function(ply, cmd, args)
     setTeamFull(ply, input)
 end)
 
-
--- broke
 concommand.Add("pntadd", function(ply, cmd, args)
-    for i, v in ipairs(player.GetAll()) do
-        v:SetNWInt("researchPoints", v:GetNWInt("researchPoints") + 100)
-    end
+    local input = tonumber(args[1])
 
-    print("Point Boost")
-end, nil, nil, FCVAR_CHEAT)
-
-concommand.Add("stsgod", function(ply, cmd, args)
-    if not args[1] then
-        print(ply:GetNWInt("stsgod"))
-
+    if input == nil then
+        print("Please enter a number")
         return
     end
 
-    local amount = args[1]
-    ply:SetNWInt("stsgod", tonumber(amount))
-    print(ply:GetNWInt("stsgod"))
+    for i = 1, 4 do
+        teams[i].points = teams[i].points + input
+    end
+
+    print("Point Boost")
 end, nil, nil, FCVAR_CHEAT)
 
 -- broke
@@ -77,7 +71,7 @@ concommand.Add("newround", function(args)
     end
 end, nil, nil, FCVAR_CHEAT)
 
-concommand.Add("flagspwn", function(args)
+concommand.Add("flagspawn", function(args)
     for k, v in ipairs(ents.GetAll()) do
         if v:GetName() == "mapctf_flag_template" then
             v:Fire("ForceSpawn")
@@ -85,7 +79,7 @@ concommand.Add("flagspwn", function(args)
     end
 end, nil, nil, FCVAR_CHEAT)
 
-concommand.Add("batteryspwn", function(args)
+concommand.Add("batteryspawn", function(args)
     for k, v in ipairs(ents.GetAll()) do
         if v:GetName() == "mapctf_battery_tp1" then
             v:Fire("ForceSpawn")
@@ -97,7 +91,7 @@ concommand.Add("reset_game", function(ply, cmd, args)
     gameReset()
 end, nil, nil, FCVAR_CHEAT)
 
--- this func will make the gamemode unfriendly to dedicated servers, needs to be automated or have additional checks
+-- TODO: this func will make the gamemode unfriendly to dedicated servers, needs to be automated or have additional checks
 concommand.Add("reset_game_solo", function(ply, cmd, args)
     if tonumber(player.GetCount()) == 1 then
         print("\n\n\nYou are alone, so you can reset the map \nThanks for cleaning up the server! \n\n-Tergative\n\n\n\n")

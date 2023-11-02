@@ -43,12 +43,13 @@ end
 
 function beginPlayingMainTrack()
     mainTrack = playGlobalSound("bm_sts_sounds/miami sky-hq.wav")
-    hook.Add("Think", "MainTrack", function()
-        if (mainTrack == nil or not mainTrack:IsPlaying()) then
-            mainTrack = playGlobalSound("bm_sts_sounds/miami sky-hq.wav")
-            mainTrack:ChangeVolume(mainTrackSound, 0)
-        end
-    end)
+    -- hook.Add("Think", "MainTrack", function()
+    --     if (mainTrack == nil or not mainTrack:IsPlaying()) then -- TODO: IsPlaying() returns true even if the track has ended, needs a fix for proper looping.
+    --         print("Restarting track")                           -- Why the hell would they make it like this?
+    --         mainTrack = playGlobalSound("bm_sts_sounds/miami sky-hq.wav")
+    --         mainTrack:ChangeVolume(mainTrackSound, 0)
+    --     end
+    -- end)
 end
 
 function muteMainTrack()

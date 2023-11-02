@@ -26,6 +26,7 @@ nextBR = ""
 currentMap = ""
 maps = {"square", "cit", "rav", "rail", "lake", "yellow", "green", "blue"}
 gameState = 0
+roundCounter = 0
 -- 0 - game not started
 -- 1 - Randomizing
 -- 2 - battle
@@ -300,11 +301,17 @@ function GM:PlayerInitialSpawn(ply)
             end
         end
     end
+    if game.MaxPlayers() > 16 then
+        ply:PrintMessage(HUD_PRINTTALK, "WARNING! You are playing on a server which has more than 16 playerslots! This gamemode was not designed with more than 16 players in mind and you WILL run into bugs.")
+    end
 end
 
-function GM:PlayerSpawn(ply)
+hook.Add("PlayerSpawn", "Universal", function(ply)
     ply:SetModel("models/player/police.mdl")
     ply:SetupHands()
+end)
+
+function GM:PlayerSpawn(ply)
     if ply:Team() ~= 0 then
         local teams = {"waiting_bluetp", "waiting_redtp", "waiting_greentp", "waiting_yellowtp"}
         local spawnPoint = teams[ply:Team()]
@@ -316,6 +323,18 @@ function GM:PlayerSpawn(ply)
                     break
                 end
             end
+        end
+    end
+end
+
+function teleportToTeamSpawn(ply)
+    local teams = {"waiting_bluetp", "waiting_redtp", "waiting_greentp", "waiting_yellowtp"}
+    local spawnPoint = teams[ply:Team()]
+    for _, ent in ipairs(ents.GetAll()) do
+        if ent:GetName() == spawnPoint then
+            ply:SetPos(ent:GetPos())
+            ply:SetEyeAngles(ent:GetAngles())
+            break
         end
     end
 end
@@ -340,16 +359,12 @@ end
 function GM:PlayerUse(ply, ent)
     if ent:GetName() == "waiting_blueteambutt" then
         setTeamFull(ply, 1)
-        shouldStartLeverBeLocked()
     elseif ent:GetName() == "waiting_redteambutt" then
         setTeamFull(ply, 2)
-        shouldStartLeverBeLocked()
     elseif ent:GetName() == "waiting_greenteambutt" then
         setTeamFull(ply, 3)
-        shouldStartLeverBeLocked()
     elseif ent:GetName() == "waiting_yellowteambutt" then
         setTeamFull(ply, 4)
-        shouldStartLeverBeLocked()
     end
 end
 
@@ -375,13 +390,6 @@ end
 
 function GM:OnPlayerPhysicsDrop(ply, ent)
     ClearBox(ply)
-end
-
---TIMER STUFF
-function roundend()
-end
-
-function roundbegin()
 end
 
 -- checks to see if server is empty on player disconnects
@@ -434,6 +442,12 @@ function getTeamIDFromName(teamName1)
     end
 end
 
+function getTeamNameFromID(teamName1)
+    local teamIDs = {"blue", "red", "green", "yellow"}
+
+    return teamIDs[teamName1]
+end
+
 function addTeamPoints(teamName, change)
     local points
     local teamID = getTeamIDFromName(teamName)
@@ -457,16 +471,20 @@ function beginTeamAssignment()
     -- needs significant testing
     -- hook.remove would probably be best for bonus rounds
     hook.Add("OnEntityCreated", "AssignTeams", function(ent)
-        if not ent:IsValid() or not ent:IsNPC() or engine.TickCount() < 1980 then return end
+        if not ent:IsValid() or not ent:IsNPC() then return end
         print(ent:GetName() .. " created")
         timer.Simple(1 / 66, function() AssignTeam(ent, ent:GetName()) end )
         local npcClass = ent:GetClass()
 
-        if (npcClass == "npc_headcrab" or npcClass == "npc_headcrab_fast" or npcClass == "npc_headcrab_black") and ent:GetName() == "" then return end
+        timer.Simple(2 / 66, function()
+            print("teleporting!!!!! " .. ent:GetName())
+            PrintMessage(HUD_PRINTTALK, "teleporting!!! " .. ent:GetName())
+            local randspawnpoint = math.random(1, 5)
+            ent:SetPos(nextMapSpawnLocations[string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1)][randspawnpoint][1])
+            ent:SetAngles(nextMapSpawnLocations[string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1)][randspawnpoint][2])
+        end)
 
-        -- timer.Simple(1 / 66, function()
-        --     ent:SetPos(nextMapSpawnLocations[string.sub( ent:GetName(), 1, string.find( ent:GetName(), "_" ) - 1 )][math.random(1, nextMapSpawnLocations[string.sub( ent:GetName(), 1, string.find( ent:GetName(), "_" ) - 1 )])])
-        -- end)
+        if (npcClass == "npc_headcrab" or npcClass == "npc_headcrab_fast" or npcClass == "npc_headcrab_black") and ent:GetName() == "" then return end
 
         if npcClass == "npc_poisonzombie" and (ent:EntIndex() ~= 0) then
             local poisonZombieTeam = ent:GetName()
@@ -487,6 +505,29 @@ function beginTeamAssignment()
                         AssignTeam(foundEnt, poisonZombieTeam)
                         foundEnt:SetKeyValue("rendercolor", "255 30 30")
                         print("Assigned headcrab team.")
+                    end
+                end
+            end)
+        end
+        if npcClass == "npc_metrocop" and (ent:EntIndex() ~= 0) then
+            local metrocopTeam = ent:GetName()
+            -- Start a timer that runs every second
+            print("Starting metrocop check" .. ent:EntIndex())
+
+            timer.Create("CheckForManhacks" .. ent:EntIndex(), 0.1, 100, function()
+                if not ent:IsValid() or ent:EntIndex() == 0 then
+                    timer.Remove("CheckForManhacks" .. ent:EntIndex())
+
+                    return
+                end
+
+                local foundEntities = ents.FindInSphere(ent:GetPos() + Vector(0, 0, 25), 100) -- adjust radius as necessary
+
+                for _, foundEnt in ipairs(foundEntities) do
+                    if foundEnt:GetClass() == "npc_manhack" then
+                        AssignTeam(foundEnt, metrocopTeam)
+                        foundEnt:SetKeyValue("rendercolor", "255 30 30")
+                        print("Assigned manhack team.")
                     end
                 end
             end)
@@ -539,7 +580,7 @@ function AssignTeam(ent, teamInput)
     if ent:GetName() == "" then
         ent:SetName(teamInput)
     end
-    print("Name is" .. ent:GetName())
+    print("Name is " .. ent:GetName())
     for i, teamName in ipairs(npcColors) do
         teamEnts[i] = ents.FindByName(teamName)
     end
@@ -581,6 +622,9 @@ function startGame()
     nextBR = chooseBonusRound()
     setNextMapScreen(getMapScreen(nextMap))
     beginPlayingMainTrack()
+    for i = 1, 4 do
+        teams[i].points = GetConVar("sts_starting_points"):GetInt()
+    end
 end
 
 function upgradeABox(cubeName)
@@ -751,6 +795,19 @@ function getMapScreen(map)
     return info[map]
 end
 
+function roundReset()
+    PrintMessage(HUD_PRINTTALK, "Resetting round!")
+    roundCounter = roundCounter + 1
+    if roundCounter % 2 == 0 then
+        doBonusRound()
+    else
+        unmuteMainTrack()
+        for _, ply in ipairs(player.GetAll()) do
+            teleportToTeamSpawn(ply)
+        end
+    end
+end
+
 function ReadyLeverPulled(teamName)
     local levers = {"waiting_blue_ready_lever", "waiting_red_ready_lever", "waiting_green_ready_lever", "waiting_yellow_ready_lever"}
     local pulled = 0
@@ -772,7 +829,69 @@ function ReadyLeverPulled(teamName)
     end
     if required == pulled then
         PrintMessage(HUD_PRINTTALK, "All teams ready!")
+        beginFight()
     end
 end
 
-hook.Add("PlayerDeath", "Deathmatch Add Points", deathmatchKill)
+function beginFight()
+    PrintMessage(HUD_PRINTTALK, "Fight!")
+    fillNextSpawns()
+    beginTeamAssignment()
+    muteMainTrack()
+    -- teleport to new shit
+    for _, ent in ipairs(ents.FindByClass("info_teleport_destination")) do
+        for i = 1, 4 do
+            for j, teammate in ipairs(team.GetPlayers(i)) do
+                if ent:GetName() == ("map" .. nextMap .. "_player_" .. getTeamNameFromID(i) .. "tpdest" .. tostring(j)) then
+                    print(ent:GetName())
+                    teammate:SetPos(ent:GetPos())
+                    teammate:SetEyeAngles(ent:GetAngles())
+                end
+            end
+        end
+    end
+
+    -- start spawning motherfuckers
+    local teamsToSpawn = getPlayingTeams()
+    local teamMobs = {} -- {1 = ..., 4 = ...}
+    local delay
+
+    for _, id in ipairs(teamsToSpawn) do
+        for _, cube in pairs(teams[id].cubes) do
+            if teamMobs[id] == nil then
+                teamMobs[id] = cube.mob:getSpawns(id, cube.strength)
+            else
+                TableConcat(teamMobs[id], cube.mob:getSpawns(id, cube.strength))
+            end
+        end
+    end
+
+    for i, mobs in ipairs(teamMobs) do
+        delay = 0
+        for _, mob in ipairs(mobs) do
+            delay = delay + mob[2]
+            timer.Simple(delay, function()
+                mob[1]:Fire("ForceSpawn")
+            end)
+        end
+    end
+end
+
+function doBonusRound()
+    PrintMessage(HUD_PRINTTALK, "Bonus Round!")
+end
+
+function getPlayingTeams()
+    local ids = {}
+    for i = 1, 4 do
+        if #team.GetPlayers(i) > 0 then
+            table.insert(ids, i)
+        end
+    end
+    return ids
+end
+
+function timerTest()
+    timer.Simple(1, function() print("I should appear after one second") end)
+    print("I should appear instantly")
+end
