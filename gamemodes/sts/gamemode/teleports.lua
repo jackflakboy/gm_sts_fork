@@ -20,10 +20,12 @@ end
 
 function startGameSpawn()
     hook.Add("PlayerSpawn", "GameSpawn", function(ply)
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == ("map" .. nextMap .. "_player_" .. getTeamNameFromID(ply:Team()) .. "tpdest" .. tostring(math.random(1, 4))) then
+        local chosen = math.random(1, 4)
+        for _, ent in ipairs(ents.FindByClass("info_teleport_destination")) do
+            if ent:GetName() == ("map" .. nextMap .. "_player_" .. getTeamNameFromID(ply:Team()) .. "tpdest" .. tostring(chosen)) then
                 ply:SetPos(ent:GetPos())
                 ply:SetEyeAngles(ent:GetAngles())
+                print("map" .. nextMap .. "_player_" .. getTeamNameFromID(ply:Team()) .. "tpdest" .. tostring(chosen))
                 break
             end
         end

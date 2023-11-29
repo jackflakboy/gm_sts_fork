@@ -4,7 +4,6 @@ include("net.lua")
 include("cubes.lua")
 include("mobs.lua")
 include("sound.lua")
-local client = LocalPlayer()
 points = 0
 startingPoints = 20
 startingRounds = 5
@@ -30,19 +29,12 @@ surface.CreateFont("timefont", {
 })
 
 function GM:SpawnMenuOpen()
-    if client:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
+    return false
 end
 
 function GM:OnContextMenuOpen()
-    if client:GetNWInt("stsgod") == 1 then
-        return true
-    else
-        return false
-    end
+    return false
+
 end
 
 boxName = ""
@@ -50,7 +42,7 @@ boxRarity = 0
 boxStrength = 0
 boxLevel = 0
 boxKey = ""
-currentTimer = 0
+tickTimerOver = 0
 
 hook.Add("PlayerSpawnProp", "RestrictSpawningProps", function(ply)
     return false

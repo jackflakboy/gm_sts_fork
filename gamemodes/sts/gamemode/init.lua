@@ -200,6 +200,20 @@ function shouldStartLeverBeLocked()
                 return true
             end
         end
+        if ent:GetName() == "startdelay_light_r" then
+            if teamedPlayers < minimumRequired and gameStarted == 0 then
+                ent:Fire("TurnOn")
+            else
+                ent:Fire("TurnOff")
+            end
+        end
+        if ent:GetName() == "startdelay_light_g" then
+            if teamedPlayers >= minimumRequired or gameStarted == 1 then
+                ent:Fire("TurnOn")
+            else
+                ent:Fire("TurnOff")
+            end
+        end
     end
 end
 
@@ -309,25 +323,15 @@ function GM:PlayerInitialSpawn(ply)
 end
 
 hook.Add("PlayerSpawn", "UniversalPlayerSpawn", function(ply)
-    ply:SetModel("models/player/police.mdl")
+    -- this needs to wait a tick for some reason???? otherwise it doesn't work.
+    -- it is supremely fucked up how many things are fixed by making them wait
+    -- one fucking tick, 
+    timer.Simple(1 / 66, function()
+        setTeamFull(ply, ply:Team())
+    end)
     ply:SetupHands()
+    print("Player spawned")
 end)
-
--- function GM:PlayerSpawn(ply)
---     if ply:Team() ~= 0 then
---         local teams = {"waiting_bluetp", "waiting_redtp", "waiting_greentp", "waiting_yellowtp"}
---         local spawnPoint = teams[ply:Team()]
---         if GetConVar("sts_game_started"):GetInt() == 1 then
---             for _, ent in ipairs(ents.GetAll()) do
---                 if ent:GetName() == spawnPoint then
---                     ply:SetPos(ent:GetPos())
---                     ply:SetEyeAngles(ent:GetAngles())
---                     break
---                 end
---             end
---         end
---     end
--- end
 
 function teleportToTeamSpawn(ply)
     local teams = {"waiting_bluetp", "waiting_redtp", "waiting_greentp", "waiting_yellowtp"}
@@ -471,7 +475,6 @@ end
 
 function beginTeamAssignment()
     -- needs significant testing
-    -- hook.remove would probably be best for bonus rounds
     hook.Add("OnEntityCreated", "AssignTeams", function(ent)
         if not ent:IsValid() or not ent:IsNPC() then return end
         local npcClass = ent:GetClass()
@@ -491,53 +494,56 @@ function beginTeamAssignment()
             end)
         end)
 
-        if npcClass == "npc_poisonzombie" and (ent:EntIndex() ~= 0) then
-            local poisonZombieTeam = ent:GetName()
-            -- Start a timer that runs every second
-            print("Starting poison zombie check" .. ent:EntIndex())
+        if npcClass == "npc_poisonzombie" then
+            timer.Simple(1 / 66, function()
+                local poisonZombieTeam = ent:GetName()
+                -- Start a timer that runs every second
+                print("Starting poison zombie check" .. ent:EntIndex())
 
-            timer.Create("CheckForHeadcrabs" .. ent:EntIndex(), 0.1, 600, function()
-                if not ent:IsValid() or ent:EntIndex() == 0 then
-                    timer.Remove("CheckForHeadcrabs" .. ent:EntIndex())
+                timer.Create("CheckForHeadcrabs" .. ent:EntIndex(), 0.1, 600, function()
+                    if not ent:IsValid() or ent:EntIndex() == 0 then
+                        timer.Remove("CheckForHeadcrabs" .. ent:EntIndex())
 
-                    return
-                end
-
-                local foundEntities = ents.FindInSphere(ent:GetPos(), 100) -- adjust radius as necessary
-
-                for _, foundEnt in ipairs(foundEntities) do
-                    if foundEnt:GetClass() == "npc_headcrab_poison" and foundEnt:GetName() == "" then
-                        AssignTeam(foundEnt, poisonZombieTeam)
-                        foundEnt:SetKeyValue("rendercolor", "255 30 30")
-                        print("Assigned headcrab team.")
+                        return
                     end
-                end
+
+                    local foundEntities = ents.FindInSphere(ent:GetPos(), 100) -- adjust radius as necessary
+
+                    for _, foundEnt in ipairs(foundEntities) do
+                        if foundEnt:GetClass() == "npc_headcrab_poison" and foundEnt:GetName() == "" then
+                            AssignTeam(foundEnt, poisonZombieTeam)
+                            --foundEnt:SetKeyValue("rendercolor", "255 30 30")
+                            print("Assigned headcrab team.")
+                        end
+                    end
+                end)
             end)
         end
-        if npcClass == "npc_metrocop" and (ent:EntIndex() ~= 0) then
-            local metrocopTeam = ent:GetName()
-            -- Start a timer that runs every second
-            print("Starting metrocop check" .. ent:EntIndex())
+        if npcClass == "npc_metropolice" then
+            timer.Simple(1 / 66, function()
+                local metrocopTeam = ent:GetName()
+                -- Start a timer that runs every second
+                PrintMessage(HUD_PRINTTALK, "Starting metrocop check" .. ent:EntIndex())
 
-            timer.Create("CheckForManhacks" .. ent:EntIndex(), 0.1, 600, function()
-                if not ent:IsValid() or ent:EntIndex() == 0 then
-                    timer.Remove("CheckForManhacks" .. ent:EntIndex())
+                timer.Create("CheckForManhacks" .. ent:EntIndex(), 0.5, 600, function()
+                    if not ent:IsValid() or ent:EntIndex() == 0 then
+                        timer.Remove("CheckForManhacks" .. ent:EntIndex())
 
-                    return
-                end
-
-                local foundEntities = ents.FindInSphere(ent:GetPos(), 150) -- adjust radius as necessary
-                render.SetColorMaterial()
-                render.DrawSphere( ent:GetPos(), 50, 30, 30, Color( 255, 0, 0, 100 ) )
-
-                for _, foundEnt in ipairs(foundEntities) do
-                    if foundEnt:GetClass() == "npc_manhack" and foundEnt:GetName() == "" then
-                        PrintMessage(HUD_PRINTTALK, "found bastard")
-                        AssignTeam(foundEnt, metrocopTeam)
-                        foundEnt:SetKeyValue("rendercolor", "255 30 30")
-                        print("Assigned manhack team.")
+                        return
                     end
-                end
+
+                    local foundEntities = ents.FindInSphere(ent:GetPos(), 50) -- adjust radius as necessary
+
+                    for _, foundEnt in ipairs(foundEntities) do
+                        if foundEnt:GetClass() == "npc_manhack" and foundEnt:GetName() == "" then
+                            PrintMessage(HUD_PRINTTALK, "found bastard named " .. foundEnt:GetName())
+                            AssignTeam(foundEnt, metrocopTeam)
+                            --foundEnt:SetKeyValue("rendercolor", "255 30 30")
+                            PrintMessage(HUD_PRINTTALK, "Assigned manhack team.")
+                            timer.Remove("CheckForManhacks" .. ent:EntIndex())
+                        end
+                    end
+                end)
             end)
         end
     end)
@@ -581,6 +587,8 @@ function AssignTeam(ent, teamInput)
     local npcColors = {"Redteam", "Blueteam", "Greenteam", "Yellowteam"}
 
     local teamEnts = {}
+
+    PrintMessage(HUD_PRINTTALK, ent:GetName() .. ent:GetClass() .. ", " .. teamInput)
 
     -- for some reason which I cannot diagnose or explain despite my best attempts, 
     -- this check is always true. running the same check in game is not always true. i don't get it!
@@ -627,6 +635,7 @@ end
 
 function startGame()
     PrintMessage(HUD_PRINTCENTER, "Ready!")
+    RunConsoleCommand("sv_hibernate_think", "1")
     GetConVar("sts_game_started"):SetInt(1)
     nextMap = chooseNextMap()
     nextBR = chooseBonusRound()
@@ -869,11 +878,11 @@ function beginFight()
     local delay
 
     for _, id in ipairs(teamsToSpawn) do
-        for _, cube in pairs(teams[id].cubes) do
+        for _, spawner in ipairs(teams[id].spawners) do
             if teamMobs[id] == nil then
-                teamMobs[id] = cube.mob:getSpawns(id, cube.strength)
+                teamMobs[id] = spawner[1].mob:getSpawns(id, spawner.strength)
             else
-                TableConcat(teamMobs[id], cube.mob:getSpawns(id, cube.strength))
+                TableConcat(teamMobs[id], spawner[1].mob:getSpawns(id, spawner.strength))
             end
         end
     end
@@ -901,9 +910,4 @@ function getPlayingTeams()
         end
     end
     return ids
-end
-
-function timerTest()
-    timer.Simple(1, function() print("I should appear after one second") end)
-    print("I should appear instantly")
 end
