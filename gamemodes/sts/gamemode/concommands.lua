@@ -26,6 +26,10 @@ function setTeamFull(ply, teamID)
     -- Clearer message
     local teamEmpty = team.NumPlayers(teamID) == 0
     print("The team you want to join IS" .. (teamEmpty and "" or " NOT") .. " empty.")
+    if team.NumPlayers(teamID) > 3 then
+        print("Team is full")
+        return
+    end
     -- Setting the team
     ply:SetTeam(teamID)
     -- Using team properties dictionary to reduce code repetition

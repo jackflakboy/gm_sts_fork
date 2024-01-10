@@ -50,6 +50,19 @@ end)
 
 cvars.AddChangeCallback("sts_force_bonus_rounds", function(convarName, valueOld, valueNew)
     print("TODO: Change lever and lock it")
+    for _, ent in ipairs(ents.GetAll()) do
+        if ent:GetName() == "waiting_lobby_brtoggle_lever" then
+            if valueNew == "1" then
+                ent:Fire("Close")
+                ent:Fire("Lock")
+            elseif valueNew == "0" then
+                ent:Fire("Unlock")
+            elseif valueNew == "-1" then
+                ent:Fire("Open")
+                ent:Fire("Lock")
+            end
+        end
+    end
 end)
 
 
@@ -320,6 +333,10 @@ function GM:PlayerInitialSpawn(ply)
     if game.MaxPlayers() > 16 then
         ply:PrintMessage(HUD_PRINTTALK, "WARNING! You are playing on a server which has more than 16 playerslots! This gamemode was not designed with more than 16 players in mind and you WILL run into bugs.")
     end
+    if ply:IsListenServerHost() and IsMounted("420") then
+        ply:PrintMessage(HUD_PRINTTALK, "You appear to have episode 2 mounted. Episodic content has been enabled. If any players do not have episode 2 mounted, please set sts_episodic_content to 0 in console.")
+    end
+
 end
 
 hook.Add("PlayerSpawn", "UniversalPlayerSpawn", function(ply)

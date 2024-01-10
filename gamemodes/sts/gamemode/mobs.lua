@@ -55,7 +55,6 @@ mobs[1] = {
     ["fastheadcrab"] = Mob.new("Fast Headcrab", {"npc_fastheadcrab"}, 1),
     ["manhack"] = Mob.new("Manhack", {"npc_manhack"}, 1),
     ["crowbar"] = Mob.new("Crowbar Guy", {"npc_crowbar"}, 1),
-    ["fasttorso"] = Mob.new("Fast Torso", {"npc_fasttorso"}, 1), -- TODO: episodic
     ["stun"] = Mob.new("Stop Resisting", {"npc_stun"}, 1),
     ["torso"] = Mob.new("Zombie Torso", {"npc_torso"}, 1)
 }
@@ -78,7 +77,6 @@ mobs[3] = {
     ["vort"] = Mob.new("Vortigaunt", {"npc_vort"}, 1),
     ["monk"] = Mob.new("Monk", {"npc_monk"}, 1),
     ["suicide"] = Mob.new("Suicide", {"npc_suicide"}, 1),
-    ["brute"] = Mob.new("Brute", {"npc_brute"}, 1), -- TODO: episodic
     ["healer"] = Mob.new("Healer", {"npc_healer"}, 1),
     ["doublezombie"] = Mob.new("Zombie (x2)", {"npc_zombie"}, 1),
     ["beefcake"] = Mob.new("Beefcake", {"npc_beefcake"}, 1)
@@ -94,3 +92,14 @@ mobs[4] = {
     ["bombsquad"] = Mob.new("Bombing Squad", {"npc_bombsquad"}, 5),
     ["elitesquad"] = Mob.new("Elite Squad", {"npc_elitesquad_ar", "npc_elitesquad_shotgun"}, 1, 1)
 }
+
+cvars.AddChangeCallback("sts_episodic_content", function(convarName, valueOld, valueNew)
+    if valueNew == 1 then
+        mobs[3]["brute"] = Mob.new("Brute", {"npc_brute"}, 1)
+        mobs[1]["fasttorso"] = Mob.new("Fast Torso", {"npc_fasttorso"}, 1)
+    end
+    if valueNew == 0 then
+        mobs[3]["brute"] = nil
+        mobs[1]["fasttorso"] = nil
+    end
+end)
