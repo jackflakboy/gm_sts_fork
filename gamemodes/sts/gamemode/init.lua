@@ -333,9 +333,10 @@ function GM:PlayerInitialSpawn(ply)
     if game.MaxPlayers() > 16 then
         ply:PrintMessage(HUD_PRINTTALK, "WARNING! You are playing on a server which has more than 16 playerslots! This gamemode was not designed with more than 16 players in mind and you WILL run into bugs.")
     end
-    if ply:IsListenServerHost() and IsMounted("420") then
-        ply:PrintMessage(HUD_PRINTTALK, "You appear to have episode 2 mounted. Episodic content has been enabled. If any players do not have episode 2 mounted, please set sts_episodic_content to 0 in console.")
-    end
+    if ply:IsListenServerHost() and IsMounted("ep2") then
+        ply:PrintMessage(HUD_PRINTTALK, "You appear to have half life 2 episode 2 mounted. Episodic content has been enabled. If any players do not have episode 2 mounted, please set sts_episodic_content to 0 in console.")
+        GetConVar("sts_episodic_content"):SetInt(1)
+        end
 
 end
 
@@ -501,12 +502,15 @@ function beginTeamAssignment()
             end
         end)
 
-        timer.Simple(1 / 66, function()
-            if (npcClass == "npc_headcrab" or npcClass == "npc_headcrab_fast" or npcClass == "npc_headcrab_black" or npcClass == "npc_manhack") and ent:GetName() == "" then return end
-            timer.Simple(1 / 66, function()
+        timer.Simple(1 / 66, function() -- name assigned after 1 tick
+            if (npcClass == "npc_headcrab" or npcClass == "npc_headcrab_fast" or npcClass == "npc_headcrab_black" or npcClass == "npc_manhack") and ent:GetName() == "" then return end -- mob was spawned by already existing mob and does not need teleporting
+            timer.Simple(1 / 66, function() -- i forgot why this is waiting an extra tick
                 PrintMessage(HUD_PRINTTALK, "teleporting!!!!! " .. ent:GetName() .. " " .. npcClass)
                 local randspawnpoint = math.random(1, 5)
-                ent:SetPos(nextMapSpawnLocations[string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1)][randspawnpoint][1])
+                print("teleporting to " .. randspawnpoint)
+                print("name is " .. ent:GetName())
+                print(string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1))
+                ent:SetPos(nextMapSpawnLocations[string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1)][randspawnpoint][1]) -- TODO: frequently does nil values
                 ent:SetAngles(nextMapSpawnLocations[string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1)][randspawnpoint][2])
             end)
         end)
@@ -542,7 +546,7 @@ function beginTeamAssignment()
                 -- Start a timer that runs every second
                 PrintMessage(HUD_PRINTTALK, "Starting metrocop check" .. ent:EntIndex())
 
-                timer.Create("CheckForManhacks" .. ent:EntIndex(), 0.5, 600, function()
+                timer.Create("CheckForManhacks" .. ent:EntIndex(), 0.1, 6000, function()
                     if not ent:IsValid() or ent:EntIndex() == 0 then
                         timer.Remove("CheckForManhacks" .. ent:EntIndex())
 
@@ -555,7 +559,7 @@ function beginTeamAssignment()
                         if foundEnt:GetClass() == "npc_manhack" and foundEnt:GetName() == "" then
                             PrintMessage(HUD_PRINTTALK, "found bastard named " .. foundEnt:GetName())
                             AssignTeam(foundEnt, metrocopTeam)
-                            --foundEnt:SetKeyValue("rendercolor", "255 30 30")
+                            foundEnt:SetKeyValue("rendercolor", "255 30 30")
                             PrintMessage(HUD_PRINTTALK, "Assigned manhack team.")
                             timer.Remove("CheckForManhacks" .. ent:EntIndex())
                         end
@@ -586,7 +590,7 @@ hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
                 for _, ent in ipairs(foundEntities) do
                     if (ent:GetClass() == "npc_headcrab" or ent:GetClass() == "npc_headcrab_fast" or ent:GetClass() == "npc_headcrab_black") and ent:GetName() == "" then
                         AssignTeam(ent, deadZombieTeam)
-                        ent:SetKeyValue("rendercolor", "255 30 30")
+                        --ent:SetKeyValue("rendercolor", "255 30 30") -- ! temp
                         PrintMessage(HUD_PRINTTALK, "Assigned headcrab team.")
                         timer.Remove("CheckForHeadcrab" .. npc:EntIndex())
                         return
@@ -627,10 +631,16 @@ function AssignTeam(ent, teamInput)
                     ent:AddEntityRelationship(teamEntity, D_LI, 10)
                     teamEntity:AddEntityRelationship(ent, D_LI, 10)
                     print(ent:GetClass() .. ent:GetName() .. " now likes " .. teamEntity:GetClass() .. teamEntity:GetName() .. "!")
+                    if ent:GetName() ~= teamEntity:GetName() then
+                        PrintMessage(HUD_PRINTTALK, "Warning! Opposite teams like each other!!! " .. ent:GetName() .. " " .. teamEntity:GetName())
+                    end
                 else
                     ent:AddEntityRelationship(teamEntity, D_HT, 10)
                     teamEntity:AddEntityRelationship(ent, D_HT, 10)
                     print(ent:GetClass() .. ent:GetName() .. " now hates " .. teamEntity:GetClass() .. teamEntity:GetName() .. "!")
+                    if ent:GetName() == teamEntity:GetName() then
+                        PrintMessage(HUD_PRINTTALK, "Warning! Same teams hate each other!!! " .. ent:GetName() .. " " .. teamEntity:GetName())
+                    end
                 end
             end
         end
@@ -668,6 +678,7 @@ function upgradeABox(cubeName)
     -- A lot of checks can be skipped like team validation as that essentially handled
     -- by the game world itself, and if bypassed (i.e. thru noclip), its probably for a good reason.
     -- The only checks required should be checking affordability and tech level
+    print("upgrading")
     local desiredCube
     local availablePoints
     local currentTeam
@@ -696,8 +707,9 @@ function upgradeABox(cubeName)
     end
 
     if desiredCube:canUpgrade(availablePoints) then
+        currentTeam.points = currentTeam.points - (desiredCube.level * 6) -- this needs to come first because the level will update in the next line
         desiredCube:upgrade()
-        currentTeam.points = currentTeam.points - (desiredCube.level * 6)
+        print("actually upgrading")
     else
         PrintMessage(HUD_PRINTTALK, "Cannot afford")
     end
@@ -835,6 +847,9 @@ end
 function roundReset()
     PrintMessage(HUD_PRINTTALK, "Resetting round!")
     roundCounter = roundCounter + 1
+    if roundCounter >= GetConVar("sts_total_rounds"):GetInt() then
+        gameOver()
+    end
     if roundCounter % 2 == 0 then
         doBonusRound()
     else
@@ -897,9 +912,9 @@ function beginFight()
     for _, id in ipairs(teamsToSpawn) do
         for _, spawner in ipairs(teams[id].spawners) do
             if teamMobs[id] == nil then
-                teamMobs[id] = spawner[1].mob:getSpawns(id, spawner.strength)
+                teamMobs[id] = spawner[1].mob:getSpawns(id, spawner[1].strength)
             else
-                TableConcat(teamMobs[id], spawner[1].mob:getSpawns(id, spawner.strength))
+                TableConcat(teamMobs[id], spawner[1].mob:getSpawns(id, spawner[1].strength))
             end
         end
     end
@@ -913,7 +928,71 @@ function beginFight()
             end)
         end
     end
+
+    timer.Create("CheckForWin", 1, 0, function()
+        local name
+        local alive = {
+            ["redteam"] = 0,
+            ["blueteam"] = 0,
+            ["greenteam"] = 0,
+            ["yellowteam"] = 0
+        }
+        local amountalive = 0
+        for _, ent in ipairs(ents.GetAll()) do
+            name = ent:GetName():lower()
+            if (name == "redteam" or name == "greenteam" or name == "yellowteam" or name == "blueteam") and ent:IsValid() and ent:IsNPC() and ent:Health() > 0 then
+                alive[name] = alive[name] + 1
+            end
+        end
+
+        for aliveteam in pairs(alive) do
+            if alive[aliveteam] == 0 then
+                PrintMessage(HUD_PRINTCENTER, "PLACEHOLDER Team Defeated!") -- TODO: do smth thru hud
+                alive[aliveteam] = -1 -- do not repeat message
+            end
+            if alive[aliveteam] > 0 then
+                amountalive = amountalive + 1
+            end
+        end
+        if amountalive == 1 then
+            timer.Remove("CheckForWin")
+            PrintMessage(HUD_PRINTCENTER, "PLACEHOLDER Team Wins!") -- TODO: do smth thru hud
+            endRound()
+        end
+    end)
 end
+
+function endRound()
+    PrintMessage(HUD_PRINTTALK, "Round over!")
+    endTeamAssignment()
+    roundReset()
+    startLobbySpawn()
+    stopGameSpawn()
+    local levers = {"waiting_blue_ready_lever", "waiting_red_ready_lever", "waiting_green_ready_lever", "waiting_yellow_ready_lever"}
+    local doors = {"waiting_blue_door", "waiting_red_door", "waiting_green_door", "waiting_yellow_door"}
+    for _, ent in ipairs(ents.GetAll()) do
+        for lever in levers do
+            if ent:GetName() == lever then
+                ent:Fire("Close")
+            end
+        end
+        for door in doors do
+            if ent:GetName() == door then
+                ent:Fire("Close")
+            end
+        end
+    end
+    local teamspawns = {"waiting_bluetp", "waiting_redtp", "waiting_greentp", "waiting_yellowtp"}
+    local spawnPoint = teamspawns[ply:Team()]
+    for _, ent in ipairs(ents.GetAll()) do
+        if ent:GetName() == spawnPoint then
+            ply:SetPos(ent:GetPos())
+            ply:SetEyeAngles(ent:GetAngles())
+            break
+        end
+    end
+end
+
 
 function doBonusRound()
     PrintMessage(HUD_PRINTTALK, "Bonus Round!")
@@ -926,5 +1005,6 @@ function getPlayingTeams()
             table.insert(ids, i)
         end
     end
-    return ids
+    -- return ids
+    return {1,2}
 end

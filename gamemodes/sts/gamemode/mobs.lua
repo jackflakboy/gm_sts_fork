@@ -103,3 +103,7 @@ cvars.AddChangeCallback("sts_episodic_content", function(convarName, valueOld, v
         mobs[1]["fasttorso"] = nil
     end
 end)
+
+-- function createTeamIndicator(ent, teamID)
+--     local indicator = ents.Create("func_brush")
+-- end

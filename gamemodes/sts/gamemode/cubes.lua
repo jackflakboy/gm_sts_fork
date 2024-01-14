@@ -18,6 +18,14 @@ function Cube.new(entity, level, rarity, strength, multiplier, mob, key)
     return EmptyCube
 end
 
+-- for debugging
+function Cube:setMob(raritychoice, mobchoice, strength)
+    self.mob = mobs[raritychoice][mobchoice]
+    self.key = mobchoice
+    self.strength = strength
+    PrintTable(self.mob)
+end
+
 function Cube:randomize()
     -- local desiredTeam
     local chosenMob

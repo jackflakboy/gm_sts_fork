@@ -12,13 +12,13 @@ CreateConVar("sts_forbid_dev_room", "1", {FCVAR_GAMEDLL}, "Whether or not to for
 
 CreateConVar("sts_disable_settings_buttons", "0", {FCVAR_GAMEDLL}, "Whether or not the lobby buttons should do anything.", 0, 1)
 
-CreateConVar("sts_episodic_content", "0", {FCVAR_GAMEDLL}, "Whether or not to add episodic mobs to the mob pool. No effect after game start.", 0, 1)
+CreateConVar("sts_episodic_content", "0", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Whether or not to add episodic mobs to the mob pool.", 0, 1)
 
 CreateConVar("sts_force_bonus_rounds", "-1", {FCVAR_GAMEDLL}, "1 - Force bonus rounds on\n0 - Force Nothing\n-1 - Force bonus rounds off.", -1, 1)
 
 CreateConVar("sts_random_teams", "0", {FCVAR_GAMEDLL}, "0 - Allow players to choose teams\n1 - Random two teams\n2 - Random Four teams\n3 - Random\nIf this is set to anything besides 0, the team selection will be locked. No effect after game start.", 0, 3)
 
-CreateConVar("sts_classic", "0", {FCVAR_GAMEDLL}, "0 - Use new announcer\n1 - Use old announcer", 0, 1)
+CreateConVar("sts_classic", "0", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "0 - Use new announcer\n1 - Use old announcer", 0, 1)
 
 CreateConVar("sts_allow_team_swapping", "0", {FCVAR_GAMEDLL}, "0 - Do not allow swapping teams midgame\n 1 - Allow swapping teams mid game", 0, 1)
 
@@ -26,7 +26,7 @@ CreateConVar("sts_deathmatch_points", "1", {FCVAR_GAMEDLL}, "Determine point rew
 
 RunConsoleCommand("sv_gravity", "600") -- reset gravity
 RunConsoleCommand("sk_combine_s_kick", "6") -- change combine melee damage
-RunConsoleCommand("sbox_noclip", "1") -- disable ability to noclip
+RunConsoleCommand("sbox_noclip", "1") -- ! disable ability to noclip. remember to change me before release
 RunConsoleCommand("sv_noclipspeed", "50")
 RunConsoleCommand("sk_citizen_heal_player_min_pct", "100")
 RunConsoleCommand("sk_citizen_heal_player_min_forced", "1")
