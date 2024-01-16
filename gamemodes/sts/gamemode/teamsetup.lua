@@ -11,10 +11,10 @@ teams[1] = {
         cube4 = Cube.new("blue_box4", 1, 1, 1, 1, mobs[1]["headcrab"], "headcrab")
     },
     spawners = {
-        [1] = {Cube.new("blue_box1", 1, 1, 4, 1, mobs[2]["cop"], "cop")},
-        [2] = {Cube.new("blue_box2", 1, 1, 4, 1, mobs[2]["cop"], "cop")},
-        [3] = {Cube.new("blue_box3", 1, 1, 4, 1, mobs[2]["cop"], "cop")},
-        [4] = {Cube.new("blue_box4", 1, 1, 4, 1, mobs[2]["cop"], "cop")}
+        [1] = {},
+        [2] = {},
+        [3] = {},
+        [4] = {}
     },
     points = 0
 }
@@ -29,10 +29,10 @@ teams[2] = {
         cube4 = Cube.new("red_box4", 1, 1, 1, 1, mobs[1]["headcrab"], "headcrab")
     },
     spawners = {
-        [1] = {Cube.new("red_box1", 1, 1, 4, 1, mobs[2]["cop"], "cop")},
-        [2] = {Cube.new("red_box2", 1, 1, 4, 1, mobs[2]["cop"], "cop")},
-        [3] = {Cube.new("red_box3", 1, 1, 4, 1, mobs[2]["cop"], "cop")},
-        [4] = {Cube.new("red_box4", 1, 1, 4, 1, mobs[2]["cop"], "cop")}
+        [1] = {},
+        [2] = {},
+        [3] = {},
+        [4] = {}
     },
     points = 0
 }
