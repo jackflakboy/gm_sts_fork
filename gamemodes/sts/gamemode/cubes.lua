@@ -60,11 +60,11 @@ function Cube:randomize()
     end
 
     chosenMob = keyset[math.random(#keyset)]
-    PrintMessage(HUD_PRINTTALK, chosenMob)
+    -- PrintMessage(HUD_PRINTTALK, chosenMob)
 
     self.mob = mobs[self.rarity][chosenMob]
     self.key = chosenMob
-    PrintTable(self.mob)
+    -- PrintTable(self.mob)
     self.strength = math.random(1, 4)
 
     return true

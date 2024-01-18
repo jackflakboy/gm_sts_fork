@@ -101,6 +101,9 @@ function HUD()
         draw.RoundedBox(5, 5, screenHeight - 130, 140, 50, Color(10, 10, 10, 100))
         draw.SimpleText("Pick Team", "CloseCaption_Bold", 20, screenHeight - 120, Color(130, 130, 130, 255), 0, 0)
     end
+    if tempMessage ~= "" then
+        draw.SimpleText(tempMessage, "CloseCaption_Bold", screenWidth / 2, screenHeight / 2.75, tempMessageColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    end
 end
 
 hook.Add("HUDPaint", "TestHud", HUD)

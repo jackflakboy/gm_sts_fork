@@ -113,7 +113,8 @@ cvars.AddChangeCallback("sts_starting_points", function(convarName, valueOld, va
 end)
 
 cvars.AddChangeCallback("sts_total_rounds", function(convarName, valueOld, valueNew)
-    if valueNew == "24" then
+    valueNew = tonumber(valueNew)
+    if valueNew >= 24 then
         for _, ent in ipairs(ents.GetAll()) do
             if ent:GetName() == "waiting_score_up" then
                 ent:Fire("lock")
@@ -126,7 +127,7 @@ cvars.AddChangeCallback("sts_total_rounds", function(convarName, valueOld, value
             end
         end
     end
-    if valueNew == "1" then
+    if valueNew <= 1 then
         for _, ent in ipairs(ents.GetAll()) do
             if ent:GetName() == "waiting_score_down" then
                 ent:Fire("lock")
@@ -335,7 +336,7 @@ function GM:PlayerInitialSpawn(ply)
     if ply:IsListenServerHost() and IsMounted("ep2") then
         ply:PrintMessage(HUD_PRINTTALK, "You appear to have half life 2 episode 2 mounted. Episodic content has been enabled. If any players do not have episode 2 mounted, please set sts_episodic_content to 0 in console.")
         GetConVar("sts_episodic_content"):SetInt(1)
-        end
+    end
 
 end
 
@@ -404,7 +405,7 @@ function GM:OnPlayerPhysicsPickup(ply, ent)
             end
         end
         if boxEnt then
-            PrintMessage(HUD_PRINTTALK, boxEnt.entity)
+            -- PrintMessage(HUD_PRINTTALK, boxEnt.entity)
             SendBoxInfoToPlayer(ply, boxEnt)
         end
     end
@@ -453,7 +454,7 @@ end
 
 -- resets the game by reloading the map
 function gameReset()
-    RunConsoleCommand("changelevel", "gm_sts") -- should've done this from the beginning
+    RunConsoleCommand("changelevel", "gm_sts_new") -- should've done this from the beginning
 end
 
 function getTeamIDFromName(teamName1)
@@ -544,7 +545,7 @@ function beginTeamAssignment()
             timer.Simple(1 / 66, function()
                 local metrocopTeam = ent:GetName()
                 -- Start a timer that runs every second
-                PrintMessage(HUD_PRINTTALK, "Starting metrocop check" .. ent:EntIndex())
+                -- PrintMessage(HUD_PRINTTALK, "Starting metrocop check" .. ent:EntIndex())
 
                 timer.Create("CheckForManhacks" .. ent:EntIndex(), 0.1, 6000, function()
                     if not ent:IsValid() or ent:EntIndex() == 0 then
@@ -563,11 +564,11 @@ function beginTeamAssignment()
                                 ["yellowteam"] = "255 255 0",
                                 ["greenteam"] = "0 255 0"
                             }
-                            PrintMessage(HUD_PRINTTALK, "found bastard named " .. foundEnt:GetName())
+                            -- PrintMessage(HUD_PRINTTALK, "found bastard named " .. foundEnt:GetName())
                             AssignTeam(foundEnt, metrocopTeam)
                             foundEnt:SetMaxLookDistance(4000)
                             foundEnt:SetKeyValue("rendercolor", teamColors[metrocopTeam:lower()])
-                            PrintMessage(HUD_PRINTTALK, "Assigned manhack team.")
+                            -- PrintMessage(HUD_PRINTTALK, "Assigned manhack team.")
                             timer.Remove("CheckForManhacks" .. ent:EntIndex())
                         end
                     end
@@ -591,14 +592,14 @@ hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
 
             -- timer might be necessary as headcrab might not exist on same tick
             timer.Create("CheckForHeadcrab" .. npc:EntIndex(), 0, 3, function()
-                PrintMessage(HUD_PRINTTALK, "Death headcrab check.")
+                print("Death headcrab check.")
                 local foundEntities = ents.FindInSphere(deadZombiePos, 25) -- radius needs adjusting
 
                 for _, ent in ipairs(foundEntities) do
                     if (ent:GetClass() == "npc_headcrab" or ent:GetClass() == "npc_headcrab_fast" or ent:GetClass() == "npc_headcrab_black") and ent:GetName() == "" then
                         AssignTeam(ent, deadZombieTeam)
                         --ent:SetKeyValue("rendercolor", "255 30 30") -- ! temp
-                        PrintMessage(HUD_PRINTTALK, "Assigned headcrab team.")
+                        print("Assigned headcrab team.")
                         timer.Remove("CheckForHeadcrab" .. npc:EntIndex())
                         return
                     end
@@ -685,7 +686,7 @@ function upgradeABox(cubeName)
     -- A lot of checks can be skipped like team validation as that essentially handled
     -- by the game world itself, and if bypassed (i.e. thru noclip), its probably for a good reason.
     -- The only checks required should be checking affordability and tech level
-    print("upgrading")
+    -- print("upgrading")
     local desiredCube
     local availablePoints
     local currentTeam
@@ -716,7 +717,7 @@ function upgradeABox(cubeName)
     if desiredCube:canUpgrade(availablePoints) then
         currentTeam.points = currentTeam.points - (desiredCube.level * 6) -- this needs to come first because the level will update in the next line
         desiredCube:upgrade()
-        print("actually upgrading")
+        -- print("actually upgrading")
     else
         PrintMessage(HUD_PRINTTALK, "Cannot afford")
     end
@@ -768,7 +769,7 @@ function randomizeABox(cubeName)
             end
         end
     else
-        PrintMessage(HUD_PRINTTALK, "Could not find cube in random func!")
+        PrintMessage(HUD_PRINTTALK, "Could not find cube in random func! Report me!")
     end
     -- lazy
     for teamIndex = 1, 4 do
@@ -854,10 +855,15 @@ end
 function roundReset()
     PrintMessage(HUD_PRINTTALK, "Resetting round!")
     roundCounter = roundCounter + 1
-    if roundCounter >= GetConVar("sts_total_rounds"):GetInt() then
-        gameOver()
+    local highestscore = 0
+    for _, teamID in ipairs(getPlayingTeams()) do
+        if team.GetScore(teamID) > highestscore then
+            highestscore = team.GetScore(teamID)
+        end
     end
-    if roundCounter % 2 == 0 then
+    if highestscore >= GetConVar("sts_total_rounds"):GetInt() then
+        gameOver()
+    elseif roundCounter % 2 == 0 then
         doBonusRound()
     else
         unmuteMainTrack()
@@ -887,8 +893,28 @@ function ReadyLeverPulled(teamName)
         end
     end
     if required == pulled then
-        PrintMessage(HUD_PRINTTALK, "All teams ready!")
-        beginFight()
+        SendServerMessage("All Teams Ready!", Color(255, 255, 255))
+        timer.Simple(5, function()
+            SendServerMessage("5", Color(255, 255, 255), 0)
+            timer.Simple(1, function()
+                SendServerMessage("4", Color(255, 255, 255), 0)
+                timer.Simple(1, function()
+                    SendServerMessage("3", Color(255, 255, 255), 0)
+                    timer.Simple(1, function()
+                        SendServerMessage("2", Color(255, 255, 255), 0)
+                        timer.Simple(1, function()
+                            SendServerMessage("1", Color(255, 255, 255), 0)
+                            timer.Simple(1, function()
+                                SendServerMessage("Fight!", Color(255, 255, 255), 3)
+                            end)
+                        end)
+                    end)
+                end)
+            end)
+        end)
+        timer.Simple(10, function()
+            beginFight()
+        end)
     end
 end
 
@@ -901,6 +927,12 @@ function beginFight()
     stopLobbySpawn()
     startGameSpawn()
     setupMap(nextMap)
+    local sound
+    if math.random(1,2) == 1 then
+        sound = playGlobalSound("bm_sts_sounds/brane_scan.wav")
+    else
+        sound = playGlobalSound("bm_sts_sounds/cp_violation.wav")
+    end
     for _, ent in ipairs(ents.FindByClass("info_teleport_destination")) do
         for i = 1, 4 do
             for j, teammate in ipairs(team.GetPlayers(i)) do
@@ -938,24 +970,43 @@ function beginFight()
     end
     local alive = {}
     for _, id in ipairs(teamsToSpawn) do
-        PrintMessage(HUD_PRINTTALK, "adding " .. id)
+        print("adding " .. id)
         if id == 1 then
             alive["blueteam"] = 0
-            PrintMessage(HUD_PRINTTALK, "adding blue")
+            print("adding blue")
         elseif id == 2 then
             alive["redteam"] = 0
-            PrintMessage(HUD_PRINTTALK, "adding red")
+            print("adding red")
         elseif id == 3 then
             alive["greenteam"] = 0
-            PrintMessage(HUD_PRINTTALK, "adding green")
+            print("adding green")
         elseif id == 4 then
             alive["yellowteam"] = 0
-            PrintMessage(HUD_PRINTTALK, "adding yellow")
+            print("adding yellow")
         end
     end
-    PrintMessage(HUD_PRINTTALK, "waiting " .. delay .. " seconds")
+    -- PrintMessage(HUD_PRINTTALK, "waiting " .. delay .. " seconds")
+    local winner
+    local formattedWinner = {
+        ["redteam"] = "Red",
+        ["blueteam"] = "Blue",
+        ["greenteam"] = "Green",
+        ["yellowteam"] = "Yellow"
+    }
+    local winnerColor = {
+        ["redteam"] = Color(255, 0, 0),
+        ["blueteam"] = Color(0, 0, 255),
+        ["greenteam"] = Color(0, 255, 0),
+        ["yellowteam"] = Color(255, 255, 0)
+    }
+    local winnerShorter = {
+        ["redteam"] = "red",
+        ["blueteam"] = "blue",
+        ["greenteam"] = "green",
+        ["yellowteam"] = "yellow"
+    }
     timer.Simple(delay, function()
-        PrintMessage(HUD_PRINTTALK, "checking for win")
+        -- PrintMessage(HUD_PRINTTALK, "checking for win")
         timer.Create("CheckForWin", 1, 0, function()
             local alivetimer = table.shallow_copy(alive)
             local amountalive = 0
@@ -969,17 +1020,48 @@ function beginFight()
             end
 
             for aliveteam, _ in pairs(alive) do
-                if alivetimer[aliveteam] == 0 then
-                    PrintMessage(HUD_PRINTCENTER, aliveteam .. "PLACEHOLDER Team Defeated!") -- TODO: do smth thru hud
-                    alivetimer[aliveteam] = -1 -- do not repeat message
-                end
                 if alivetimer[aliveteam] > 0 then
                     amountalive = amountalive + 1
+                    winner = aliveteam
+                end
+                if alivetimer[aliveteam] == 0 and amountalive > 1 then
+                    SendServerMessage(formattedWinner[aliveteam] .. " Team Defeated!", winnerColor[aliveteam])
+                    alivetimer[aliveteam] = -1 -- do not repeat message
+                    if math.random(1, 50) == 1 then
+                        playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "lose_funny.wav")
+                    else
+                        playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "lose" .. math.random(1,2) .. ".wav")
+                    end
                 end
             end
             if amountalive == 1 then
                 timer.Remove("CheckForWin")
-                PrintMessage(HUD_PRINTCENTER, "PLACEHOLDER Team Wins!") -- TODO: do smth thru hud
+                if winner == "blueteam" then
+                    team.AddScore(1, 1)
+                    teams[1].points = teams[1].points + 1
+                elseif winner == "redteam" then
+                    team.AddScore(2, 1)
+                    teams[2].points = teams[2].points + 1
+                elseif winner == "greenteam" then
+                    team.AddScore(3, 1)
+                    teams[3].points = teams[3].points + 1
+                elseif winner == "yellowteam" then
+                    team.AddScore(4, 1)
+                    teams[4].points = teams[4].points + 1
+                end
+                sound:Stop()
+                for teamID = 1, 4 do
+                    teams[teamID].points = teams[teamID].points + 5
+                    SendPointsToTeamMembers(teamID)
+                end
+                SendServerMessage(formattedWinner[winner] .. " Team Wins!", winnerColor[winner])
+                playGlobalSound("sts_sounds_new/" .. winnerShorter[winner] .. "_win" .. math.random(1, 3) .. ".wav")
+                endRound()
+            elseif amountalive == 0 then
+                timer.Remove("CheckForWin")
+                sound:Stop()
+                playGlobalSound("sts_sounds_new/tie.wav")
+                SendServerMessage("Tie!", Color(255, 255, 255))
                 endRound()
             end
         end)
@@ -997,7 +1079,6 @@ function endRound()
     startLobbySpawn()
     stopGameSpawn()
     roundReset()
-    cleanupMap(nextMap)
     local levers = {"waiting_blue_ready_lever", "waiting_red_ready_lever", "waiting_green_ready_lever", "waiting_yellow_ready_lever"}
     local doors = {"waiting_blue_door", "waiting_red_door", "waiting_green_door", "waiting_yellow_door"}
     local blockers = {"waiting_bluewall", "waiting_redwall", "waiting_greenwall", "waiting_yellowwall"}
@@ -1063,16 +1144,16 @@ function setupMap(map)
         -- end
     end
     if map == "rail" then
-        PrintMessage(HUD_PRINTTALK, "train spawn")
+        -- PrintMessage(HUD_PRINTTALK, "train spawn")
         timer.Create("trainSpawn", 5, 0, function()
             local directions = {"ns", "sn", "ew", "we"}
             local direction = directions[math.random(#directions)]
             if math.random(1, 4) == 1 then
-                PrintMessage(HUD_PRINTTALK, "train spawn" .. direction)
-                PrintMessage(HUD_PRINTTALK, "maprail_rail_" .. direction .. "_template")
+                -- PrintMessage(HUD_PRINTTALK, "train spawn" .. direction)
+                -- PrintMessage(HUD_PRINTTALK, "maprail_rail_" .. direction .. "_template")
                 for _, ent in ipairs(ents.GetAll()) do
                     if ent:GetName():lower() == "maprail_rail_" .. direction .. "_template" then
-                        PrintMessage(HUD_PRINTTALK, "train spawn" .. direction .. " found")
+                        -- PrintMessage(HUD_PRINTTALK, "train spawn" .. direction .. " found")
                         ent:Fire("ForceSpawn")
                     end
                 end
@@ -1122,7 +1203,7 @@ end
 
 
 function doBonusRound()
-    PrintMessage(HUD_PRINTTALK, "Bonus Round!")
+    PrintMessage(HUD_PRINTTALK, "This is when a bonus round would happen, but they haven't been implemented yet. Sorry!")
 end
 
 function getPlayingTeams()
@@ -1132,6 +1213,74 @@ function getPlayingTeams()
             table.insert(ids, i)
         end
     end
-    -- return ids
-    return {1,2}
+    return ids
+    -- return {1,2} -- for testing
+end
+
+function gameOver()
+    local winnertpcoords
+    local losertpcoords
+    local winningTeam
+    local highestscore = 0
+
+    stopLobbySpawn()
+    stopGameSpawn()
+    playGlobalSound("bm_sts_sounds/end_win.wav")
+
+    for _, teamID in ipairs(getPlayingTeams()) do
+        if team.GetScore(teamID) > highestscore then
+            winningTeam = teamID
+        end
+    end
+
+    for _, ent in ipairs(ents.GetAll()) do
+        if ent:GetName() == "end_winnertp" then
+            winnertpcoords = ent:GetPos()
+        elseif ent:GetName() == "end_losertp" then
+            losertpcoords = ent:GetPos()
+        elseif ent:GetName() == "end_guard_template" then
+            ent:Fire("ForceSpawn")
+        end
+    end
+    local delay = 0.5 -- seconds
+    local timeElapsed = 0
+
+    for _, ply in ipairs(player.GetAll()) do
+        -- Increase delay for each player
+        timer.Simple(timeElapsed, function()
+            if not IsValid(ply) then return end -- Check if the player is still valid
+            if ply:Team() == winningTeam then
+                ply:SetPos(winnertpcoords)
+            else
+                ply:SetPos(losertpcoords)
+                ply:SetWalkSpeed(100)
+                ply:SetRunSpeed(200)
+            end
+        end)
+        timeElapsed = timeElapsed + delay
+    end
+
+    hook.Add("PlayerSpawn", "EndSpawn", function(ply)
+        if ply:Team() == winningTeam then
+            ply:SetPos(winnertpcoords)
+        else
+            ply:SetPos(losertpcoords)
+            timer.Simple(0.1, function() -- this is necessary because the player spawn hook is called before the player is actually spawned
+                ply:SetWalkSpeed(100)
+                ply:SetRunSpeed(200)
+            end)
+        end
+    end)
+
+    hook.Add( "PlayerDeath", "GlobalDeathMessage", function( victim, inflictor, attacker )
+        timer.Simple(2, function()
+            if victim:Alive() == false then
+                victim:Spawn()
+            end
+        end)
+    end)
+
+    timer.Simple(30, function()
+        gameReset()
+    end)
 end

@@ -25,7 +25,7 @@ function startGameSpawn()
             if ent:GetName() == ("map" .. nextMap .. "_player_" .. getTeamNameFromID(ply:Team()) .. "tpdest" .. tostring(chosen)) then
                 ply:SetPos(ent:GetPos())
                 ply:SetEyeAngles(ent:GetAngles())
-                print("map" .. nextMap .. "_player_" .. getTeamNameFromID(ply:Team()) .. "tpdest" .. tostring(chosen))
+                -- print("map" .. nextMap .. "_player_" .. getTeamNameFromID(ply:Team()) .. "tpdest" .. tostring(chosen))
                 break
             end
         end

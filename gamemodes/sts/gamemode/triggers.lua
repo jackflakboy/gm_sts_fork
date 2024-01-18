@@ -52,7 +52,7 @@ hook.Add( "BoxTrigger", "BoxHook", function()
 	local teamName = string.sub( boxName, 1, string.find( boxName, "_" ) - 1 ) -- this works by finding the first underscore in the box name, then taking the substring from the start of the trigger name to the underscore
 	local teamID = getTeamIDFromName(teamName)
 	local spawnerID = tonumber(triggerName[-1])
-	print( "teamName =", teamName, "\nteamID =", teamID, "\nspawnerID =", spawnerID, "\nboxName = ", boxName )
+	-- print( "teamName =", teamName, "\nteamID =", teamID, "\nspawnerID =", spawnerID, "\nboxName = ", boxName )
 	table.insert(teams[teamID].spawners[spawnerID], teams[teamID].cubes["cube" .. boxName[-1]])
 end )
 
@@ -63,7 +63,7 @@ hook.Add( "BoxUnTouchTrigger", "BoxUnTouchHook", function()
 	local teamName = string.sub( boxName, 1, string.find( boxName, "_" ) - 1 )
 	local teamID = getTeamIDFromName(teamName)
 	local spawnerID = tonumber(triggerName[-1])
-	print( "teamName =", teamName, "\nteamID =", teamID, "\nspawnerID =", spawnerID, "\nboxName = ", boxName )
+	-- print( "teamName =", teamName, "\nteamID =", teamID, "\nspawnerID =", spawnerID, "\nboxName = ", boxName )
 	for i, cube in ipairs(teams[teamID].spawners[spawnerID]) do
 		if cube == teams[teamID].cubes["cube" .. boxName[-1]] then
 			table.remove(teams[teamID].spawners[spawnerID], i)

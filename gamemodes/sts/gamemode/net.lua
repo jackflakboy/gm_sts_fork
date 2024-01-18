@@ -87,3 +87,44 @@ if CLIENT then
     end
     net.Receive("ClearBoxInfo", CleanBox)
 end
+
+if SERVER then
+    util.AddNetworkString("ServerToClientMessage")
+
+    function SendServerMessage(message, color, time)
+        net.Start("ServerToClientMessage")
+        net.WriteString(message) -- The message
+        net.WriteColor(color or Color(255, 255, 255)) -- The color of the message
+        net.WriteInt(time or 5, 32)
+        net.Broadcast() -- or net.Send(ply) if you want to send to a specific player        
+    end
+end
+
+if CLIENT then
+    net.Receive("ServerToClientMessage", function()
+        tempMessage = net.ReadString()
+        tempMessageColor = net.ReadColor()
+        local delay = net.ReadInt(32)
+        if delay > 0 then
+            timer.Simple(delay, function()
+                tempMessage = ""
+            end)
+        end
+    end)
+end
+
+if SERVER then
+    util.AddNetworkString("TimerEnd")
+
+    function SendTimerEnd(endTick)
+        net.Start("TimerEnd")
+        net.WriteInt(endTick, 32)
+        net.Broadcast()
+    end
+end
+
+if CLIENT then
+    net.Receive("TimerEnd", function()
+        tickTimerOver = net.ReadInt(32)
+    end)
+end
