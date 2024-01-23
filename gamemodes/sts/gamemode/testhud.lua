@@ -17,12 +17,10 @@ function HUD()
     draw.RoundedBox(3, 10, screenHeight - 50, math.Clamp(client:Health(), 0, 100) * 2.25, 4, Color(255, 50, 50, 255))
 
     --Beginning
-    if GetConVar("sts_game_started"):GetInt() == 0 then
-        local startingPoints = tostring(GetConVar("sts_starting_points"):GetInt())
-        local totalRounds = tostring(GetConVar("sts_total_rounds"):GetInt())
+    if gameStarted == false then
         draw.RoundedBox(5, screenWidth / 2 - 225, 75, 450, 60, Color(10, 10, 10, 230))
         draw.SimpleText("Starting Points: " .. startingPoints, "CloseCaption_Bold", screenWidth / 2, 90, Color(255, 255, 255, 255), 0, 0)
-        draw.SimpleText("Rounds: " .. totalRounds, "CloseCaption_Bold", screenWidth / 2 - 180, 90, Color(255, 255, 255, 255), 0, 0)
+        draw.SimpleText("Rounds: " .. startingRounds, "CloseCaption_Bold", screenWidth / 2 - 180, 90, Color(255, 255, 255, 255), 0, 0)
     end
 
     --Timer

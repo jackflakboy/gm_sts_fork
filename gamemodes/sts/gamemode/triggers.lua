@@ -24,7 +24,7 @@ end
 
 local function ResetGameAfterMapReset()
 	print("Resetting")
-	GetConVar( "sts_game_started" ):Revert()
+	gameStartedServer = false
 	GetConVar( "sts_starting_points" ):Revert()
 	GetConVar( "sts_total_rounds" ):Revert()
 	shouldStartLeverBeLocked()

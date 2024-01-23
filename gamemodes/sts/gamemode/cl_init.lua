@@ -9,6 +9,7 @@ startingPoints = 20
 startingRounds = 5
 gameStarted = false
 tempMessage = ""
+startedGame = false
 CreateClientConVar("sts_use_descriptions", "1", true, true, "Enables mob descriptions", 0, 1)
 
 surface.CreateFont("timefont", {

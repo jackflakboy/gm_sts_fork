@@ -128,3 +128,36 @@ if CLIENT then
         tickTimerOver = net.ReadInt(32)
     end)
 end
+
+if SERVER then
+    util.AddNetworkString("StartGame")
+
+    function sendStartToPlayers()
+        net.Start("StartGame")
+        net.Broadcast()
+    end
+end
+
+if CLIENT then
+    net.Receive("StartGame", function()
+        gameStarted = true
+    end)
+end
+
+if SERVER then
+    util.AddNetworkString("UpdateSettings")
+
+    function updateSettingsToClients(startPoints, startRounds)
+        net.Start("UpdateSettings")
+        net.WriteInt(startPoints, 32)
+        net.WriteInt(startRounds, 32)
+        net.Broadcast()
+    end
+end
+
+if CLIENT then
+    net.Receive("UpdateSettings", function()
+        startingPoints = net.ReadInt(32)
+        startingRounds = net.ReadInt(32)
+    end)
+end

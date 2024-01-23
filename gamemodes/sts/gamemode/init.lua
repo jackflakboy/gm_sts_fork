@@ -29,11 +29,11 @@ currentMap = ""
 maps = {"square", "cit", "rav", "rail", "lake", "yellow", "green", "blue"}
 gameState = 0
 roundCounter = 0
+gameStartedServer = false
 -- 0 - game not started
 -- 1 - Randomizing
 -- 2 - battle
 -- 3 - minigame
-
 -- determines loadout. returning true means override default, this might be able to be used for minigames.
 function GM:PlayerLoadout(ply)
     return true
@@ -43,145 +43,163 @@ end
 -- if bonus round
 -- if bonus round == round with gun
 -- give guns
+cvars.AddChangeCallback(
+    "sts_random_teams",
+    function(convarName, valueOld, valueNew)
+        print("TODO: Create team door and open and close it")
+    end
+)
 
-cvars.AddChangeCallback("sts_random_teams", function(convarName, valueOld, valueNew)
-    print("TODO: Create team door and open and close it")
-end)
+cvars.AddChangeCallback(
+    "sts_force_bonus_rounds",
+    function(convarName, valueOld, valueNew)
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "waiting_lobby_brtoggle_lever" then
+                if valueNew == "1" then
+                    ent:Fire("Close")
+                    ent:Fire("Lock")
+                elseif valueNew == "0" then
+                    ent:Fire("Unlock")
+                elseif valueNew == "-1" then
+                    ent:Fire("Open")
+                    ent:Fire("Lock")
+                end
+            end
+        end
+    end
+)
 
-cvars.AddChangeCallback("sts_force_bonus_rounds", function(convarName, valueOld, valueNew)
+cvars.AddChangeCallback(
+    "sts_disable_settings_buttons",
+    function(convarName, valueOld, valueNew)
+        if gameStartedServer then return end
+        if valueNew == "1" then
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "waiting_lobby_ready_door" then
+                    ent:Fire("open")
+                end
+            end
+        elseif valueNew == "0" then
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "waiting_lobby_ready_door" then
+                    ent:Fire("close")
+                end
+            end
+        end
+    end
+)
+
+cvars.AddChangeCallback(
+    "sts_starting_points",
+    function(convarName, valueOld, valueNew)
+        updateSettingsToClients(valueNew, GetConVar("sts_total_rounds"):GetInt())
+        if valueNew == "80" then
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "waiting_startpnt_up" then
+                    ent:Fire("lock")
+                end
+            end
+        else
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "waiting_startpnt_up" then
+                    ent:Fire("unlock")
+                end
+            end
+        end
+
+        if valueNew == "5" then
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "waiting_startpnt_down" then
+                    ent:Fire("lock")
+                end
+            end
+        else
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "waiting_startpnt_down" then
+                    ent:Fire("unlock")
+                end
+            end
+        end
+    end
+)
+
+cvars.AddChangeCallback(
+    "sts_total_rounds",
+    function(convarName, valueOld, valueNew)
+        valueNew = tonumber(valueNew)
+        updateSettingsToClients(GetConVar("sts_starting_points"):GetInt(), valueNew)
+        if valueNew >= 24 then
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "waiting_score_up" then
+                    ent:Fire("lock")
+                end
+            end
+        else
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "waiting_score_up" then
+                    ent:Fire("unlock")
+                end
+            end
+        end
+
+        if valueNew <= 1 then
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "waiting_score_down" then
+                    ent:Fire("lock")
+                end
+            end
+        else
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "waiting_score_down" then
+                    ent:Fire("unlock")
+                end
+            end
+        end
+    end
+)
+
+function lockButtonsAfterGameStart()
     for _, ent in ipairs(ents.GetAll()) do
-        if ent:GetName() == "waiting_lobby_brtoggle_lever" then
-            if valueNew == "1" then
-                ent:Fire("Close")
-                ent:Fire("Lock")
-            elseif valueNew == "0" then
-                ent:Fire("Unlock")
-            elseif valueNew == "-1" then
-                ent:Fire("Open")
-                ent:Fire("Lock")
+        if ent:GetName() == "waiting_score_up" then
+            ent:Fire("lock")
+        elseif ent:GetName() == "waiting_score_down" then
+            ent:Fire("lock")
+        elseif ent:GetName() == "waiting_startpnt_down" then
+            ent:Fire("lock")
+        elseif ent:GetName() == "waiting_startpnt_up" then
+            ent:Fire("lock")
+        end
+    end
+end
+
+cvars.AddChangeCallback(
+    "sts_forbid_dev_room",
+    function(convarName, valueOld, valueNew)
+        if valueNew == "0" then
+            print("gyas")
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "dev_secret_button" then
+                    ent:Fire("unlock")
+                    break
+                end
+            end
+        else
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "dev_secret_button" then
+                    ent:Fire("lock")
+                    break
+                end
             end
         end
     end
-end)
+)
 
-
-cvars.AddChangeCallback("sts_disable_settings_buttons", function(convarName, valueOld, valueNew)
-    if GetConVar("sts_game_started"):GetInt() == 1 then return end
-
-    if valueNew == "1" then
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "waiting_lobby_ready_door" then
-                ent:Fire("open")
-            end
-        end
-    elseif valueNew == "0" then
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "waiting_lobby_ready_door" then
-                ent:Fire("close")
-            end
-        end
+cvars.AddChangeCallback(
+    "sts_minimum_players",
+    function(convarName, valueOld, valueNew)
+        shouldStartLeverBeLocked()
     end
-end)
-
-cvars.AddChangeCallback("sts_starting_points", function(convarName, valueOld, valueNew)
-    if valueNew == "80" then
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "waiting_startpnt_up" then
-                ent:Fire("lock")
-            end
-        end
-    else
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "waiting_startpnt_up" then
-                ent:Fire("unlock")
-            end
-        end
-    end
-    if valueNew == "5" then
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "waiting_startpnt_down" then
-                ent:Fire("lock")
-            end
-        end
-    else
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "waiting_startpnt_down" then
-                ent:Fire("unlock")
-            end
-        end
-    end
-end)
-
-cvars.AddChangeCallback("sts_total_rounds", function(convarName, valueOld, valueNew)
-    valueNew = tonumber(valueNew)
-    if valueNew >= 24 then
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "waiting_score_up" then
-                ent:Fire("lock")
-            end
-        end
-    else
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "waiting_score_up" then
-                ent:Fire("unlock")
-            end
-        end
-    end
-    if valueNew <= 1 then
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "waiting_score_down" then
-                ent:Fire("lock")
-            end
-        end
-    else
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "waiting_score_down" then
-                ent:Fire("unlock")
-            end
-        end
-    end
-end)
-
-cvars.AddChangeCallback("sts_game_started", function(convarName, valueOld, valueNew)
-    if valueNew == "1" then
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "waiting_score_up" then
-                ent:Fire("lock")
-            elseif ent:GetName() == "waiting_score_down" then
-                ent:Fire("lock")
-            elseif ent:GetName() == "waiting_startpnt_down" then
-                ent:Fire("lock")
-            elseif ent:GetName() == "waiting_startpnt_up" then
-                ent:Fire("lock")
-            end
-        end
-    end
-end)
-
-cvars.AddChangeCallback("sts_forbid_dev_room", function(convarName, valueOld, valueNew)
-    if valueNew == "0" then
-        print("gyas")
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "dev_secret_button" then
-                ent:Fire("unlock")
-                break
-            end
-        end
-    else
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "dev_secret_button" then
-                ent:Fire("lock")
-                break
-            end
-        end
-    end
-end)
-
-cvars.AddChangeCallback("sts_minimum_players", function(convarName, valueOld, valueNew)
-    shouldStartLeverBeLocked()
-end)
-
-
+)
 
 function getAmountOfTeamedPlayers()
     local teamedPlayers = 0
@@ -192,6 +210,7 @@ function getAmountOfTeamedPlayers()
             end
         end
     end
+
     return teamedPlayers
 end
 
@@ -199,29 +218,31 @@ function shouldStartLeverBeLocked()
     -- PrintMessage(HUD_PRINTTALK, "Checking!")
     local teamedPlayers = getAmountOfTeamedPlayers()
     local minimumRequired = GetConVar("sts_minimum_players"):GetInt()
-    local gameStarted = GetConVar("sts_game_started"):GetInt()
-
     for _, ent in ipairs(ents.GetAll()) do
         if ent:GetName() == "waiting_lobby_readylever" then
-            if teamedPlayers >= minimumRequired and gameStarted == 0 then
+            if teamedPlayers >= minimumRequired and gameStartedServer == false then
                 ent:Fire("Unlock")
                 -- PrintMessage(HUD_PRINTTALK, "Unlocked!")
+
                 return false
             else
                 ent:Fire("Lock")
                 -- PrintMessage(HUD_PRINTTALK, "Locked!")
+
                 return true
             end
         end
+
         if ent:GetName() == "startdelay_light_r" then
-            if teamedPlayers < minimumRequired and gameStarted == 0 then
+            if teamedPlayers < minimumRequired and gameStartedServer == false then
                 ent:Fire("TurnOn")
             else
                 ent:Fire("TurnOff")
             end
         end
+
         if ent:GetName() == "startdelay_light_g" then
-            if teamedPlayers >= minimumRequired or gameStarted == 1 then
+            if teamedPlayers >= minimumRequired or gameStartedServer == true then
                 ent:Fire("TurnOn")
             else
                 ent:Fire("TurnOff")
@@ -235,11 +256,8 @@ function getChosenBonusRounds()
     local leverClass
     local leverState
     local bonusRoundDesired
-
     local bonusRounds = {"waiting_lobby_mapleverb_lake", "waiting_lobby_mapleverb_blue", "waiting_lobby_mapleverb_green", "waiting_lobby_mapleverb_boomstick", "waiting_lobby_mapleverb_ctf", "waiting_lobby_mapleverb_battery", "waiting_lobby_mapleverb_ravsurv", "waiting_lobby_mapleverb_rav", "waiting_lobby_mapleverb_cit", "waiting_lobby_mapleverb_square"}
-
     local selectedBonusRounds = {}
-
     for _, entity in ipairs(ents.GetAll()) do
         if entity:GetName() == "waiting_lobby_brtoggle_lever" then
             lever = entity
@@ -264,7 +282,6 @@ function getChosenBonusRounds()
 
     -- https://wiki.facepunch.com/gmod/Entity:GetInternalVariable
     leverClass = lever:GetClass()
-
     if leverClass == "func_door" or leverClass == "func_door_rotating" then
         leverState = lever:GetInternalVariable("m_toggle_state") == 0
     elseif leverClass == "prop_door_rotating" then
@@ -283,12 +300,8 @@ end
 
 function getChosenMaps()
     local mapDesired
-
     local mapLevers = {"waiting_lobby_maplever_square", "waiting_lobby_maplever_cit", "waiting_lobby_maplever_rav", "waiting_lobby_maplever_rail", "waiting_lobby_maplever_lake", "waiting_lobby_maplever_yellow", "waiting_lobby_maplever_green", "waiting_lobby_maplever_blue"}
-
     local selectedMaps = {}
-
-
     for _, entity in ipairs(ents.GetAll()) do
         if entity:GetName() ~= "waiting_lobby_brtoggle_lever" then
             for _, bonusRoundLever in ipairs(mapLevers) do
@@ -308,6 +321,7 @@ function getChosenMaps()
             end
         end
     end
+
     local goodSelectedMaps = {}
     for _, k in ipairs(selectedMaps) do
         table.insert(goodSelectedMaps, getMapFromWhatever(k))
@@ -322,7 +336,6 @@ function GM:PlayerInitialSpawn(ply)
     ply:SetRunSpeed(400)
     ply:SetPlayerColor(Vector(0.0, 0.0, 0.0))
     setTeamFull(ply, 0)
-
     if GetConVar("sts_disable_settings_buttons"):GetInt() == 0 then
         for _, ent in ipairs(ents.GetAll()) do
             if ent:GetName() == "waiting_lobby_ready_door" then
@@ -330,25 +343,40 @@ function GM:PlayerInitialSpawn(ply)
             end
         end
     end
+
     if game.MaxPlayers() > 16 then
         ply:PrintMessage(HUD_PRINTTALK, "WARNING! You are playing on a server which has more than 16 playerslots! This gamemode was not designed with more than 16 players in mind and you WILL run into bugs.")
     end
+
     if ply:IsListenServerHost() and IsMounted("ep2") then
         ply:PrintMessage(HUD_PRINTTALK, "You appear to have half life 2 episode 2 mounted. Episodic content has been enabled. If any players do not have episode 2 mounted, please set sts_episodic_content to 0 in console.")
         GetConVar("sts_episodic_content"):SetInt(1)
     end
 
+    if gameStartedServer then
+        sendStartToPlayers()
+    end
+
+    updateSettingsToClients(GetConVar("sts_starting_points"):GetInt(), GetConVar("sts_total_rounds"):GetInt())
 end
 
-hook.Add("PlayerSpawn", "UniversalPlayerSpawn", function(ply)
-    -- this needs to wait a tick for some reason???? otherwise it doesn't work.
-    -- it is supremely fucked up how many things are fixed by making them wait
-    -- one fucking tick, 
-    timer.Simple(1 / 66, function()
-        setTeamFull(ply, ply:Team())
-    end)
-    ply:SetupHands()
-end)
+hook.Add(
+    "PlayerSpawn",
+    "UniversalPlayerSpawn",
+    function(ply)
+        -- this needs to wait a tick for some reason???? otherwise it doesn't work.
+        -- it is supremely fucked up how many things are fixed by making them wait
+        -- one fucking tick, 
+        timer.Simple(
+            1 / 66,
+            function()
+                setTeamFull(ply, ply:Team())
+            end
+        )
+
+        ply:SetupHands()
+    end
+)
 
 function teleportToTeamSpawn(ply)
     local teams = {"waiting_bluetp", "waiting_redtp", "waiting_greentp", "waiting_yellowtp"}
@@ -365,7 +393,6 @@ end
 function GM:PlayerSetHandsModel(ply, ent)
     local simplemodel = player_manager.TranslateToPlayerModelName(ply:GetModel())
     local info = player_manager.TranslatePlayerHands(simplemodel)
-
     if info then
         ent:SetModel(info.model)
         ent:SetSkin(info.skin)
@@ -395,7 +422,6 @@ end
 function GM:OnPlayerPhysicsPickup(ply, ent)
     local enty = ent:GetName()
     local boxEnt
-
     if string.sub(enty, -4, -2) == "box" then
         for _, teamID in pairs(teams) do
             for _, box in pairs(teamID.cubes) do
@@ -404,6 +430,7 @@ function GM:OnPlayerPhysicsPickup(ply, ent)
                 end
             end
         end
+
         if boxEnt then
             -- PrintMessage(HUD_PRINTTALK, boxEnt.entity)
             SendBoxInfoToPlayer(ply, boxEnt)
@@ -430,7 +457,6 @@ end
 -- runs endtimerstart() if server is empty
 function allgonecheck()
     print(tonumber(player.GetCount()))
-
     if tonumber(player.GetCount()) == 0 then
         print("Server Empty")
         endtimerstart()
@@ -459,7 +485,6 @@ end
 
 function getTeamIDFromName(teamName1)
     local teamIDs = {"blue", "red", "green", "yellow"}
-
     for i, name in ipairs(teamIDs) do
         if name == teamName1 then return i end
     end
@@ -474,7 +499,6 @@ end
 function addTeamPoints(teamName, change)
     local points
     local teamID = getTeamIDFromName(teamName)
-
     for _, entity in ipairs(ents.GetAll()) do
         if entity:GetName() == (teamName .. "_points") then
             points = entity:GetNwInt("researchPoints")
@@ -492,133 +516,165 @@ end
 
 function beginTeamAssignment()
     -- needs significant testing
-    hook.Add("OnEntityCreated", "AssignTeams", function(ent)
-        if not ent:IsValid() or not ent:IsNPC() then return end
-        local npcClass = ent:GetClass()
-        timer.Simple(1 / 66, function()
-            if ent:GetName() ~= "" then
-                ent = AssignTeam(ent, ent:GetName())
+    hook.Add(
+        "OnEntityCreated",
+        "AssignTeams",
+        function(ent)
+            if not ent:IsValid() or not ent:IsNPC() then return end
+            local npcClass = ent:GetClass()
+            timer.Simple(
+                1 / 66,
+                function()
+                    if ent:GetName() ~= "" then
+                        ent = AssignTeam(ent, ent:GetName())
+                    end
+                end
+            )
+
+            -- name assigned after 1 tick
+            timer.Simple(
+                1 / 66,
+                function()
+                    if (npcClass == "npc_headcrab" or npcClass == "npc_headcrab_fast" or npcClass == "npc_headcrab_black" or npcClass == "npc_manhack") and ent:GetName() == "" then return end -- mob was spawned by already existing mob and does not need teleporting
+                    -- i forgot why this is waiting an extra tick
+                    timer.Simple(
+                        1 / 66,
+                        function()
+                            -- PrintMessage(HUD_PRINTTALK, "teleporting!!!!! " .. ent:GetName() .. " " .. npcClass)
+                            local randspawnpoint = math.random(1, 5)
+                            -- print("teleporting to " .. randspawnpoint)
+                            -- print("name is " .. ent:GetName())
+                            -- print(string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1))
+                            ent:SetPos(nextMapSpawnLocations[string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1)][randspawnpoint][1]) -- TODO: frequently does nil values
+                            ent:SetAngles(nextMapSpawnLocations[string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1)][randspawnpoint][2])
+                            ent:SetMaxLookDistance(4000)
+                        end
+                    )
+                end
+            )
+
+            if npcClass == "npc_poisonzombie" then
+                timer.Simple(
+                    1 / 66,
+                    function()
+                        local poisonZombieTeam = ent:GetName()
+                        -- Start a timer that runs every second
+                        print("Starting poison zombie check" .. ent:EntIndex())
+                        timer.Create(
+                            "CheckForHeadcrabs" .. ent:EntIndex(),
+                            0.1,
+                            600,
+                            function()
+                                if not ent:IsValid() or ent:EntIndex() == 0 then
+                                    timer.Remove("CheckForHeadcrabs" .. ent:EntIndex())
+
+                                    return
+                                end
+
+                                local foundEntities = ents.FindInSphere(ent:GetPos(), 100) -- adjust radius as necessary
+                                for _, foundEnt in ipairs(foundEntities) do
+                                    if foundEnt:GetClass() == "npc_headcrab_poison" and foundEnt:GetName() == "" then
+                                        AssignTeam(foundEnt, poisonZombieTeam)
+                                        --foundEnt:SetKeyValue("rendercolor", "255 30 30")
+                                        print("Assigned headcrab team.")
+                                        foundEnt:SetMaxLookDistance(4000)
+                                    end
+                                end
+                            end
+                        )
+                    end
+                )
             end
-        end)
 
-        timer.Simple(1 / 66, function() -- name assigned after 1 tick
-            if (npcClass == "npc_headcrab" or npcClass == "npc_headcrab_fast" or npcClass == "npc_headcrab_black" or npcClass == "npc_manhack") and ent:GetName() == "" then return end -- mob was spawned by already existing mob and does not need teleporting
-            timer.Simple(1 / 66, function() -- i forgot why this is waiting an extra tick
-                -- PrintMessage(HUD_PRINTTALK, "teleporting!!!!! " .. ent:GetName() .. " " .. npcClass)
-                local randspawnpoint = math.random(1, 5)
-                -- print("teleporting to " .. randspawnpoint)
-                -- print("name is " .. ent:GetName())
-                -- print(string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1))
-                ent:SetPos(nextMapSpawnLocations[string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1)][randspawnpoint][1]) -- TODO: frequently does nil values
-                ent:SetAngles(nextMapSpawnLocations[string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1)][randspawnpoint][2])
-                ent:SetMaxLookDistance(4000)
-            end)
-        end)
+            if npcClass == "npc_metropolice" then
+                timer.Simple(
+                    1 / 66,
+                    function()
+                        local metrocopTeam = ent:GetName()
+                        -- Start a timer that runs every second
+                        -- PrintMessage(HUD_PRINTTALK, "Starting metrocop check" .. ent:EntIndex())
+                        timer.Create(
+                            "CheckForManhacks" .. ent:EntIndex(),
+                            0.1,
+                            6000,
+                            function()
+                                if not ent:IsValid() or ent:EntIndex() == 0 then
+                                    timer.Remove("CheckForManhacks" .. ent:EntIndex())
 
-        if npcClass == "npc_poisonzombie" then
-            timer.Simple(1 / 66, function()
-                local poisonZombieTeam = ent:GetName()
-                -- Start a timer that runs every second
-                print("Starting poison zombie check" .. ent:EntIndex())
+                                    return
+                                end
 
-                timer.Create("CheckForHeadcrabs" .. ent:EntIndex(), 0.1, 600, function()
-                    if not ent:IsValid() or ent:EntIndex() == 0 then
-                        timer.Remove("CheckForHeadcrabs" .. ent:EntIndex())
+                                local foundEntities = ents.FindInSphere(ent:GetPos(), 50) -- adjust radius as necessary
+                                for _, foundEnt in ipairs(foundEntities) do
+                                    if foundEnt:GetClass() == "npc_manhack" and foundEnt:GetName() == "" then
+                                        local teamColors = {
+                                            ["redteam"] = "255 0 0",
+                                            ["blueteam"] = "0 0 255",
+                                            ["yellowteam"] = "255 255 0",
+                                            ["greenteam"] = "0 255 0"
+                                        }
 
-                        return
+                                        -- PrintMessage(HUD_PRINTTALK, "found bastard named " .. foundEnt:GetName())
+                                        AssignTeam(foundEnt, metrocopTeam)
+                                        foundEnt:SetMaxLookDistance(4000)
+                                        foundEnt:SetKeyValue("rendercolor", teamColors[metrocopTeam:lower()])
+                                        -- PrintMessage(HUD_PRINTTALK, "Assigned manhack team.")
+                                        timer.Remove("CheckForManhacks" .. ent:EntIndex())
+                                    end
+                                end
+                            end
+                        )
                     end
-
-                    local foundEntities = ents.FindInSphere(ent:GetPos(), 100) -- adjust radius as necessary
-
-                    for _, foundEnt in ipairs(foundEntities) do
-                        if foundEnt:GetClass() == "npc_headcrab_poison" and foundEnt:GetName() == "" then
-                            AssignTeam(foundEnt, poisonZombieTeam)
-                            --foundEnt:SetKeyValue("rendercolor", "255 30 30")
-                            print("Assigned headcrab team.")
-                            foundEnt:SetMaxLookDistance(4000)
-                        end
-                    end
-                end)
-            end)
+                )
+            end
         end
-        if npcClass == "npc_metropolice" then
-            timer.Simple(1 / 66, function()
-                local metrocopTeam = ent:GetName()
-                -- Start a timer that runs every second
-                -- PrintMessage(HUD_PRINTTALK, "Starting metrocop check" .. ent:EntIndex())
-
-                timer.Create("CheckForManhacks" .. ent:EntIndex(), 0.1, 6000, function()
-                    if not ent:IsValid() or ent:EntIndex() == 0 then
-                        timer.Remove("CheckForManhacks" .. ent:EntIndex())
-
-                        return
-                    end
-
-                    local foundEntities = ents.FindInSphere(ent:GetPos(), 50) -- adjust radius as necessary
-
-                    for _, foundEnt in ipairs(foundEntities) do
-                        if foundEnt:GetClass() == "npc_manhack" and foundEnt:GetName() == "" then
-                            local teamColors = {
-                                ["redteam"] = "255 0 0",
-                                ["blueteam"] = "0 0 255",
-                                ["yellowteam"] = "255 255 0",
-                                ["greenteam"] = "0 255 0"
-                            }
-                            -- PrintMessage(HUD_PRINTTALK, "found bastard named " .. foundEnt:GetName())
-                            AssignTeam(foundEnt, metrocopTeam)
-                            foundEnt:SetMaxLookDistance(4000)
-                            foundEnt:SetKeyValue("rendercolor", teamColors[metrocopTeam:lower()])
-                            -- PrintMessage(HUD_PRINTTALK, "Assigned manhack team.")
-                            timer.Remove("CheckForManhacks" .. ent:EntIndex())
-                        end
-                    end
-                end)
-            end)
-        end
-    end)
+    )
 end
 
 function endTeamAssignment()
     hook.Remove("OnEntityCreated", "AssignTeams")
 end
 
-hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
-    local zombieTypes = {"npc_zombie", "npc_zombie_torso", "npc_fastzombie", "npc_poisonzombie"}
+hook.Add(
+    "OnNPCKilled",
+    "TrackZombieDeath",
+    function(npc)
+        local zombieTypes = {"npc_zombie", "npc_zombie_torso", "npc_fastzombie", "npc_poisonzombie"}
+        for _, type in ipairs(zombieTypes) do
+            if npc:GetClass() == type then
+                local deadZombiePos = npc:GetPos()
+                local deadZombieTeam = npc:GetName()
+                -- timer might be necessary as headcrab might not exist on same tick
+                timer.Create(
+                    "CheckForHeadcrab" .. npc:EntIndex(),
+                    0,
+                    3,
+                    function()
+                        print("Death headcrab check.")
+                        local foundEntities = ents.FindInSphere(deadZombiePos, 25) -- radius needs adjusting
+                        for _, ent in ipairs(foundEntities) do
+                            if (ent:GetClass() == "npc_headcrab" or ent:GetClass() == "npc_headcrab_fast" or ent:GetClass() == "npc_headcrab_black") and ent:GetName() == "" then
+                                AssignTeam(ent, deadZombieTeam)
+                                --ent:SetKeyValue("rendercolor", "255 30 30") -- ! temp
+                                print("Assigned headcrab team.")
+                                timer.Remove("CheckForHeadcrab" .. npc:EntIndex())
 
-    for _, type in ipairs(zombieTypes) do
-        if npc:GetClass() == type then
-            local deadZombiePos = npc:GetPos()
-            local deadZombieTeam = npc:GetName()
-
-            -- timer might be necessary as headcrab might not exist on same tick
-            timer.Create("CheckForHeadcrab" .. npc:EntIndex(), 0, 3, function()
-                print("Death headcrab check.")
-                local foundEntities = ents.FindInSphere(deadZombiePos, 25) -- radius needs adjusting
-
-                for _, ent in ipairs(foundEntities) do
-                    if (ent:GetClass() == "npc_headcrab" or ent:GetClass() == "npc_headcrab_fast" or ent:GetClass() == "npc_headcrab_black") and ent:GetName() == "" then
-                        AssignTeam(ent, deadZombieTeam)
-                        --ent:SetKeyValue("rendercolor", "255 30 30") -- ! temp
-                        print("Assigned headcrab team.")
-                        timer.Remove("CheckForHeadcrab" .. npc:EntIndex())
-                        return
+                                return
+                            end
+                        end
                     end
-                end
-            end)
+                )
+            end
         end
     end
-end)
+)
 
 function AssignTeam(ent, teamInput)
     if not ent:IsValid() or not ent:IsNPC() then return end
     teamInput = teamInput or ""
-
     local npcColors = {"Redteam", "Blueteam", "Greenteam", "Yellowteam"}
-
     local teamEnts = {}
-
     -- PrintMessage(HUD_PRINTTALK, ent:GetName() .. ent:GetClass() .. ", " .. teamInput)
-
     -- for some reason which I cannot diagnose or explain despite my best attempts, 
     -- this check is always true. running the same check in game is not always true. i don't get it!
     -- Too Bad!
@@ -626,6 +682,7 @@ function AssignTeam(ent, teamInput)
     if ent:GetName() == "" then
         ent:SetName(teamInput)
     end
+
     -- print("2Name is " .. ent:GetName())
     for i, teamName in ipairs(npcColors) do
         teamEnts[i] = ents.FindByName(teamName)
@@ -653,6 +710,7 @@ function AssignTeam(ent, teamInput)
             end
         end
     end
+
     return ent
 end
 
@@ -671,7 +729,8 @@ end
 function startGame()
     PrintMessage(HUD_PRINTCENTER, "Ready!")
     RunConsoleCommand("sv_hibernate_think", "1")
-    GetConVar("sts_game_started"):SetInt(1)
+    gameStartedServer = true
+    sendStartToPlayers()
     nextMap = chooseNextMap()
     nextBR = chooseBonusRound()
     setNextMapScreen(getMapScreen(nextMap))
@@ -679,6 +738,7 @@ function startGame()
     for i = 1, 4 do
         teams[i].points = GetConVar("sts_starting_points"):GetInt()
     end
+
     startLobbySpawn()
 end
 
@@ -690,7 +750,6 @@ function upgradeABox(cubeName)
     local desiredCube
     local availablePoints
     local currentTeam
-
     for _, teamName in ipairs(teams) do
         for _, cube in pairs(teamName.cubes) do
             if cube.entity == cubeName then
@@ -704,12 +763,14 @@ function upgradeABox(cubeName)
 
     if desiredCube.level == 5 then
         PrintMessage(HUD_PRINTTALK, "Max tech level reached!")
+
         return
     end
 
     for _, cube in pairs(currentTeam.cubes) do
         if cube ~= desiredCube and cube.level < desiredCube.level then
             PrintMessage(HUD_PRINTTALK, "Tech Level not Available!")
+
             return
         end
     end
@@ -720,6 +781,7 @@ function upgradeABox(cubeName)
         -- print("actually upgrading")
     else
         PrintMessage(HUD_PRINTTALK, "Cannot afford")
+        return
     end
 
     if currentTeam.cubes["cube1"].level == currentTeam.cubes["cube2"].level and currentTeam.cubes["cube3"].level == currentTeam.cubes["cube4"].level and currentTeam.cubes["cube2"].level == currentTeam.cubes["cube3"].level then
@@ -732,6 +794,7 @@ function upgradeABox(cubeName)
             playGlobalSound("sts_sounds_new/newtechlevel" .. variant .. ".wav", getTeamIDFromName(currentTeam))
         end
     end
+
     -- lazy
     for teamIndex = 1, 4 do
         SendPointsToTeamMembers(teamIndex)
@@ -739,10 +802,9 @@ function upgradeABox(cubeName)
 end
 
 function randomizeABox(cubeName)
-    PrintMessage(HUD_PRINTTALK, "Randomizing " .. cubeName .. "!")
+    -- PrintMessage(HUD_PRINTTALK, "Randomizing " .. cubeName .. "!")
     local desiredCube
     local availablePoints
-
     for _, teamName in ipairs(teams) do
         for _, cube in pairs(teamName.cubes) do
             if cube.entity == cubeName then
@@ -771,16 +833,17 @@ function randomizeABox(cubeName)
     else
         PrintMessage(HUD_PRINTTALK, "Could not find cube in random func! Report me!")
     end
+
     -- lazy
     for teamIndex = 1, 4 do
         SendPointsToTeamMembers(teamIndex)
     end
-
 end
 
 function chooseNextMap()
     local options = getChosenMaps()
     local map = options[math.random(#options)]
+
     return map
 end
 
@@ -788,20 +851,12 @@ function chooseBonusRound()
     local options = getChosenBonusRounds()
     if options == {} then return {} end
     local bonusRound = options[math.random(#options)]
+
     return bonusRound
 end
 
 function setNextMapScreen(map)
-    local waitingScreens = {
-        "waiting_screen_mapblue",
-        "waiting_screen_mapyellow",
-        "waiting_screen_mapgreen",
-        "waiting_screen_maplake",
-        "waiting_screen_maprail",
-        "waiting_screen_maprav",
-        "waiting_screen_mapcit",
-        "waiting_screen_mapsquare"
-    }
+    local waitingScreens = {"waiting_screen_mapblue", "waiting_screen_mapyellow", "waiting_screen_mapgreen", "waiting_screen_maplake", "waiting_screen_maprail", "waiting_screen_maprav", "waiting_screen_mapcit", "waiting_screen_mapsquare"}
     for _, ent in ipairs(ents.GetAll()) do
         for _, mapScreen in ipairs(waitingScreens) do
             if ent:GetName() == map then
@@ -816,31 +871,33 @@ end
 function getMapFromWhatever(whatever)
     local mapLevers = {
         ["waiting_lobby_maplever_square"] = "square",
-        ["waiting_lobby_maplever_cit"] =    "cit",
-        ["waiting_lobby_maplever_rav"] =    "rav",
-        ["waiting_lobby_maplever_rail"] =   "rail",
-        ["waiting_lobby_maplever_lake"] =   "lake",
+        ["waiting_lobby_maplever_cit"] = "cit",
+        ["waiting_lobby_maplever_rav"] = "rav",
+        ["waiting_lobby_maplever_rail"] = "rail",
+        ["waiting_lobby_maplever_lake"] = "lake",
         ["waiting_lobby_maplever_yellow"] = "yellow",
-        ["waiting_lobby_maplever_green"] =  "green",
-        ["waiting_lobby_maplever_blue"] =   "blue"
+        ["waiting_lobby_maplever_green"] = "green",
+        ["waiting_lobby_maplever_blue"] = "blue"
     }
+
     if mapLevers[whatever] then return mapLevers[whatever] end
     local mapScreens = {
-        ["waiting_screen_mapblue"] =    "blue",
-        ["waiting_screen_mapyellow"] =  "yellow",
-        ["waiting_screen_mapgreen"] =   "green",
-        ["waiting_screen_maplake"] =    "lake",
-        ["waiting_screen_maprail"] =    "rail",
-        ["waiting_screen_maprav"] =     "rav",
-        ["waiting_screen_mapcit"] =     "cit",
-        ["waiting_screen_mapsquare"] =  "square"
+        ["waiting_screen_mapblue"] = "blue",
+        ["waiting_screen_mapyellow"] = "yellow",
+        ["waiting_screen_mapgreen"] = "green",
+        ["waiting_screen_maplake"] = "lake",
+        ["waiting_screen_maprail"] = "rail",
+        ["waiting_screen_maprav"] = "rav",
+        ["waiting_screen_mapcit"] = "cit",
+        ["waiting_screen_mapsquare"] = "square"
     }
+
     if mapScreens[whatever] then return mapScreens[whatever] end
 end
 
 function getMapScreen(map)
     local info = {
-        ["blue"] =  "waiting_screen_mapblue",
+        ["blue"] = "waiting_screen_mapblue",
         ["yellow"] = "waiting_screen_mapyellow",
         ["green"] = "waiting_screen_mapgreen",
         ["lake"] = "waiting_screen_maplake",
@@ -849,6 +906,7 @@ function getMapScreen(map)
         ["cit"] = "waiting_screen_mapcit",
         ["square"] = "waiting_screen_mapsquare"
     }
+
     return info[map]
 end
 
@@ -861,6 +919,7 @@ function roundReset()
             highestscore = team.GetScore(teamID)
         end
     end
+
     if highestscore >= GetConVar("sts_total_rounds"):GetInt() then
         gameOver()
     elseif roundCounter % 2 == 0 then
@@ -877,14 +936,13 @@ function ReadyLeverPulled(teamName)
     local levers = {"waiting_blue_ready_lever", "waiting_red_ready_lever", "waiting_green_ready_lever", "waiting_yellow_ready_lever"}
     local pulled = 0
     local required = 0
-
     playGlobalSound("sts_sounds_new/" .. teamName .. "_ready.wav")
-
     for i = 1, 4 do
         if #team.GetPlayers(i) > 0 then
             required = required + 1
         end
     end
+
     for _, ent in ipairs(ents.GetAll()) do
         for _, lever in ipairs(levers) do
             if ent:GetName() == lever and ent:GetInternalVariable("m_toggle_state") == 0 then
@@ -892,29 +950,52 @@ function ReadyLeverPulled(teamName)
             end
         end
     end
+
     if required == pulled then
         SendServerMessage("All Teams Ready!", Color(255, 255, 255))
-        timer.Simple(5, function()
-            SendServerMessage("5", Color(255, 255, 255), 0)
-            timer.Simple(1, function()
-                SendServerMessage("4", Color(255, 255, 255), 0)
-                timer.Simple(1, function()
-                    SendServerMessage("3", Color(255, 255, 255), 0)
-                    timer.Simple(1, function()
-                        SendServerMessage("2", Color(255, 255, 255), 0)
-                        timer.Simple(1, function()
-                            SendServerMessage("1", Color(255, 255, 255), 0)
-                            timer.Simple(1, function()
-                                SendServerMessage("Fight!", Color(255, 255, 255), 3)
-                            end)
-                        end)
-                    end)
-                end)
-            end)
-        end)
-        timer.Simple(10, function()
-            beginFight()
-        end)
+        timer.Simple(
+            5,
+            function()
+                SendServerMessage("5", Color(255, 255, 255), 0)
+                timer.Simple(
+                    1,
+                    function()
+                        SendServerMessage("4", Color(255, 255, 255), 0)
+                        timer.Simple(
+                            1,
+                            function()
+                                SendServerMessage("3", Color(255, 255, 255), 0)
+                                timer.Simple(
+                                    1,
+                                    function()
+                                        SendServerMessage("2", Color(255, 255, 255), 0)
+                                        timer.Simple(
+                                            1,
+                                            function()
+                                                SendServerMessage("1", Color(255, 255, 255), 0)
+                                                timer.Simple(
+                                                    1,
+                                                    function()
+                                                        SendServerMessage("Fight!", Color(255, 255, 255), 3)
+                                                    end
+                                                )
+                                            end
+                                        )
+                                    end
+                                )
+                            end
+                        )
+                    end
+                )
+            end
+        )
+
+        timer.Simple(
+            10,
+            function()
+                beginFight()
+            end
+        )
     end
 end
 
@@ -928,11 +1009,12 @@ function beginFight()
     startGameSpawn()
     setupMap(nextMap)
     local sound
-    if math.random(1,2) == 1 then
+    if math.random(1, 2) == 1 then
         sound = playGlobalSound("bm_sts_sounds/brane_scan.wav")
     else
         sound = playGlobalSound("bm_sts_sounds/cp_violation.wav")
     end
+
     for _, ent in ipairs(ents.FindByClass("info_teleport_destination")) do
         for i = 1, 4 do
             for j, teammate in ipairs(team.GetPlayers(i)) do
@@ -948,7 +1030,6 @@ function beginFight()
     local teamsToSpawn = getPlayingTeams()
     local teamMobs = {} -- {1 = ..., 4 = ...}
     local delay
-
     for _, id in ipairs(teamsToSpawn) do
         for _, spawner in ipairs(teams[id].spawners) do
             if teamMobs[id] == nil then
@@ -963,11 +1044,15 @@ function beginFight()
         delay = 0
         for _, mob in ipairs(mobs) do
             delay = delay + mob[2]
-            timer.Simple(delay, function()
-                mob[1]:Fire("ForceSpawn")
-            end)
+            timer.Simple(
+                delay,
+                function()
+                    mob[1]:Fire("ForceSpawn")
+                end
+            )
         end
     end
+
     local alive = {}
     for _, id in ipairs(teamsToSpawn) do
         print("adding " .. id)
@@ -985,6 +1070,7 @@ function beginFight()
             print("adding yellow")
         end
     end
+
     -- PrintMessage(HUD_PRINTTALK, "waiting " .. delay .. " seconds")
     local winner
     local formattedWinner = {
@@ -993,79 +1079,96 @@ function beginFight()
         ["greenteam"] = "Green",
         ["yellowteam"] = "Yellow"
     }
+
     local winnerColor = {
         ["redteam"] = Color(255, 0, 0),
         ["blueteam"] = Color(0, 0, 255),
         ["greenteam"] = Color(0, 255, 0),
         ["yellowteam"] = Color(255, 255, 0)
     }
+
     local winnerShorter = {
         ["redteam"] = "red",
         ["blueteam"] = "blue",
         ["greenteam"] = "green",
         ["yellowteam"] = "yellow"
     }
-    timer.Simple(delay, function()
-        -- PrintMessage(HUD_PRINTTALK, "checking for win")
-        timer.Create("CheckForWin", 1, 0, function()
-            local alivetimer = table.shallow_copy(alive)
-            local amountalive = 0
-            local name
-            for _, ent in ipairs(ents.GetAll()) do
-                name = ent:GetName():lower()
-                if (name == "redteam" or name == "greenteam" or name == "yellowteam" or name == "blueteam") and ent:IsValid() and ent:IsNPC() and ent:Health() > 0 and alivetimer[name] ~= -1 then
-                    alivetimer[name] = alivetimer[name] + 1
-                    print(name .. " is alive " .. alivetimer[name])
-                end
-            end
 
-            for aliveteam, _ in pairs(alive) do
-                if alivetimer[aliveteam] > 0 then
-                    amountalive = amountalive + 1
-                    winner = aliveteam
-                end
-                if alivetimer[aliveteam] == 0 and amountalive > 1 then
-                    SendServerMessage(formattedWinner[aliveteam] .. " Team Defeated!", winnerColor[aliveteam])
-                    alivetimer[aliveteam] = -1 -- do not repeat message
-                    if math.random(1, 50) == 1 then
-                        playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "lose_funny.wav")
-                    else
-                        playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "lose" .. math.random(1,2) .. ".wav")
+    timer.Simple(delay, function()
+            -- PrintMessage(HUD_PRINTTALK, "checking for win")
+            timer.Create(
+                "CheckForWin",
+                1,
+                0,
+                function()
+                    local alivetimer = table.shallow_copy(alive)
+                    local amountalive = 0
+                    local name
+                    for _, ent in ipairs(ents.GetAll()) do
+                        name = ent:GetName():lower()
+                        if (name == "redteam" or name == "greenteam" or name == "yellowteam" or name == "blueteam") and ent:IsValid() and ent:IsNPC() and ent:Health() > 0 and alivetimer[name] ~= -1 then
+                            alivetimer[name] = alivetimer[name] + 1
+                            print(name .. " is alive " .. alivetimer[name])
+                        end
+                    end
+
+                    for aliveteam, _ in pairs(alive) do
+                        if alivetimer[aliveteam] > 0 then
+                            amountalive = amountalive + 1
+                            winner = aliveteam
+                        end
+
+                        if alivetimer[aliveteam] == 0 and amountalive > 1 then
+                            SendServerMessage(formattedWinner[aliveteam] .. " Team Defeated!", winnerColor[aliveteam])
+                            alivetimer[aliveteam] = -1 -- do not repeat message
+                            if math.random(1, 50) == 1 then
+                                playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "lose_funny.wav")
+                            else
+                                playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "lose" .. math.random(1, 2) .. ".wav")
+                            end
+                        end
+                    end
+
+                    if amountalive == 1 then
+                        timer.Remove("CheckForWin")
+                        if winner == "blueteam" then
+                            team.AddScore(1, 1)
+                            teams[1].points = teams[1].points + 1
+                        elseif winner == "redteam" then
+                            team.AddScore(2, 1)
+                            teams[2].points = teams[2].points + 1
+                        elseif winner == "greenteam" then
+                            team.AddScore(3, 1)
+                            teams[3].points = teams[3].points + 1
+                        elseif winner == "yellowteam" then
+                            team.AddScore(4, 1)
+                            teams[4].points = teams[4].points + 1
+                        end
+
+                        sound:Stop()
+                        for teamID = 1, 4 do
+                            teams[teamID].points = teams[teamID].points + 5
+                            SendPointsToTeamMembers(teamID)
+                        end
+
+                        SendServerMessage(formattedWinner[winner] .. " Team Wins!", winnerColor[winner])
+                        playGlobalSound("sts_sounds_new/" .. winnerShorter[winner] .. "_win" .. math.random(1, 3) .. ".wav")
+                        endRound()
+                    elseif amountalive == 0 then
+                        timer.Remove("CheckForWin")
+                        sound:Stop()
+                        for teamID = 1, 4 do
+                            teams[teamID].points = teams[teamID].points + 5
+                            SendPointsToTeamMembers(teamID)
+                        end
+                        playGlobalSound("sts_sounds_new/tie.wav")
+                        SendServerMessage("Tie!", Color(255, 255, 255))
+                        endRound()
                     end
                 end
-            end
-            if amountalive == 1 then
-                timer.Remove("CheckForWin")
-                if winner == "blueteam" then
-                    team.AddScore(1, 1)
-                    teams[1].points = teams[1].points + 1
-                elseif winner == "redteam" then
-                    team.AddScore(2, 1)
-                    teams[2].points = teams[2].points + 1
-                elseif winner == "greenteam" then
-                    team.AddScore(3, 1)
-                    teams[3].points = teams[3].points + 1
-                elseif winner == "yellowteam" then
-                    team.AddScore(4, 1)
-                    teams[4].points = teams[4].points + 1
-                end
-                sound:Stop()
-                for teamID = 1, 4 do
-                    teams[teamID].points = teams[teamID].points + 5
-                    SendPointsToTeamMembers(teamID)
-                end
-                SendServerMessage(formattedWinner[winner] .. " Team Wins!", winnerColor[winner])
-                playGlobalSound("sts_sounds_new/" .. winnerShorter[winner] .. "_win" .. math.random(1, 3) .. ".wav")
-                endRound()
-            elseif amountalive == 0 then
-                timer.Remove("CheckForWin")
-                sound:Stop()
-                playGlobalSound("sts_sounds_new/tie.wav")
-                SendServerMessage("Tie!", Color(255, 255, 255))
-                endRound()
-            end
-        end)
-    end)
+            )
+        end
+    )
 end
 
 function endRound()
@@ -1076,6 +1179,7 @@ function endRound()
     for _, ply in ipairs(player.GetAll()) do
         teleportToTeamSpawn(ply)
     end
+
     startLobbySpawn()
     stopGameSpawn()
     roundReset()
@@ -1089,16 +1193,19 @@ function endRound()
                 ent:Fire("close")
             end
         end
+
         for _, door in ipairs(doors) do
             if ent:GetName() == door then
                 ent:Fire("close")
             end
         end
+
         for _, wall in ipairs(blockers) do
             if ent:GetName() == wall then
                 ent:Remove()
             end
         end
+
         for _, mob in ipairs(mobnames) do
             if ent:GetName():lower() == mob then
                 ent:Remove()
@@ -1112,6 +1219,7 @@ function setupMap(map)
         if ent:GetName() == "map_push_" .. map then
             ent:Fire("Enable")
         end
+
         -- if map == "blue" then
         -- end
         -- if map == "yellow" then
@@ -1126,16 +1234,22 @@ function setupMap(map)
             if ent:GetName() == "maprav_template_car" then
                 ent:Fire("Forcespawn")
             end
+
             if string.find(ent:GetName(), "maprav_door_") then
-                timer.Simple(2, function()
-                    ent:Fire("Open")
-                end)
+                timer.Simple(
+                    2,
+                    function()
+                        ent:Fire("Open")
+                    end
+                )
             end
         end
+
         if map == "cit" then
             if string.find(ent:GetName(), "mapcit_ball_") then
                 ent:Fire("Enable")
             end
+
             if string.find(ent:GetName(), "mapcit_ballbeam") then
                 ent:Fire("Toggle")
             end
@@ -1143,22 +1257,28 @@ function setupMap(map)
         -- if map == "square" then
         -- end
     end
+
     if map == "rail" then
         -- PrintMessage(HUD_PRINTTALK, "train spawn")
-        timer.Create("trainSpawn", 5, 0, function()
-            local directions = {"ns", "sn", "ew", "we"}
-            local direction = directions[math.random(#directions)]
-            if math.random(1, 4) == 1 then
-                -- PrintMessage(HUD_PRINTTALK, "train spawn" .. direction)
-                -- PrintMessage(HUD_PRINTTALK, "maprail_rail_" .. direction .. "_template")
-                for _, ent in ipairs(ents.GetAll()) do
-                    if ent:GetName():lower() == "maprail_rail_" .. direction .. "_template" then
-                        -- PrintMessage(HUD_PRINTTALK, "train spawn" .. direction .. " found")
-                        ent:Fire("ForceSpawn")
+        timer.Create(
+            "trainSpawn",
+            5,
+            0,
+            function()
+                local directions = {"ns", "sn", "ew", "we"}
+                local direction = directions[math.random(#directions)]
+                if math.random(1, 4) == 1 then
+                    -- PrintMessage(HUD_PRINTTALK, "train spawn" .. direction)
+                    -- PrintMessage(HUD_PRINTTALK, "maprail_rail_" .. direction .. "_template")
+                    for _, ent in ipairs(ents.GetAll()) do
+                        if ent:GetName():lower() == "maprail_rail_" .. direction .. "_template" then
+                            -- PrintMessage(HUD_PRINTTALK, "train spawn" .. direction .. " found")
+                            ent:Fire("ForceSpawn")
+                        end
                     end
                 end
             end
-        end)
+        )
     end
 end
 
@@ -1167,6 +1287,7 @@ function cleanupMap(map)
         if ent:GetName() == "map_push_" .. map then
             ent:Fire("Disable")
         end
+
         -- if map == "blue" then
         -- end
         -- if map == "yellow" then
@@ -1181,14 +1302,17 @@ function cleanupMap(map)
             if string.find(ent:GetName(), "maprav_car_") then
                 ent:Remove()
             end
+
             if string.find(ent:GetName(), "maprav_door_") then
                 ent:Fire("Close")
             end
         end
+
         if map == "cit" then
             if string.find(ent:GetName(), "mapcit_ball_") then
                 ent:Fire("Disable")
             end
+
             if string.find(ent:GetName(), "mapcit_ballbeam_") then
                 ent:Fire("Toggle")
             end
@@ -1196,11 +1320,11 @@ function cleanupMap(map)
         -- if map == "square" then
         -- end
     end
+
     if map == "rail" then
         timer.Remove("trainSpawn")
     end
 end
-
 
 function doBonusRound()
     PrintMessage(HUD_PRINTTALK, "This is when a bonus round would happen, but they haven't been implemented yet. Sorry!")
@@ -1213,8 +1337,9 @@ function getPlayingTeams()
             table.insert(ids, i)
         end
     end
-    return ids
     -- return {1,2} -- for testing
+
+    return ids
 end
 
 function gameOver()
@@ -1222,11 +1347,9 @@ function gameOver()
     local losertpcoords
     local winningTeam
     local highestscore = 0
-
     stopLobbySpawn()
     stopGameSpawn()
     playGlobalSound("bm_sts_sounds/end_win.wav")
-
     for _, teamID in ipairs(getPlayingTeams()) do
         if team.GetScore(teamID) > highestscore then
             winningTeam = teamID
@@ -1242,45 +1365,67 @@ function gameOver()
             ent:Fire("ForceSpawn")
         end
     end
+
     local delay = 0.5 -- seconds
     local timeElapsed = 0
-
     for _, ply in ipairs(player.GetAll()) do
         -- Increase delay for each player
-        timer.Simple(timeElapsed, function()
-            if not IsValid(ply) then return end -- Check if the player is still valid
+        timer.Simple(
+            timeElapsed,
+            function()
+                if not IsValid(ply) then return end -- Check if the player is still valid
+                if ply:Team() == winningTeam then
+                    ply:SetPos(winnertpcoords)
+                else
+                    ply:SetPos(losertpcoords)
+                    ply:SetWalkSpeed(100)
+                    ply:SetRunSpeed(200)
+                end
+            end
+        )
+
+        timeElapsed = timeElapsed + delay
+    end
+
+    hook.Add(
+        "PlayerSpawn",
+        "EndSpawn",
+        function(ply)
             if ply:Team() == winningTeam then
                 ply:SetPos(winnertpcoords)
             else
                 ply:SetPos(losertpcoords)
-                ply:SetWalkSpeed(100)
-                ply:SetRunSpeed(200)
+                -- this is necessary because the player spawn hook is called before the player is actually spawned
+                timer.Simple(
+                    0.1,
+                    function()
+                        ply:SetWalkSpeed(100)
+                        ply:SetRunSpeed(200)
+                    end
+                )
             end
-        end)
-        timeElapsed = timeElapsed + delay
-    end
-
-    hook.Add("PlayerSpawn", "EndSpawn", function(ply)
-        if ply:Team() == winningTeam then
-            ply:SetPos(winnertpcoords)
-        else
-            ply:SetPos(losertpcoords)
-            timer.Simple(0.1, function() -- this is necessary because the player spawn hook is called before the player is actually spawned
-                ply:SetWalkSpeed(100)
-                ply:SetRunSpeed(200)
-            end)
         end
-    end)
+    )
 
-    hook.Add( "PlayerDeath", "GlobalDeathMessage", function( victim, inflictor, attacker )
-        timer.Simple(2, function()
-            if victim:Alive() == false then
-                victim:Spawn()
-            end
-        end)
-    end)
+    hook.Add(
+        "PlayerDeath",
+        "GlobalDeathMessage",
+        function(victim, inflictor, attacker)
+            timer.Simple(
+                2,
+                function()
+                    if victim:Alive() == false then
+                        victim:Spawn()
+                    end
+                end
+            )
+        end
+    )
 
-    timer.Simple(30, function()
-        gameReset()
-    end)
+    timer.Simple(
+        30,
+        function()
+            gameReset()
+        end
+    )
 end
