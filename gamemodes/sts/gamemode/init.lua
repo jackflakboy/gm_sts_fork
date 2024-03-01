@@ -1058,16 +1058,12 @@ function beginFight()
         print("adding " .. id)
         if id == 1 then
             alive["blueteam"] = 0
-            print("adding blue")
         elseif id == 2 then
             alive["redteam"] = 0
-            print("adding red")
         elseif id == 3 then
             alive["greenteam"] = 0
-            print("adding green")
         elseif id == 4 then
             alive["yellowteam"] = 0
-            print("adding yellow")
         end
     end
 
@@ -1108,7 +1104,6 @@ function beginFight()
                         name = ent:GetName():lower()
                         if (name == "redteam" or name == "greenteam" or name == "yellowteam" or name == "blueteam") and ent:IsValid() and ent:IsNPC() and ent:Health() > 0 and alivetimer[name] ~= -1 then
                             alivetimer[name] = alivetimer[name] + 1
-                            print(name .. " is alive " .. alivetimer[name])
                         end
                     end
 
@@ -1174,12 +1169,12 @@ end
 function endRound()
     PrintMessage(HUD_PRINTTALK, "Round over!")
     endTeamAssignment()
+    cleanupMap(nextMap)
     nextMap = chooseNextMap()
     setNextMapScreen(getMapScreen(nextMap))
     for _, ply in ipairs(player.GetAll()) do
         teleportToTeamSpawn(ply)
     end
-
     startLobbySpawn()
     stopGameSpawn()
     roundReset()

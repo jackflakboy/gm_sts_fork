@@ -1,7 +1,4 @@
-local LoadedSounds
-if CLIENT then
-    LoadedSounds = {} -- this table caches existing CSoundPatches
-end
+LoadedSounds = LoadedSounds or {} -- ! this will never free from memory, and may cause performance issues! need to find a better fix for stopping garbage collection!
 
 mainTrack = nil
 mainTrackSound = 1
