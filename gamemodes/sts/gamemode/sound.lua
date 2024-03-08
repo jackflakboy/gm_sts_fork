@@ -1,6 +1,6 @@
-LoadedSounds = LoadedSounds or {} -- ! this will never free from memory, and may cause performance issues! need to find a better fix for stopping garbage collection!
+LoadedSounds = LoadedSounds or {}
 
-mainTrack = nil
+mainTrack = mainTrack or nil
 mainTrackSound = 1
 
 function playGlobalSound( FileName, teamID )
@@ -41,7 +41,7 @@ end
 function beginPlayingMainTrack()
     mainTrack = playGlobalSound("bm_sts_sounds/miami_sky_hq.wav")
     -- PrintMessage(HUD_PRINTTALK, "playing track")
-    timer.Create("RepeatTrack", 105, 0, function()
+    timer.Create("RepeatTrack", 101, 0, function()
         mainTrack = playGlobalSound("bm_sts_sounds/miami_sky_hq.wav")
         -- PrintMessage(HUD_PRINTTALK, "playing track again")
         if mainTrackSound == 0 then
@@ -64,3 +64,18 @@ function unmuteMainTrack()
         mainTrack:ChangeVolume(1, 2)
     end
 end
+
+-- this is to tell the garbage collector that these variables are 
+-- still being used, otherwise sound gets cut every time it runs
+-- ! WARNING: sounds will not be freed from memory, and this will cause a memory leak. it may be 
+-- ! worthwile to manually free from memory via LoadedSounds[FileName] = nil after stopping 
+-- ! if sounds are big or high in quantity, as the 32 bit version of gmod will crash at 4 gb of mem used
+function keepSoundAlive()
+    timer.Simple(99999999999, function()
+        LoadedSounds = LoadedSounds or {}
+        mainTrack = mainTrack or nil
+        mainTrackSound = mainTrackSound or 1
+    end)
+end
+
+keepSoundAlive()

@@ -672,7 +672,7 @@ hook.Add(
 function AssignTeam(ent, teamInput)
     if not ent:IsValid() or not ent:IsNPC() then return end
     teamInput = teamInput or ""
-    local npcColors = {"Redteam", "Blueteam", "Greenteam", "Yellowteam"}
+    local npcColors = {"redteam", "blueteam", "greenteam", "yellowteam"}
     local teamEnts = {}
     -- PrintMessage(HUD_PRINTTALK, ent:GetName() .. ent:GetClass() .. ", " .. teamInput)
     -- for some reason which I cannot diagnose or explain despite my best attempts, 
