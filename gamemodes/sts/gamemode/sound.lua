@@ -70,6 +70,7 @@ end
 -- ! WARNING: sounds will not be freed from memory, and this will cause a memory leak. it may be 
 -- ! worthwile to manually free from memory via LoadedSounds[FileName] = nil after stopping 
 -- ! if sounds are big or high in quantity, as the 32 bit version of gmod will crash at 4 gb of mem used
+-- TODO: Find a better solution
 function keepSoundAlive()
     timer.Simple(99999999999, function()
         LoadedSounds = LoadedSounds or {}

@@ -95,12 +95,11 @@ concommand.Add("reset_game", function(ply, cmd, args)
     gameReset()
 end, nil, nil, FCVAR_CHEAT)
 
--- TODO: this func will make the gamemode unfriendly to dedicated servers, needs to be automated or have additional checks
 concommand.Add("reset_game_solo", function(ply, cmd, args)
-    if tonumber(player.GetCount()) == 1 then
+    if tonumber(player.GetCount()) == 1 and gameStartedServer then
         print("\n\n\nYou are alone, so you can reset the map \nThanks for cleaning up the server! \n\n-Tergative\n\n\n\n")
         gameReset()
     else
-        print("You are not alone")
+        print("Either you are not alone or the game has not started.")
     end
 end)

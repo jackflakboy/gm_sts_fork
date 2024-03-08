@@ -447,7 +447,9 @@ function GM:PlayerDisconnected(ply)
     shouldStartLeverBeLocked()
     print("A player has disconnected")
     print(ply:Name() .. " has left the server.")
-    timer.Simple(10, allgonecheck)
+    if gameStartedServer then
+        timer.Simple(10, allgonecheck)
+    end
 end
 
 function GM:PlayerConnect(name, ip)
@@ -468,14 +470,6 @@ end
 -- creates timer to run gamereset
 function endtimerstart()
     timer.Create("endtimer", 50, 1, gameReset)
-end
-
--- unknown, timer stuff, might be deprecated
-function allgonened()
-    if timer.Exists("endtimer") then
-        print("Server Reloaded")
-        timer.Remove("endtimer")
-    end
 end
 
 -- resets the game by reloading the map
@@ -737,6 +731,7 @@ function startGame()
     beginPlayingMainTrack()
     for i = 1, 4 do
         teams[i].points = GetConVar("sts_starting_points"):GetInt()
+        SendPointsToTeamMembers(i)
     end
 
     startLobbySpawn()
@@ -762,14 +757,22 @@ function upgradeABox(cubeName)
     end
 
     if desiredCube.level == 5 then
-        PrintMessage(HUD_PRINTTALK, "Max tech level reached!")
+        for _, ply in ipairs(player.GetAll()) do
+            if ply:Team() == getTeamIDFromName(currentTeam) then
+                ply:PrintMessage(HUD_PRINTTALK, "Max tech level reached!")
+            end
+        end
 
         return
     end
 
     for _, cube in pairs(currentTeam.cubes) do
         if cube ~= desiredCube and cube.level < desiredCube.level then
-            PrintMessage(HUD_PRINTTALK, "Tech Level not Available!")
+            for _, ply in ipairs(player.GetAll()) do
+                if ply:Team() == getTeamIDFromName(currentTeam) then
+                    ply:PrintMessage(HUD_PRINTTALK, "Tech level not available!")
+                end
+            end
 
             return
         end
@@ -780,12 +783,20 @@ function upgradeABox(cubeName)
         desiredCube:upgrade()
         -- print("actually upgrading")
     else
-        PrintMessage(HUD_PRINTTALK, "Cannot afford")
+        for _, ply in ipairs(player.GetAll()) do
+            if ply:Team() == getTeamIDFromName(currentTeam) then
+                ply:PrintMessage(HUD_PRINTTALK, "Cannot Afford!")
+            end
+        end
         return
     end
 
     if currentTeam.cubes["cube1"].level == currentTeam.cubes["cube2"].level and currentTeam.cubes["cube3"].level == currentTeam.cubes["cube4"].level and currentTeam.cubes["cube2"].level == currentTeam.cubes["cube3"].level then
-        PrintMessage(HUD_PRINTTALK, "New Tech Level!")
+        for _, ply in ipairs(player.GetAll()) do
+            if ply:Team() == getTeamIDFromName(currentTeam) then
+                ply:PrintMessage(HUD_PRINTTALK, "New Tech Level!")
+            end
+        end
         local funny = math.random(1, 100)
         if funny == 1 then
             playGlobalSound("sts_sounds_new/newtechlevel_funny.wav", getTeamIDFromName(currentTeam))
@@ -805,10 +816,12 @@ function randomizeABox(cubeName)
     -- PrintMessage(HUD_PRINTTALK, "Randomizing " .. cubeName .. "!")
     local desiredCube
     local availablePoints
+    local currentTeam
     for _, teamName in ipairs(teams) do
         for _, cube in pairs(teamName.cubes) do
             if cube.entity == cubeName then
                 desiredCube = cube
+                currentTeam = teamName
                 availablePoints = teamName.points
                 break
             end
@@ -816,7 +829,11 @@ function randomizeABox(cubeName)
     end
 
     if availablePoints <= 0 then
-        PrintMessage(HUD_PRINTTALK, "Cannot afford")
+        for _, ply in ipairs(player.GetAll()) do
+            if ply:Team() == getTeamIDFromName(currentTeam) then
+                ply:PrintMessage(HUD_PRINTTALK, "Cannot afford!")
+            end
+        end
         return
     end
 
@@ -831,7 +848,7 @@ function randomizeABox(cubeName)
             end
         end
     else
-        PrintMessage(HUD_PRINTTALK, "Could not find cube in random func! Report me!")
+        PrintMessage(HUD_PRINTTALK, "Could not find cube in randomize func! Report this in the discord please!")
     end
 
     -- lazy
