@@ -24,9 +24,9 @@ end
 
 hook.Add("PlayerDeath", "Deathmatch Add Points", deathmatchKill) -- this can be on forever cause if someone figures out a way to kill outside of a bonus round thats funny asf
 
-function getBonusRoundFunc()
+function getBonusRoundBeginFunc()
 
-    local lookup_table = {
+    local lookupTable = {
         ["waiting_lobby_mapleverb_lake"] = beginElMatador, 
         ["waiting_lobby_mapleverb_blue"] = beginSpaceSMGs, 
         ["waiting_lobby_mapleverb_green"] = beginCrabRave, 
@@ -39,9 +39,29 @@ function getBonusRoundFunc()
         ["waiting_lobby_mapleverb_square"] = beginLookUp
     }
 
-    local br = lookup_table[nextBR]
+    local br = lookupTable[nextBR]
 
-    
+    return br
+end
+
+function getBonusRoundEndFunc()
+
+    local lookupTable = {
+        ["waiting_lobby_mapleverb_lake"] = endElMatador, 
+        ["waiting_lobby_mapleverb_blue"] = endSpaceSMGs, 
+        ["waiting_lobby_mapleverb_green"] = endCrabRave, 
+        ["waiting_lobby_mapleverb_boomstick"] = endBoomstick, 
+        ["waiting_lobby_mapleverb_ctf"] = endCTF, 
+        ["waiting_lobby_mapleverb_battery"] = endBattery, 
+        ["waiting_lobby_mapleverb_ravsurv"] = endRavenholm, 
+        ["waiting_lobby_mapleverb_rav"] = endHl2dm, 
+        ["waiting_lobby_mapleverb_cit"] = endDodgeball, 
+        ["waiting_lobby_mapleverb_square"] = endLookUp
+    }
+
+    local br = lookupTable[nextBR]
+
+    return br
 end
 
 function elMatadorTeleport(ply)
