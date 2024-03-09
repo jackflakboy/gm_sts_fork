@@ -41,7 +41,7 @@ end
 function beginPlayingMainTrack()
     mainTrack = playGlobalSound("bm_sts_sounds/miami_sky_hq.wav")
     -- PrintMessage(HUD_PRINTTALK, "playing track")
-    timer.Create("RepeatTrack", 101, 0, function()
+    timer.Create("RepeatTrack", 103, 0, function()
         mainTrack = playGlobalSound("bm_sts_sounds/miami_sky_hq.wav")
         -- PrintMessage(HUD_PRINTTALK, "playing track again")
         if mainTrackSound == 0 then

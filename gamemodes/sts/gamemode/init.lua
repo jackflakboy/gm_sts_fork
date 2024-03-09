@@ -941,7 +941,7 @@ function roundReset()
         gameOver()
     elseif roundCounter % 2 == 0 then
         doBonusRound()
-    else
+    -- else
         unmuteMainTrack()
         for _, ply in ipairs(player.GetAll()) do
             teleportToTeamSpawn(ply)
@@ -1354,6 +1354,7 @@ function getPlayingTeams()
     return ids
 end
 
+-- TODO: winning team was wrong once
 function gameOver()
     local winnertpcoords
     local losertpcoords
