@@ -12,12 +12,13 @@ CreateConVar("sts_allow_team_swapping", "0", {FCVAR_GAMEDLL}, "0 - Do not allow 
 CreateConVar("sts_deathmatch_points", "1", {FCVAR_GAMEDLL}, "Determine point reward for kills in bonus rounds.")
 RunConsoleCommand("sv_gravity", "600") -- reset gravity
 RunConsoleCommand("sk_combine_s_kick", "6") -- change combine melee damage
-RunConsoleCommand("sbox_noclip", "0") -- ! disable ability to noclip. remember to change me before release
+RunConsoleCommand("sbox_noclip", "0") -- ! disable ability to noclip. remember to change me  to 0 before release
 RunConsoleCommand("sv_noclipspeed", "50")
 RunConsoleCommand("sk_citizen_heal_player_min_pct", "100")
 RunConsoleCommand("sk_citizen_heal_player_min_forced", "1")
 RunConsoleCommand("sk_citizen_heal_ally", "40")
 RunConsoleCommand("sk_citizen_heal_ally_delay", "0.5") -- this might've not been set correctly prior and may cause a buff to medics
+
 function GM:PlayerSpawnProp(ply, model)
     return false
 end
@@ -107,3 +108,15 @@ function table.shallow_copy(t)
 
     return t2
 end
+
+
+-- Starting to think that maybe the garbage collector is to blame for init.lua:542 being nil sometimes, so I'm going to try to keep the variables alive
+function testKeepVariablesAlive()
+    timer.Simple(999999999999, function()
+        nextMapSpawnLocations = nextMapSpawnLocations or {}
+        nextMap = nextMap or ""
+        nextBR = nextBR or ""
+    end)
+end
+
+testKeepVariablesAlive()
