@@ -960,23 +960,23 @@ function ReadyLeverPulled(teamName)
         SendServerMessage("All Teams Ready!", Color(255, 255, 255))
 
         timer.Simple(5, function()
-            SendServerMessage("5", Color(255, 255, 255), 0)
+            SendServerMessage("Fight begins in 5", Color(255, 255, 255), 0)
         end)
 
         timer.Simple(6, function()
-            SendServerMessage("4", Color(255, 255, 255), 0)
+            SendServerMessage("Fight begins in 4", Color(255, 255, 255), 0)
         end)
 
         timer.Simple(7, function()
-            SendServerMessage("3", Color(255, 255, 255), 0)
+            SendServerMessage("Fight begins in 3", Color(255, 255, 255), 0)
         end)
 
         timer.Simple(8, function()
-            SendServerMessage("2", Color(255, 255, 255), 0)
+            SendServerMessage("Fight begins in 2", Color(255, 255, 255), 0)
         end)
 
         timer.Simple(9, function()
-            SendServerMessage("1", Color(255, 255, 255), 0)
+            SendServerMessage("Fight begins in 1", Color(255, 255, 255), 0)
         end)
 
         timer.Simple(10, function()
