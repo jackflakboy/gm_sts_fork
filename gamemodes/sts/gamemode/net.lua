@@ -161,3 +161,23 @@ if CLIENT then
         startingRounds = net.ReadInt(32)
     end)
 end
+
+if SERVER then
+    util.AddNetworkString("UpdateGravity")
+
+    function updateGravityToClients(gravity)
+        net.Start("UpdateGravity")
+        net.WriteFloat(gravity)
+        net.Broadcast()
+        for _, ply in ipairs(player.GetAll()) do
+            ply:SetGravity(gravity)
+        end
+    end
+end
+
+if CLIENT then
+    net.Receive("UpdateGravity", function()
+        globalGravity = net.ReadFloat()
+        print(globalGravity)
+    end)
+end

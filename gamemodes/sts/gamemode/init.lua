@@ -33,19 +33,13 @@ gameState = 0
 roundCounter = 0
 gameStartedServer = false
 
--- 0 - game not started
--- 1 - Randomizing
--- 2 - battle
--- 3 - minigame
 -- determines loadout. returning true means override default, this might be able to be used for minigames.
-function GM:PlayerLoadout(ply)
-    return true
-end
+-- function GM:PlayerLoadout(ply)
+--     return true
+-- end
 
--- TODO: check if currently in a bonus round, then give weapons
--- if bonus round
--- if bonus round == round with gun
--- give guns
+hook.Add("PlayerLoadout", "Default", function(ply) return true end)
+
 cvars.AddChangeCallback("sts_random_teams", function(convarName, valueOld, valueNew)
     print("TODO: Create team door and open and close it")
 end)
@@ -471,20 +465,6 @@ end
 -- resets the game by reloading the map
 function gameReset()
     RunConsoleCommand("changelevel", "gm_sts_new") -- should've done this from the beginning
-end
-
-function getTeamIDFromName(teamName1)
-    local teamIDs = {"blue", "red", "green", "yellow"}
-
-    for i, name in ipairs(teamIDs) do
-        if name == teamName1 then return i end
-    end
-end
-
-function getTeamNameFromID(teamName1)
-    local teamIDs = {"blue", "red", "green", "yellow"}
-
-    return teamIDs[teamName1]
 end
 
 function addTeamPoints(teamName, change)
@@ -924,9 +904,12 @@ function roundReset()
 
     if highestscore >= GetConVar("sts_total_rounds"):GetInt() then
         gameOver()
-    elseif roundCounter % 2 == 0 then
+    elseif roundCounter % 2 == 0 and getChosenBonusRounds() ~= {} then
+        for _, ply in ipairs(player.GetAll()) do
+            teleportToTeamSpawn(ply)
+        end
         doBonusRound()
-        -- else
+    else
         unmuteMainTrack()
 
         for _, ply in ipairs(player.GetAll()) do

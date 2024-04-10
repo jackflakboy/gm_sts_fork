@@ -4,6 +4,7 @@ include("net.lua")
 include("cubes.lua")
 include("mobs.lua")
 include("sound.lua")
+globalGravity = 1
 points = 0
 startingPoints = 20
 startingRounds = 5
@@ -36,7 +37,10 @@ end
 
 function GM:OnContextMenuOpen()
     return false
+end
 
+function GM:SetupMove(ply, mv, cmd)
+    ply:SetGravity(globalGravity)
 end
 
 boxName = ""

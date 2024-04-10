@@ -34,6 +34,7 @@ function playGlobalSound( FileName, teamID )
         end
         sound:Play()
     end
+    keepSoundAlive()
     return sound -- useful if you want to stop the sound yourself
 end
 
