@@ -39,7 +39,7 @@ function GM:OnContextMenuOpen()
     return false
 end
 
-function GM:SetupMove(ply, mv, cmd)
+function GM:SetupMove(ply, mv, cmd) -- necessary because gravity is not predicted
     ply:SetGravity(globalGravity)
 end
 

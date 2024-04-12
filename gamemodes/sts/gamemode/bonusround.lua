@@ -1,3 +1,15 @@
+batteryPositions = {
+    [1] = false,
+    [2] = false,
+    [3] = false,
+    [4] = false,
+    [5] = false,
+    [6] = false,
+    [7] = false
+}
+
+bonusSurvivors = {}
+
 function deathmatchKill(victim, inflictor, attacker)
     if attacker == victim then
         attacker:PrintMessage(HUD_PRINTTALK, "Quit killing yourself")
@@ -23,6 +35,31 @@ function deathmatchKill(victim, inflictor, attacker)
     end
     return 0
 end
+
+function beginSurvival()
+    for _, ply in ipairs(player.GetAll()) do
+        bonusSurvivors[ply:SteamID()] = true
+    end
+    hook.Add("PlayerDeath", "SurvivalDeath", survivalDeath)
+end
+
+function survivalDeath(ply)
+    bonusSurvivors[ply:SteamID()] = false
+end
+
+function endSurvival()
+    for _, ply in ipairs(player.GetAll()) do
+        if bonusSurvivors[ply:SteamID()] == true then
+            teams[ply:Team()].points = teams[ply:Team()].points + GetConVar("sts_survival_points"):GetInt()
+        end
+    end
+    for teamIndex = 1, 4 do
+        SendPointsToTeamMembers(teamIndex)
+    end
+    bonusSurvivors = {}
+    hook.Remove("PlayerDeath", "SurvivalDeath")
+end
+
 
 -- called in game by luarunner
 function awardCTF(teamID)
@@ -51,6 +88,14 @@ function awardBattery(teamID)
     end
     teams[teamID].points = teams[teamID].points + GetConVar("sts_battery_points"):GetInt()
     SendPointsToTeamMembers(teamID)
+end
+
+function batteryTouching(id)
+    batteryPositions[id] = true
+end
+
+function batteryLeaving(id)
+    batteryPositions[id] = false
 end
 
 hook.Add("PlayerDeath", "Deathmatch Add Points", deathmatchKill) -- this can be on forever cause if someone figures out a way to kill outside of a bonus round thats funny asf
@@ -109,6 +154,8 @@ end
 
 function beginElMatador()
     hook.Add("PlayerSpawn", "ElMatadorTP", elMatadorTeleport)
+    stopLobbySpawn()
+    beginSurvival()
     local desiredTime = GetConVar("sts_survival_time"):GetInt()
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -135,17 +182,36 @@ function beginElMatador()
                 end
             end
         end
-        for i = 0, 3 do
-            timer.Simple((desiredTime / 4) * i, function()
-                for _, ent in ipairs(ents.FindByClass("point_template")) do
-                    if ent:GetName() == "maplake_bonus_guardtemp" then
-                        ent:Fire("ForceSpawn")
-                    end
+        for _, ent in ipairs(ents.FindByClass("point_template")) do
+            if ent:GetName() == "maplake_bonus_guardtemp" then
+                ent:Fire("ForceSpawn")
+            end
+        end
+        timer.Create("MatadorSpawn", desiredTime / 4, 3, function()
+            for _, ent in ipairs(ents.FindByClass("point_template")) do
+                if ent:GetName() == "maplake_bonus_guardtemp" then
+                    ent:Fire("ForceSpawn")
                 end
-            end)
+            end
+        end)
+    end)
+    timer.Create("checkIfAllDead", 1, 0, function()
+        local allDead = true
+        for _, ply in ipairs(player.GetAll()) do
+            if bonusSurvivors[ply:SteamID()] == true then
+                allDead = false
+                break
+            end
+        end
+        if allDead == true then
+            endElMatador()
+            ElMatadorSound:Stop()
+            ElMatadorSound = nil -- clear from memory
+            timer.Remove("checkIfAllDead")
+            timer.Remove("endThing")
         end
     end)
-    timer.Simple(desiredTime + 64, function()
+    timer.Create("endThing", desiredTime + 4, 1, function()
         endElMatador()
         ElMatadorSound:Stop()
         ElMatadorSound = nil -- clear from memory
@@ -154,15 +220,19 @@ end
 
 function endElMatador()
     hook.Remove("PlayerSpawn", "ElMatadorTP")
+    timer.Remove("checkIfAllDead")
+    startLobbySpawn()
     for _, ent in ipairs(ents.GetAll()) do
         if ent:GetClass() == "npc_antlionguard" then
             ent:Remove()
         end
     end
     unmuteMainTrack()
+    endSurvival()
     for _, ply in ipairs(player.GetAll()) do
         teleportToTeamSpawn(ply)
     end
+    timer.Remove("MatadorSpawn")
 end
 
 function SpaceSMGsTeleport(ply)
@@ -179,6 +249,7 @@ end
 
 function beginSpaceSMGs()
     hook.Add("PlayerSpawn", "SpaceSMGTP", SpaceSMGsTeleport)
+    stopLobbySpawn()
     local desiredTime = GetConVar("sts_deathmatch_time"):GetInt()
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -233,6 +304,7 @@ function endSpaceSMGs()
     hook.Remove("PlayerSpawn", "SpaceSMGTP")
     hook.Remove("PlayerLoadout", "SpaceSMG")
     hook.Add("PlayerLoadout", "Default", function(ply) return true end)
+    startLobbySpawn()
     unmuteMainTrack()
     for _, ply in ipairs(player.GetAll()) do
         ply:StripWeapons()
@@ -255,6 +327,7 @@ end
 
 function beginCTF()
     hook.Add("PlayerSpawn", "CTFTP", CTFTeleport)
+    stopLobbySpawn()
     local desiredTime = GetConVar("sts_deathmatch_time"):GetInt()
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -319,14 +392,15 @@ function endCTF()
     hook.Remove("PlayerSpawn", "CTFTP")
     hook.Remove("PlayerLoadout", "CTF")
     hook.Add("PlayerLoadout", "Default", function(ply) return true end)
+    startLobbySpawn()
     unmuteMainTrack()
     for _, ply in ipairs(player.GetAll()) do
         ply:StripWeapons()
         teleportToTeamSpawn(ply)
     end
     for _, ent in ipairs(ents.GetAll()) do
-        if ent:GetName() == "flag" then
-            ent:Fire("Kill")
+        if string.sub(ent:GetName(), 0, 4) == "flag" then
+            ent:Remove()
         end
     end
 end
@@ -345,6 +419,7 @@ end
 
 function beginBattery()
     hook.Add("PlayerSpawn", "BatteryTP", BatteryTeleport)
+    stopLobbySpawn()
     local desiredTime = GetConVar("sts_deathmatch_time"):GetInt()
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -355,7 +430,7 @@ function beginBattery()
     end)
     timer.Simple(3, function()
         SendServerMessage("Batteries!", Color(255, 0, 255), 2)
-        CTFSound = playGlobalSound("bm_sts_sounds/something_secret.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        BatterySound = playGlobalSound("bm_sts_sounds/something_secret_steers.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
     hook.Remove("PlayerLoadout", "Default")
     hook.Add("PlayerLoadout", "Battery", function(ply)
@@ -391,11 +466,25 @@ function beginBattery()
                 end
             end
         end
+        timer.Create("batterySpawning", 10, 0, function()
+            local possibleBatterySpawns = {}
+            for i, bat in ipairs(batteryPositions) do
+                if bat == false then
+                    table.insert(possibleBatterySpawns, i)
+                end
+            end
+            local chosenSpawn = possibleBatterySpawns[math.random(#possibleBatterySpawns)]
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "mapctf_battery_tp" .. tostring(chosenSpawn) then
+                    ent:Fire("ForceSpawn")
+                end
+            end
+        end)
     end)
     timer.Simple(desiredTime + 4, function()
         endBattery()
-        CTFSound:Stop()
-        CTFSound = nil -- clear from memory
+        BatterySound:Stop()
+        BatterySound = nil -- clear from memory
     end)
 end
 
@@ -403,6 +492,8 @@ function endBattery()
     hook.Remove("PlayerSpawn", "BatteryTP")
     hook.Remove("PlayerLoadout", "Battery")
     hook.Add("PlayerLoadout", "Default", function(ply) return true end)
+    timer.Remove("batterySpawning")
+    startLobbySpawn()
     unmuteMainTrack()
     for _, ply in ipairs(player.GetAll()) do
         ply:StripWeapons()
@@ -430,6 +521,8 @@ end
 function beginCrabRave()
     hook.Add("PlayerSpawn", "CrabRaveTP", crabRaveTeleport)
     local desiredTime = GetConVar("sts_survival_time"):GetInt()
+    beginSurvival()
+    stopLobbySpawn()
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
     end
@@ -454,24 +547,55 @@ function beginCrabRave()
                 end
             end
         end
-        for i = 0, 7 do
-            timer.Simple((desiredTime / 8) * i, function()
-                for _, ent in ipairs(ents.FindByClass("point_template")) do
-                    if ent:GetName() == "mapgreen_bonus_crabtemp2" then
-                        ent:Fire("ForceSpawn")
-                    end
-                end
-            end)
+        for _, ent in ipairs(ents.FindByClass("point_template")) do
+            if ent:GetName() == "mapgreen_bonus_crabtemp2" then
+                ent:Fire("ForceSpawn")
+            end
         end
+        timer.Create("HeadCrabSpawn", desiredTime / 8, 7, function()
+            for _, ent in ipairs(ents.FindByClass("point_template")) do
+                if ent:GetName() == "mapgreen_bonus_crabtemp2" then
+                    ent:Fire("ForceSpawn")
+                end
+            end
+        end)
+    end)
+    timer.Create("checkIfAllDead", 1, 0, function()
+        local allDead = true
+        for _, ply in ipairs(player.GetAll()) do
+            if bonusSurvivors[ply:SteamID()] == true then
+                allDead = false
+                break
+            end
+        end
+        if allDead == true then
+            endCrabRave()
+            CrabRaveSound:Stop()
+            CrabRaveSound = nil -- clear from memory
+            timer.Remove("checkIfAllDead")
+            timer.Remove("endThing")
+            timer.Remove("HeadCrabSpawn")
+        end
+    end)
+    timer.Create("endThing", desiredTime + 4, 1, function()
+        endCrabRave()
+        CrabRaveSound:Stop()
+        CrabRaveSound = nil -- clear from memory
     end)
 end
 
 function endCrabRave()
     hook.Remove("PlayerSpawn", "CrabRaveTP")
+    startLobbySpawn()
     for _, ent in ipairs(ents.GetAll()) do
-        if ent:GetClass() == "npc_fastheadcrab" then
+        if ent:GetClass() == "npc_headcrab_fast" then
             ent:Remove()
         end
+    end
+    endSurvival()
+    unmuteMainTrack()
+    for _, ply in ipairs(player.GetAll()) do
+        teleportToTeamSpawn(ply)
     end
 end
 
@@ -490,6 +614,7 @@ end
 
 function beginBoomstick()
     hook.Add("PlayerSpawn", "BoomstickTP", boomstickTeleport)
+    stopLobbySpawn()
     local desiredTime = GetConVar("sts_deathmatch_time"):GetInt()
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -555,6 +680,7 @@ function endBoomstick()
     hook.Remove("PlayerLoadout", "Boomstick")
     hook.Add("PlayerLoadout", "Default", function(ply) return true end)
     unmuteMainTrack()
+    startLobbySpawn()
     for _, ply in ipairs(player.GetAll()) do
         ply:StripWeapons()
         teleportToTeamSpawn(ply)
@@ -577,6 +703,8 @@ end
 function beginRavenholm()
     hook.Add("PlayerSpawn", "RavenholmTP", ravenholmTeleport)
     local desiredTime = GetConVar("sts_survival_time"):GetInt()
+    beginSurvival()
+    stopLobbySpawn()
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
     end
@@ -585,7 +713,7 @@ function beginRavenholm()
         muteMainTrack()
     end)
     timer.Simple(3, function()
-        SendServerMessage("Ravenholm!", Color(255, 0, 255), 2)
+        SendServerMessage("We went to Ravenholm!", Color(255, 0, 255), 2)
         RavenholmSound = playGlobalSound("bm_sts_sounds/go_together_ashija.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
     timer.Simple(4, function()
@@ -612,31 +740,42 @@ function beginRavenholm()
                 end
             end
         end
-        for i = 0, 3 do
-            timer.Simple((desiredTime / 4) * i, function()
-                for _, ent in ipairs(ents.FindByClass("point_template")) do
-                    for j = 1, 4 do
-                        if ent:GetName() == ("maprav_bonus_temp_zombie" .. tostring(j)) then
-                            ent:Fire("ForceSpawn")
-                        end
-                    end
-                    if ent:GetName() == "mapgreen_camp_se_temp" then
-                        ent:Fire("ForceSpawn")
-                    end
-                    if ent:GetName() == "mapgreen_camp_ne_temp" then
-                        ent:Fire("ForceSpawn")
-                    end
-                    if ent:GetName() == "mapgreen_camp_sw_temp" then
-                        ent:Fire("ForceSpawn")
-                    end
-                    if ent:GetName() == "mapgreen_camp_nw_temp" then
+        for _, ent in ipairs(ents.FindByClass("point_template")) do
+            for j = 1, 4 do
+                if ent:GetName() == ("maprav_bonus_temp_zombie" .. tostring(j)) then
+                    ent:Fire("ForceSpawn")
+                end
+            end
+        end
+        timer.Create("ZombieSpawn",desiredTime / 5, 4, function()
+            for _, ent in ipairs(ents.FindByClass("point_template")) do
+                for j = 1, 4 do
+                    if ent:GetName() == ("maprav_bonus_temp_zombie" .. tostring(j)) then
                         ent:Fire("ForceSpawn")
                     end
                 end
-            end)
+            end
+        end)
+    end)
+    timer.Create("checkIfAllDead", 1, 0, function()
+        local allDead = true
+        for _, ply in ipairs(player.GetAll()) do
+            if bonusSurvivors[ply:SteamID()] == true then
+                allDead = false
+                break
+            end
+        end
+        if allDead == true then
+            endRavenholm()
+            RavenholmSound:Stop()
+            RavenholmSound = nil -- clear from memory
+            timer.Remove("checkIfAllDead")
+            timer.Remove("endThing")
+            timer.Remove("ZombieSpawn")
+            SendTimerEnd(0)
         end
     end)
-    timer.Simple(desiredTime + 4, function()
+    timer.Create("endThing", desiredTime + 4, 1, function()
         endRavenholm()
         RavenholmSound:Stop()
         RavenholmSound = nil -- clear from memory
@@ -645,11 +784,12 @@ end
 
 function endRavenholm()
     hook.Remove("PlayerSpawn", "RavenholmTP")
+    startLobbySpawn()
     for _, ent in ipairs(ents.GetAll()) do
         if ent:GetClass() == "npc_fastzombie" then
             ent:Remove()
         end
-        if ent:GetClass() == "npc_fastheadcrab" then
+        if ent:GetClass() == "npc_headcrab_fast" then
             ent:Remove()
         end
         if string.find(ent:GetName(), "maprav_car_") then
@@ -664,18 +804,106 @@ function endRavenholm()
     for _, ply in ipairs(player.GetAll()) do
         teleportToTeamSpawn(ply)
     end
+    endSurvival()
+    timer.Remove("ZombieSpawn")
 end
 
-function hl2dmTeleport()
-
+function hl2dmTeleport(ply)
+    -- deathmatch
+    local chosen = math.random(1, 5)
+    for _, ent in ipairs(ents.FindByClass("info_teleport_destination")) do
+        if ent:GetName() == ("maprav" .. "_" .. getTeamNameFromID(ply:Team()) .. "spawn" .. tostring(chosen)) then
+            ply:SetPos(ent:GetPos())
+            ply:SetEyeAngles(ent:GetAngles())
+            break
+        end
+    end
 end
 
 function beginHl2dm()
     hook.Add("PlayerSpawn", "HL2TP", hl2dmTeleport)
+    stopLobbySpawn()
+    local desiredTime = GetConVar("sts_deathmatch_time"):GetInt()
+    for _, ply in ipairs(player.GetAll()) do
+        ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
+    end
+    timer.Simple(1, function()
+        SendServerMessage("Bonus Round!", Color(255, 0, 255), 0)
+        muteMainTrack()
+    end)
+    timer.Simple(3, function()
+        SendServerMessage("Half-Life 2 Deathmatch!", Color(255, 0, 255), 2)
+        HL2DMSound = playGlobalSound("bm_sts_sounds/brane_scan.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+    end)
+    hook.Remove("PlayerLoadout", "Default")
+    hook.Add("PlayerLoadout", "HL2DM", function(ply)
+        ply:Give("weapon_physcannon")
+        ply:Give("weapon_crowbar")
+        return true
+    end)
+    timer.Simple(4, function()
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "maprav_bonus_timer" then
+                ent:Fire("Enable")
+            end
+            if ent:GetName() == "maprav_template_car" then
+                ent:Fire("Forcespawn")
+            end
+            if string.find(ent:GetName(), "maprav_door_") then
+                timer.Simple(2, function()
+                    ent:Fire("Open")
+                end)
+            end
+        end
+        SendTimerEnd(engine.TickCount() + (desiredTime * 66))
+        for _, ply in ipairs(player.GetAll()) do
+            local chosen = math.random(1, 5)
+            for _, ent in ipairs(ents.FindByClass("info_teleport_destination")) do
+                if ent:GetName() == ("maprav" .. "_" .. getTeamNameFromID(ply:Team()) .. "spawn" .. tostring(chosen)) then
+                    ply:SetPos(ent:GetPos())
+                    ply:SetEyeAngles(ent:GetAngles())
+                    break
+                end
+            end
+        end
+    end)
+    timer.Simple(desiredTime + 4, function()
+        endHl2dm()
+        HL2DMSound:Stop()
+        HL2DMSound = nil -- clear from memory
+    end)
 end
 
 function endHl2dm()
     hook.Remove("PlayerSpawn", "HL2TP")
+    hook.Remove("PlayerLoadout", "HL2DM")
+    hook.Add("PlayerLoadout", "Default", function(ply) return true end)
+    unmuteMainTrack()
+    startLobbySpawn()
+    for _, ply in ipairs(player.GetAll()) do
+        ply:StripWeapons()
+        teleportToTeamSpawn(ply)
+    end
+    for _, ent in ipairs(ents.GetAll()) do
+        if ent:GetName() == "maprav_bonus_timer" then
+            ent:Fire("Disable")
+        end
+        if string.find(ent:GetName(), "maprav_car_") then
+            ent:Remove()
+        end
+        if string.find(ent:GetName(), "maprav_door_") then
+            ent:Fire("Close")
+        end
+        if string.find(ent:GetName(), "maprav_bonus_drum_drum") then
+            ent:Remove()
+        end
+        if string.find(ent:GetName(), "maprav_bonus_sawblade_sawblade") then
+            ent:Remove()
+        end
+        if string.find(ent:GetName(), "maprav_bonus_brick_brick") then
+            ent:Remove()
+        end
+    end
 end
 
 function dodgeballTeleport(ply)
@@ -692,6 +920,7 @@ end
 
 function beginDodgeball()
     hook.Add("PlayerSpawn", "DodgeballTP", dodgeballTeleport)
+    stopLobbySpawn()
     local desiredTime = GetConVar("sts_deathmatch_time"):GetInt()
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -718,7 +947,7 @@ function beginDodgeball()
         ply:Give("weapon_physcannon")
         return true
     end)
-    RunConsoleCommand("physcannon_mega_enabled", "1")
+    RunConsoleCommand("physcannon_mega_enabled", "1") -- there's probably a better way to do this
     timer.Simple(4, function()
         SendTimerEnd(engine.TickCount() + (desiredTime * 66))
         for _, ply in ipairs(player.GetAll()) do
@@ -744,6 +973,7 @@ function endDodgeball()
     hook.Remove("PlayerSpawn", "DodgeballTP")
     hook.Remove("PlayerLoadout", "Dodgeball")
     hook.Add("PlayerLoadout", "Default", function(ply) return true end)
+    startLobbySpawn()
     unmuteMainTrack()
     for _, ply in ipairs(player.GetAll()) do
         ply:StripWeapons()
@@ -761,15 +991,16 @@ function endDodgeball()
     RunConsoleCommand("physcannon_mega_enabled", "0")
 end
 
-function lookUpTeleport()
+function lookUpTeleport(ply)
     -- survival
-    for _, ply in ipairs(player.GetAll()) do
-        for _, ent in ipairs(ents.FindByClass("info_teleport_destination")) do
-            if ent:GetName() == ("mapsquare" .. "_player_" .. getTeamNameFromID(ply:Team()) .. "tpdest") then
-                ply:SetPos(ent:GetPos())
-                ply:SetEyeAngles(ent:GetAngles())
-                break
-            end
+    local chosen = math.random(1, 4)
+    for _, ent in ipairs(ents.FindByClass("info_teleport_destination")) do
+        if ent:GetName() == ("mapsquare" .. "_player_" .. getTeamNameFromID(ply:Team()) .. "tpdest" .. tostring(chosen)) then
+            ply:SetPos(ent:GetPos())
+            ply:SetEyeAngles(ent:GetAngles())
+            ply:SetWalkSpeed(100)
+            ply:SetRunSpeed(150)
+            break
         end
     end
 end
@@ -777,6 +1008,8 @@ end
 function beginLookUp()
     hook.Add("PlayerSpawn", "LookUpTP", lookUpTeleport)
     local desiredTime = GetConVar("sts_survival_time"):GetInt()
+    beginSurvival()
+    stopLobbySpawn()
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
     end
@@ -786,33 +1019,67 @@ function beginLookUp()
     end)
     timer.Simple(3, function()
         SendServerMessage("Look Up!", Color(255, 0, 255), 2)
-        LookUpSound = playGlobalSound("bm_sts_sounds/go_together_ashija.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        LookUpSound = playGlobalSound("bm_sts_sounds/cp_violation.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
     timer.Simple(4, function()
         SendTimerEnd(engine.TickCount() + (desiredTime * 66))
+        local chosen = math.random(1, 5)
         for _, ply in ipairs(player.GetAll()) do
             for _, ent in ipairs(ents.FindByClass("info_teleport_destination")) do
-                if ent:GetName() == ("mapsquare" .. "_player_" .. getTeamNameFromID(ply:Team()) .. "tpdest") then
+                if ent:GetName() == ("mapsquare_" .. getTeamNameFromID(ply:Team()) .. "spawn" .. tostring(chosen)) then
                     ply:SetPos(ent:GetPos())
                     ply:SetEyeAngles(ent:GetAngles())
+                    ply:SetWalkSpeed(100)
+                    ply:SetRunSpeed(150)
+                    ply:SetHealth(1)
                     break
                 end
             end
         end
+        timer.Create("lookUpSpawning", 2, 0, function()
+            for _, ent in ipairs(ents.GetAll()) do
+                if ent:GetName() == "mapsquare_bonus_hacktemp" then
+                    ent:Fire("ForceSpawn")
+                end
+            end
+        end)
     end)
-    timer.Simple(desiredTime + 4, function()
+    timer.Create("checkIfAllDead", 1, 0, function()
+        local allDead = true
+        for _, ply in ipairs(player.GetAll()) do
+            if bonusSurvivors[ply:SteamID()] == true then
+                allDead = false
+                break
+            end
+        end
+        if allDead == true then
+            endLookUp()
+            LookUpSound:Stop()
+            LookUpSound = nil -- clear from memory
+            timer.Remove("checkIfAllDead")
+            timer.Remove("endThing")
+            SendTimerEnd(0)
+        end
+    end)
+    timer.Create("endThing", desiredTime + 4, 1, function()
         endLookUp()
         LookUpSound:Stop()
         LookUpSound = nil -- clear from memory
+        timer.Remove("checkIfAllDead")
     end)
 end
 
 function endLookUp()
     hook.Remove("PlayerSpawn", "LookUpTP")
     unmuteMainTrack()
+    endSurvival()
+    startLobbySpawn()
     for _, ply in ipairs(player.GetAll()) do
         teleportToTeamSpawn(ply)
+        ply:SetWalkSpeed(200)
+        ply:SetRunSpeed(400)
     end
+    timer.Remove("lookUpSpawning")
     for _, ent in ipairs(ents.GetAll()) do
         if ent:GetClass() == "npc_manhack" then
             ent:Remove()
