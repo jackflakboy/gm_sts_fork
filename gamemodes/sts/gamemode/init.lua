@@ -357,6 +357,7 @@ hook.Add("PlayerSpawn", "UniversalPlayerSpawn", function(ply)
     -- one fucking tick, 
     timer.Simple(1 / 66, function()
         setTeamFull(ply, ply:Team())
+        ply:SetNoCollideWithTeammates( true )
     end)
 
     ply:SetupHands()
@@ -364,6 +365,8 @@ end)
 
 function teleportToTeamSpawn(ply)
     local teams = {"waiting_bluetp", "waiting_redtp", "waiting_greentp", "waiting_yellowtp"}
+
+    ply:SetHealth(100)
 
     local spawnPoint = teams[ply:Team()]
 
@@ -424,10 +427,18 @@ function GM:OnPlayerPhysicsPickup(ply, ent)
             SendBoxInfoToPlayer(ply, boxEnt)
         end
     end
+    if string.sub(ent:GetName(), 0, 4) == "flag" then
+        ply:SetWalkSpeed(100)
+        ply:SetRunSpeed(125)
+    end
 end
 
 function GM:OnPlayerPhysicsDrop(ply, ent)
     ClearBox(ply)
+    if string.sub(ent:GetName(), 0, 4) == "flag" then
+        ply:SetWalkSpeed(200)
+        ply:SetRunSpeed(400)
+    end
 end
 
 -- checks to see if server is empty on player disconnects
@@ -904,7 +915,7 @@ function roundReset()
 
     if highestscore >= GetConVar("sts_total_rounds"):GetInt() then
         gameOver()
-    elseif roundCounter % 2 == 0 and getChosenBonusRounds() ~= {} then
+    elseif roundCounter % 2 == 0 and #getChosenBonusRounds() ~= 0 then -- cannot check if table equal to empty table
         for _, ply in ipairs(player.GetAll()) do
             teleportToTeamSpawn(ply)
         end
@@ -930,6 +941,7 @@ function ReadyLeverPulled(teamName)
             required = required + 1
         end
     end
+    print("required " .. required)
 
     for _, ent in ipairs(ents.GetAll()) do
         for _, lever in ipairs(levers) do
@@ -938,6 +950,7 @@ function ReadyLeverPulled(teamName)
             end
         end
     end
+    print("pulled " .. pulled)
 
     if required == pulled then
         SendServerMessage("All Teams Ready!", Color(255, 255, 255))
@@ -1005,7 +1018,8 @@ function beginFight()
     local teamMobs = {} -- {1 = ..., 4 = ...}
     local delay
 
-    for _, id in ipairs(teamsToSpawn) do
+    for _, id in pairs(teamsToSpawn) do
+        PrintTable(teams[id].spawners)
         for _, spawner in ipairs(teams[id].spawners) do
             if teamMobs[id] == nil then
                 teamMobs[id] = spawner[1].mob:getSpawns(id, spawner[1].strength)
@@ -1015,7 +1029,7 @@ function beginFight()
         end
     end
 
-    for i, mobs in ipairs(teamMobs) do
+    for i, mobs in pairs(teamMobs) do
         delay = 0
 
         for _, mob in ipairs(mobs) do
@@ -1029,8 +1043,7 @@ function beginFight()
 
     local alive = {}
 
-    for _, id in ipairs(teamsToSpawn) do
-        print("adding " .. id)
+    for _, id in pairs(teamsToSpawn) do
 
         if id == 1 then
             alive["blueteam"] = 0
@@ -1301,7 +1314,8 @@ function cleanupMap(map)
 end
 
 function doBonusRound()
-    PrintMessage(HUD_PRINTTALK, "This is when a bonus round would happen, but they haven't been implemented yet. Sorry!")
+    getBonusRoundBeginFunc()()
+    nextBR = chooseBonusRound()
 end
 
 function getPlayingTeams()
@@ -1324,7 +1338,7 @@ function gameOver()
     local highestscore = 0
     stopLobbySpawn()
     stopGameSpawn()
-    playGlobalSound("bm_sts_sounds/end_win.wav")
+    endWinSound = playGlobalSound("bm_sts_sounds/end_win.wav")
 
     for _, teamID in ipairs(getPlayingTeams()) do
         if team.GetScore(teamID) > highestscore then
@@ -1373,11 +1387,12 @@ function gameOver()
             timer.Simple(0.1, function()
                 ply:SetWalkSpeed(100)
                 ply:SetRunSpeed(200)
+                ply:SetNoCollideWithTeammates( true )
             end)
         end
     end)
 
-    hook.Add("PlayerDeath", "GlobalDeathMessage", function(victim, inflictor, attacker)
+    hook.Add("PlayerDeath", "RespawnLoser", function(victim, inflictor, attacker)
         timer.Simple(2, function()
             if victim:Alive() == false then
                 victim:Spawn()
