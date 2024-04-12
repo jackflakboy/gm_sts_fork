@@ -2,22 +2,27 @@
 local teamProperties = {
     [1] = {
         color = Vector(0, 0, 1.0),
+        outfitterColor = "28 141 255",
         namePrefix = "Blueply"
     },
     [2] = {
         color = Vector(1.0, 0, 0),
+        outfitterColor = "255 30 30",
         namePrefix = "Redply"
     },
     [3] = {
         color = Vector(0.0, 1.0, 0.0),
+        outfitterColor = "30 255 30",
         namePrefix = "Greenply"
     },
     [4] = {
         color = Vector(1.0, 1.0, 0.0),
+        outfitterColor = "255 2530 0",
         namePrefix = "Yellowply"
     },
     [0] = {
         color = Vector(0.0, 0.0, 0.0),
+        outfitterColor = "0 0 0",
         namePrefix = ""
     }
 }
@@ -35,8 +40,14 @@ function setTeamFull(ply, teamID)
     -- Using team properties dictionary to reduce code repetition
     local props = teamProperties[teamID]
     ply:SetKeyValue("targetname", props.namePrefix .. ply:GetName())
-    ply:SetPlayerColor(props.color)
-    ply:SetModel("models/player/police.mdl")
+
+    -- Setting the player color
+    if GetConVar("sts_outfitter_support"):GetInt() == 1 then
+        ply:SetKeyValue("rendercolor", props.outfitterColor)
+    else
+        ply:SetPlayerColor(props.color)
+        ply:SetModel("models/player/police.mdl")
+    end
     shouldStartLeverBeLocked()
 end
 

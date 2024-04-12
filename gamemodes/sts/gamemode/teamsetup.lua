@@ -97,6 +97,8 @@ teams[5] = {
     },
 }
 
+
+-- deprecated?
 function ply:SetupTeam(n)
     if not teams[n] then return end
     self:SetTeam(n)

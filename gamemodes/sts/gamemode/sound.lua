@@ -50,6 +50,7 @@ function beginPlayingMainTrack()
             -- PrintMessage(HUD_PRINTTALK, "zero sound")
         end
     end)
+    keepSoundAlive()
 end
 
 function muteMainTrack()
@@ -79,5 +80,3 @@ function keepSoundAlive()
         mainTrackSound = mainTrackSound or 1
     end)
 end
-
-keepSoundAlive()
