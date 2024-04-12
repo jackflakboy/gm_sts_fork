@@ -178,6 +178,5 @@ end
 if CLIENT then
     net.Receive("UpdateGravity", function()
         globalGravity = net.ReadFloat()
-        print(globalGravity)
     end)
 end

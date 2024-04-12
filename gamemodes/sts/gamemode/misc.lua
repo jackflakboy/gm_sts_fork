@@ -14,6 +14,7 @@ CreateConVar("sts_survival_time", "60", {FCVAR_GAMEDLL}, "Determine time for sur
 CreateConVar("sts_survival_points", "10", {FCVAR_GAMEDLL}, "Determine point reward for survival in bonus rounds.", 1, 100)
 CreateConVar("sts_ctf_points", "10", {FCVAR_GAMEDLL}, "Determine point reward for capturing the flag in bonus rounds.", 1, 100)
 CreateConVar("sts_battery_points", "5", {FCVAR_GAMEDLL}, "Determine point reward for delivering the battery in bonus rounds.", 1, 100)
+CreateConVar("sts_bonus_round_interval", "2", {FCVAR_GAMEDLL}, "Determine how many rounds between bonus rounds.", 1, 10)
 RunConsoleCommand("sv_gravity", "600") -- reset gravity
 RunConsoleCommand("sk_combine_s_kick", "6") -- change combine melee damage
 RunConsoleCommand("sbox_noclip", "0") -- ! disable ability to noclip. remember to change me  to 0 before release
@@ -85,8 +86,6 @@ function fillNextSpawns()
     }
 
     local mapSpawners = getMapSpawners(nextMap)
-    print("mapSpawners")
-    PrintTable(mapSpawners)
     local teamNames = {"blue", "red", "green", "yellow"}
     for _, teamName in ipairs(teamNames) do
         for _, spawner in ipairs(mapSpawners[teamName]) do

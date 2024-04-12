@@ -458,7 +458,7 @@ end
 
 -- runs endtimerstart() if server is empty
 function allgonecheck()
-    print(tonumber(player.GetCount()))
+    -- print(tonumber(player.GetCount()))
 
     if tonumber(player.GetCount()) == 0 then
         print("Server Empty")
@@ -915,7 +915,7 @@ function roundReset()
 
     if highestscore >= GetConVar("sts_total_rounds"):GetInt() then
         gameOver()
-    elseif roundCounter % 2 == 0 and #getChosenBonusRounds() ~= 0 then -- cannot check if table equal to empty table
+    elseif roundCounter % GetConVar("sts_bonus_round_interval"):GetInt() == 0 and #getChosenBonusRounds() ~= 0 then -- cannot check if table equal to empty table
         for _, ply in ipairs(player.GetAll()) do
             teleportToTeamSpawn(ply)
         end
@@ -941,7 +941,6 @@ function ReadyLeverPulled(teamName)
             required = required + 1
         end
     end
-    print("required " .. required)
 
     for _, ent in ipairs(ents.GetAll()) do
         for _, lever in ipairs(levers) do
@@ -950,7 +949,6 @@ function ReadyLeverPulled(teamName)
             end
         end
     end
-    print("pulled " .. pulled)
 
     if required == pulled then
         SendServerMessage("All Teams Ready!", Color(255, 255, 255))
