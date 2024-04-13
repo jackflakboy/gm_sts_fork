@@ -34,23 +34,25 @@ function playGlobalSound( FileName, teamID )
         end
         sound:Play()
     end
-    keepSoundAlive()
     return sound -- useful if you want to stop the sound yourself
 end
 
 
 function beginPlayingMainTrack()
-    mainTrack = playGlobalSound("bm_sts_sounds/miami_sky_hq.wav")
-    -- PrintMessage(HUD_PRINTTALK, "playing track")
-    timer.Create("RepeatTrack", 103, 0, function()
+    if not mainTrack then  -- Only create a new mainTrack if it does not already exist
         mainTrack = playGlobalSound("bm_sts_sounds/miami_sky_hq.wav")
-        -- PrintMessage(HUD_PRINTTALK, "playing track again")
         if mainTrackSound == 0 then
             mainTrack:ChangeVolume(0, 0)
-            -- PrintMessage(HUD_PRINTTALK, "zero sound")
         end
-    end)
-    keepSoundAlive()
+        -- Setting up the timer to restart the sound track
+        timer.Create("RepeatTrack", 103, 0, function()
+            mainTrack:Stop()  -- Stop the current track
+            mainTrack:Play()  -- Play the track again
+            if mainTrackSound == 0 then
+                mainTrack:ChangeVolume(0, 0)
+            end
+        end)
+    end
 end
 
 function muteMainTrack()
@@ -74,9 +76,11 @@ end
 -- ! if sounds are big or high in quantity, as the 32 bit version of gmod will crash at 4 gb of mem used
 -- TODO: Find a better solution
 function keepSoundAlive()
-    timer.Simple(99999999999, function()
+    timer.Create("KeepAlive", 1 / 66 , 0, function()  -- Run more frequently to renew the reference
         LoadedSounds = LoadedSounds or {}
         mainTrack = mainTrack or nil
         mainTrackSound = mainTrackSound or 1
     end)
 end
+
+keepSoundAlive()
