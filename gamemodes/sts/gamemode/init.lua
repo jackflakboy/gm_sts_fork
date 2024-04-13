@@ -711,12 +711,14 @@ function upgradeABox(cubeName)
     local desiredCube
     local availablePoints
     local currentTeam
+    local teamID
 
-    for _, teamName in ipairs(teams) do
+    for i, teamName in ipairs(teams) do
         for _, cube in pairs(teamName.cubes) do
             if cube.entity == cubeName then
                 currentTeam = teamName
                 desiredCube = cube
+                teamID = i
                 availablePoints = teamName.points
                 break
             end
@@ -725,7 +727,7 @@ function upgradeABox(cubeName)
 
     if desiredCube.level == 5 then
         for _, ply in ipairs(player.GetAll()) do
-            if ply:Team() == getTeamIDFromName(currentTeam) then
+            if ply:Team() == teamID then
                 ply:PrintMessage(HUD_PRINTTALK, "Max tech level reached!")
             end
         end
@@ -736,7 +738,7 @@ function upgradeABox(cubeName)
     for _, cube in pairs(currentTeam.cubes) do
         if cube ~= desiredCube and cube.level < desiredCube.level then
             for _, ply in ipairs(player.GetAll()) do
-                if ply:Team() == getTeamIDFromName(currentTeam) then
+                if ply:Team() == teamID then
                     ply:PrintMessage(HUD_PRINTTALK, "Tech level not available!")
                 end
             end
@@ -751,7 +753,7 @@ function upgradeABox(cubeName)
         -- print("actually upgrading")
     else
         for _, ply in ipairs(player.GetAll()) do
-            if ply:Team() == getTeamIDFromName(currentTeam) then
+            if ply:Team() == teamID then
                 ply:PrintMessage(HUD_PRINTTALK, "Cannot Afford!")
             end
         end
@@ -761,7 +763,7 @@ function upgradeABox(cubeName)
 
     if currentTeam.cubes["cube1"].level == currentTeam.cubes["cube2"].level and currentTeam.cubes["cube3"].level == currentTeam.cubes["cube4"].level and currentTeam.cubes["cube2"].level == currentTeam.cubes["cube3"].level then
         for _, ply in ipairs(player.GetAll()) do
-            if ply:Team() == getTeamIDFromName(currentTeam) then
+            if ply:Team() == teamID then
                 ply:PrintMessage(HUD_PRINTTALK, "New Tech Level!")
             end
         end
@@ -769,10 +771,10 @@ function upgradeABox(cubeName)
         local funny = math.random(1, 100)
 
         if funny == 1 then
-            playGlobalSound("sts_sounds_new/newtechlevel_funny.wav", getTeamIDFromName(currentTeam))
+            playGlobalSound("sts_sounds_new/newtechlevel_funny.wav", teamID)
         else
             local variant = math.random(1, 3)
-            playGlobalSound("sts_sounds_new/newtechlevel" .. variant .. ".wav", getTeamIDFromName(currentTeam))
+            playGlobalSound("sts_sounds_new/newtechlevel" .. variant .. ".wav", teamID)
         end
     end
 
@@ -786,13 +788,13 @@ function randomizeABox(cubeName)
     -- PrintMessage(HUD_PRINTTALK, "Randomizing " .. cubeName .. "!")
     local desiredCube
     local availablePoints
-    local currentTeam
+    local teamID
 
-    for _, teamName in ipairs(teams) do
+    for i, teamName in ipairs(teams) do
         for _, cube in pairs(teamName.cubes) do
             if cube.entity == cubeName then
                 desiredCube = cube
-                currentTeam = teamName
+                teamID = i
                 availablePoints = teamName.points
                 break
             end
@@ -801,7 +803,7 @@ function randomizeABox(cubeName)
 
     if availablePoints <= 0 then
         for _, ply in ipairs(player.GetAll()) do
-            if ply:Team() == getTeamIDFromName(currentTeam) then
+            if ply:Team() == teamID then
                 ply:PrintMessage(HUD_PRINTTALK, "Cannot afford!")
             end
         end
