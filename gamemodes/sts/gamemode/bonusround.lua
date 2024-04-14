@@ -473,10 +473,12 @@ function beginBattery()
                     table.insert(possibleBatterySpawns, i)
                 end
             end
-            local chosenSpawn = possibleBatterySpawns[math.random(#possibleBatterySpawns)]
-            for _, ent in ipairs(ents.GetAll()) do
-                if ent:GetName() == "mapctf_battery_tp" .. tostring(chosenSpawn) then
-                    ent:Fire("ForceSpawn")
+            if #possibleBatterySpawns ~= 0 then
+                local chosenSpawn = possibleBatterySpawns[math.random(#possibleBatterySpawns)]
+                for _, ent in ipairs(ents.GetAll()) do
+                    if ent:GetName() == "mapctf_battery_tp" .. tostring(chosenSpawn) then
+                        ent:Fire("ForceSpawn")
+                    end
                 end
             end
         end)
@@ -714,7 +716,7 @@ function beginRavenholm()
     end)
     timer.Simple(3, function()
         SendServerMessage("We went to Ravenholm!", Color(255, 0, 255), 2)
-        RavenholmSound = playGlobalSound("bm_sts_sounds/go_together_ashija.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        RavenholmSound = playGlobalSound("bm_sts_sounds/HNG3r.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
     timer.Simple(4, function()
         SendTimerEnd(engine.TickCount() + (desiredTime * 66))
@@ -940,7 +942,7 @@ function beginDodgeball()
     end)
     timer.Simple(3, function()
         SendServerMessage("Dodgeball!", Color(255, 0, 255), 2)
-        DodgeballSound = playGlobalSound("bm_sts_sounds/brane_scan.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        DodgeballSound = playGlobalSound("bm_sts_sounds/celestial.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
     hook.Remove("PlayerLoadout", "Default")
     hook.Add("PlayerLoadout", "Dodgeball", function(ply)
