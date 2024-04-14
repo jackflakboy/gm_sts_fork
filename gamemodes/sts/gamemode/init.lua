@@ -1404,7 +1404,7 @@ function gameOver()
         gameReset()
     end)
 
-    timer.simple(40, function() -- this will never actually run and is just to prevent the garbage collector from removing the sound
+    timer.Simple(40, function() -- this will never actually run and is just to prevent the garbage collector from removing the sound
         endWinSound:Stop()
     end)
 end
