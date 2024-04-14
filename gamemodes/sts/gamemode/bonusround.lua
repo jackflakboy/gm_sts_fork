@@ -589,6 +589,7 @@ end
 function endCrabRave()
     hook.Remove("PlayerSpawn", "CrabRaveTP")
     startLobbySpawn()
+    timer.Remove("checkIfAllDead")
     for _, ent in ipairs(ents.GetAll()) do
         if ent:GetClass() == "npc_headcrab_fast" then
             ent:Remove()
@@ -787,6 +788,7 @@ end
 function endRavenholm()
     hook.Remove("PlayerSpawn", "RavenholmTP")
     startLobbySpawn()
+    timer.Remove("checkIfAllDead")
     for _, ent in ipairs(ents.GetAll()) do
         if ent:GetClass() == "npc_fastzombie" then
             ent:Remove()
@@ -1067,12 +1069,12 @@ function beginLookUp()
         endLookUp()
         LookUpSound:Stop()
         LookUpSound = nil -- clear from memory
-        timer.Remove("checkIfAllDead")
     end)
 end
 
 function endLookUp()
     hook.Remove("PlayerSpawn", "LookUpTP")
+    timer.Remove("checkIfAllDead")
     unmuteMainTrack()
     endSurvival()
     startLobbySpawn()
