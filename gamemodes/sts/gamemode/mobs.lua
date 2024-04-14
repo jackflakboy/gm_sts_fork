@@ -53,7 +53,7 @@ mobs[1] = {
     ["headcrab"] = Mob.new("Headcrab", {"npc_headcrab"}, 1),
     ["blackheadcrab"] = Mob.new("Black Headcrab", {"npc_blackheadcrab"}, 1),
     ["fastheadcrab"] = Mob.new("Fast Headcrab", {"npc_fastheadcrab"}, 1),
-    ["manhack"] = Mob.new("Manhack", {"npc_manhack"}, 1),
+    ["manhack"] = Mob.new("Manhack", {"npc_manhack"}, 1, 0.5),
     ["crowbar"] = Mob.new("Crowbar Guy", {"npc_crowbar"}, 1),
     ["stun"] = Mob.new("Stop Resisting", {"npc_stun"}, 1),
     ["torso"] = Mob.new("Zombie Torso", {"npc_torso"}, 1)
@@ -66,9 +66,9 @@ mobs[2] = {
     ["cop"] = Mob.new("Metrocop", {"npc_cop"}, 1),
     ["zombie"] = Mob.new("Zombie", {"npc_zombie"}, 1),
     ["antlion"] = Mob.new("Antlion", {"npc_antlion"}, 1),
-    ["triplefastheadcrab"] = Mob.new("Fast Headcrab (x3)", {"npc_fastheadcrab"}, 3),
-    ["doublestun"] = Mob.new("Stop Resisting (x2)", {"npc_stun"}, 2),
-    ["triplemanhack"] = Mob.new("Manhack (x3)", {"npc_manhack"}, 3)
+    ["triplefastheadcrab"] = Mob.new("Fast Headcrab (x3)", {"npc_fastheadcrab"}, 3, 0.5),
+    ["doublestun"] = Mob.new("Stop Resisting (x2)", {"npc_stun"}, 2, 0.75),
+    ["triplemanhack"] = Mob.new("Manhack (x3)", {"npc_manhack"}, 3, 0.3)
 }
 
 mobs[3] = {
@@ -76,9 +76,9 @@ mobs[3] = {
     ["barney"] = Mob.new("Barney", {"npc_barney"}, 1),
     ["vort"] = Mob.new("Vortigaunt", {"npc_vort"}, 1),
     ["monk"] = Mob.new("Monk", {"npc_monk"}, 1),
-    ["suicide"] = Mob.new("Suicide", {"npc_suicide"}, 1),
+    ["suicide"] = Mob.new("Suicide", {"npc_suicide"}, 1, 0.5),
     ["healer"] = Mob.new("Healer", {"npc_healer"}, 1),
-    ["doublezombie"] = Mob.new("Zombie (x2)", {"npc_zombie"}, 1),
+    ["doublezombie"] = Mob.new("Zombie (x2)", {"npc_zombie"}, 1, 0.75),
     ["beefcake"] = Mob.new("Beefcake", {"npc_beefcake"}, 1)
 }
 
@@ -89,7 +89,7 @@ mobs[4] = {
     ["valkyrie"] = Mob.new("Valkyrie", {"npc_valkyrie"}, 1),
     ["antlion"] = Mob.new("Antlion (x5)", {"npc_antlion"}, 5, 0.5),
     ["healer"] = Mob.new("Healer (x3)", {"npc_healer"}, 3),
-    ["bombsquad"] = Mob.new("Bombing Squad", {"npc_bombsquad"}, 5),
+    ["bombsquad"] = Mob.new("Bombing Squad", {"npc_bombsquad"}, 5, 0.3),
     ["elitesquad"] = Mob.new("Elite Squad", {"npc_elitesquad_ar", "npc_elitesquad_shotgun"}, 1, 1)
 }
 
