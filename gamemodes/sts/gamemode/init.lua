@@ -1369,8 +1369,8 @@ function gameOver()
                 ply:SetPos(winnertpcoords)
             else
                 ply:SetPos(losertpcoords)
-                ply:SetWalkSpeed(100)
-                ply:SetRunSpeed(200)
+                ply:SetWalkSpeed(75)
+                ply:SetRunSpeed(125)
             end
         end)
 
@@ -1385,8 +1385,8 @@ function gameOver()
 
             -- this is necessary because the player spawn hook is called before the player is actually spawned
             timer.Simple(0.1, function()
-                ply:SetWalkSpeed(100)
-                ply:SetRunSpeed(200)
+                ply:SetWalkSpeed(75)
+                ply:SetRunSpeed(125)
                 ply:SetNoCollideWithTeammates( true )
             end)
         end
@@ -1402,5 +1402,9 @@ function gameOver()
 
     timer.Simple(30, function()
         gameReset()
+    end)
+
+    timer.simple(40, function() -- this will never actually run and is just to prevent the garbage collector from removing the sound
+        endWinSound:Stop()
     end)
 end
