@@ -1,4 +1,4 @@
-CreateConVar("sts_starting_points", "20", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Starting points, no effect after game start.", 1, 80)
+CreateConVar("sts_starting_points", "20", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Starting points. No effect after game start.", 1, 80)
 CreateConVar("sts_total_rounds", "5", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Amount of rounds to play. No effect after game start.", 1, 24)
 CreateConVar("sts_minimum_players", "2", {FCVAR_GAMEDLL}, "Minimum players required before game can start.", 0, 16)
 CreateConVar("sts_outfitter_support", "0", {FCVAR_GAMEDLL}, "Change how team recognition is handled if using outfitter.", 0, 1)
@@ -15,6 +15,8 @@ CreateConVar("sts_survival_points", "10", {FCVAR_GAMEDLL}, "Determine point rewa
 CreateConVar("sts_ctf_points", "10", {FCVAR_GAMEDLL}, "Determine point reward for capturing the flag in bonus rounds.", 1, 100)
 CreateConVar("sts_battery_points", "5", {FCVAR_GAMEDLL}, "Determine point reward for delivering the battery in bonus rounds.", 1, 100)
 CreateConVar("sts_bonus_round_interval", "2", {FCVAR_GAMEDLL}, "Determine how many rounds between bonus rounds.", 1, 10)
+CreateConVar("sts_winner_points", "6", {FCVAR_GAMEDLL}, "Determine point reward for winning a round.", 1, 100)
+CreateConVar("sts_loser_points", "5", {FCVAR_GAMEDLL}, "Determine point reward for losing a round.", 1, 100)
 RunConsoleCommand("sv_gravity", "600") -- reset gravity
 RunConsoleCommand("sk_combine_s_kick", "6") -- change combine melee damage
 RunConsoleCommand("sbox_noclip", "0") -- ! disable ability to noclip. remember to change me  to 0 before release
@@ -116,7 +118,7 @@ end
 
 -- Starting to think that maybe the garbage collector is to blame for init.lua:542 being nil sometimes, so I'm going to try to keep the variables alive
 function testKeepVariablesAlive()
-    timer.Simple(999999999999, function()
+    timer.Simple(1 / 66 , function()
         nextMapSpawnLocations = nextMapSpawnLocations or {}
         nextMap = nextMap or ""
         nextBR = nextBR or ""
@@ -139,3 +141,23 @@ function getTeamNameFromID(teamName1)
 
     return teamIDs[teamName1]
 end
+
+cvars.AddChangeCallback("sts_forbid_dev_room", function(convarName, valueOld, valueNew)
+    if valueNew == "0" then
+        print("gyas")
+
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "dev_secret_button" then
+                ent:Fire("unlock")
+                break
+            end
+        end
+    else
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "dev_secret_button" then
+                ent:Fire("lock")
+                break
+            end
+        end
+    end
+end)

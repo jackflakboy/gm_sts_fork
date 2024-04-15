@@ -209,6 +209,7 @@ function beginElMatador()
             ElMatadorSound = nil -- clear from memory
             timer.Remove("checkIfAllDead")
             timer.Remove("endThing")
+            SendTimerEnd(0)
         end
     end)
     timer.Create("endThing", desiredTime + 4, 1, function()
@@ -221,6 +222,7 @@ end
 function endElMatador()
     hook.Remove("PlayerSpawn", "ElMatadorTP")
     timer.Remove("checkIfAllDead")
+    SendTimerEnd(0)
     startLobbySpawn()
     for _, ent in ipairs(ents.GetAll()) do
         if ent:GetClass() == "npc_antlionguard" then
@@ -577,6 +579,7 @@ function beginCrabRave()
             timer.Remove("checkIfAllDead")
             timer.Remove("endThing")
             timer.Remove("HeadCrabSpawn")
+            SendTimerEnd(0)
         end
     end)
     timer.Create("endThing", desiredTime + 4, 1, function()
@@ -590,6 +593,7 @@ function endCrabRave()
     hook.Remove("PlayerSpawn", "CrabRaveTP")
     startLobbySpawn()
     timer.Remove("checkIfAllDead")
+    SendTimerEnd(0)
     for _, ent in ipairs(ents.GetAll()) do
         if ent:GetClass() == "npc_headcrab_fast" then
             ent:Remove()
@@ -1075,6 +1079,7 @@ end
 function endLookUp()
     hook.Remove("PlayerSpawn", "LookUpTP")
     timer.Remove("checkIfAllDead")
+    SendTimerEnd(0)
     unmuteMainTrack()
     endSurvival()
     startLobbySpawn()

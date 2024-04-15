@@ -31,10 +31,7 @@ function setTeamFull(ply, teamID)
     -- Clearer message
     -- local teamEmpty = team.NumPlayers(teamID) == 0
     -- print("The team you want to join IS" .. (teamEmpty and "" or " NOT") .. " empty.")
-    if team.NumPlayers(teamID) > 3 then
-        ply:PrintMessage(HUD_PRINTTALK, "That team is full!")
-        return
-    end
+
     -- Setting the team
     ply:SetTeam(teamID)
     -- Using team properties dictionary to reduce code repetition
@@ -59,6 +56,21 @@ concommand.Add("set_team", function(ply, cmd, args)
         return
     end
 
+    if team.NumPlayers(input) > 3 then
+        ply:PrintMessage(HUD_PRINTTALK, "That team is full!")
+        return
+    end
+
+    if ply:Team() ~= 0 and gameStartedServer and GetConVar("sts_allow_team_swapping"):GetInt() == 0 then
+        ply:PrintMessage(HUD_PRINTTALK, "You can't change teams midgame!")
+        return
+    end
+
+    if GetConVar("sts_random_teams"):GetInt() ~= 0 then
+        ply:PrintMessage(HUD_PRINTTALK, "Teams are locked!")
+        return
+    end
+
     setTeamFull(ply, input)
 end)
 
@@ -75,15 +87,6 @@ concommand.Add("pntadd", function(ply, cmd, args)
     end
 
     print("Point Boost")
-end, nil, nil, FCVAR_CHEAT)
-
--- broke
-concommand.Add("newround", function(args)
-    for k, v in ipairs(ents.GetAll()) do
-        if v:GetName() == "newround_relay_nodelay" then
-            v:Fire("Trigger")
-        end
-    end
 end, nil, nil, FCVAR_CHEAT)
 
 concommand.Add("flagspawn", function(args)

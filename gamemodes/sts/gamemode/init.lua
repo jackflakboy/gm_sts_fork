@@ -10,6 +10,7 @@ AddCSLuaFile("mobs.lua")
 AddCSLuaFile("sound.lua")
 AddCSLuaFile("teleports.lua")
 AddCSLuaFile("net.lua")
+-- AddCSLuaFile("entities/team_indicator/init.lua")
 include("bonusround.lua")
 include("concommands.lua")
 include("shared.lua")
@@ -22,6 +23,7 @@ include("mobs.lua")
 include("triggers.lua")
 include("sound.lua")
 include("teleports.lua")
+-- include("entities/team_indicator/init.lua")
 math.randomseed(os.time())
 nextMap = ""
 nextBR = ""
@@ -157,26 +159,6 @@ function lockButtonsAfterGameStart()
     end
 end
 
-cvars.AddChangeCallback("sts_forbid_dev_room", function(convarName, valueOld, valueNew)
-    if valueNew == "0" then
-        print("gyas")
-
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "dev_secret_button" then
-                ent:Fire("unlock")
-                break
-            end
-        end
-    else
-        for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "dev_secret_button" then
-                ent:Fire("lock")
-                break
-            end
-        end
-    end
-end)
-
 cvars.AddChangeCallback("sts_minimum_players", function(convarName, valueOld, valueNew)
     shouldStartLeverBeLocked()
 end)
@@ -198,11 +180,13 @@ end
 function shouldStartLeverBeLocked()
     -- PrintMessage(HUD_PRINTTALK, "Checking!")
     local teamedPlayers = getAmountOfTeamedPlayers()
+    local totalPlayers = player.GetCount()
     local minimumRequired = GetConVar("sts_minimum_players"):GetInt()
+    local randomizedTeams = GetConVar("sts_random_teams"):GetInt()
 
     for _, ent in ipairs(ents.GetAll()) do
         if ent:GetName() == "waiting_lobby_readylever" then
-            if teamedPlayers >= minimumRequired and gameStartedServer == false then
+            if (teamedPlayers >= minimumRequired or (randomizedTeams and totalPlayers >= minimumRequired)) and gameStartedServer == false then
                 ent:Fire("Unlock")
                 -- PrintMessage(HUD_PRINTTALK, "Unlocked!")
 
@@ -216,7 +200,7 @@ function shouldStartLeverBeLocked()
         end
 
         if ent:GetName() == "startdelay_light_r" then
-            if teamedPlayers < minimumRequired and gameStartedServer == false then
+            if (teamedPlayers < minimumRequired or (randomizedTeams and totalPlayers < minimumRequired)) and gameStartedServer == false then
                 ent:Fire("TurnOn")
             else
                 ent:Fire("TurnOff")
@@ -224,7 +208,7 @@ function shouldStartLeverBeLocked()
         end
 
         if ent:GetName() == "startdelay_light_g" then
-            if teamedPlayers >= minimumRequired or gameStartedServer == true then
+            if (teamedPlayers >= minimumRequired or (randomizedTeams and totalPlayers >= minimumRequired)) or gameStartedServer == true then
                 ent:Fire("TurnOn")
             else
                 ent:Fire("TurnOff")
@@ -475,7 +459,7 @@ end
 
 -- resets the game by reloading the map
 function gameReset()
-    RunConsoleCommand("changelevel", "gm_sts_new") -- should've done this from the beginning
+    RunConsoleCommand("changelevel", "gm_sts") -- should've done this from the beginning
 end
 
 function addTeamPoints(teamName, change)
@@ -511,7 +495,7 @@ function beginTeamAssignment()
 
         -- name assigned after 1 tick
         timer.Simple(1 / 66, function()
-            if (npcClass == "npc_headcrab" or npcClass == "npc_headcrab_fast" or npcClass == "npc_headcrab_black" or npcClass == "npc_manhack") and ent:GetName() == "" then return end -- mob was spawned by already existing mob and does not need teleporting
+            if ((npcClass == "npc_headcrab" or npcClass == "npc_headcrab_fast" or npcClass == "npc_headcrab_black" or npcClass == "npc_manhack") and ent:GetName() == "") and not string.find(ent:GetName(), "notp") or npcClass == "npc_turret_floor" then return end -- mob was spawned by already existing mob and does not need teleporting
 
             -- i forgot why this is waiting an extra tick
             timer.Simple(1 / 66, function()
@@ -527,12 +511,12 @@ function beginTeamAssignment()
         end)
 
         if npcClass == "npc_poisonzombie" then
-            timer.Simple(1 / 66, function()
+            timer.Simple(10 / 66, function()
                 local poisonZombieTeam = ent:GetName()
                 -- Start a timer that runs every second
                 print("Starting poison zombie check" .. ent:EntIndex())
 
-                timer.Create("CheckForHeadcrabs" .. ent:EntIndex(), 0.1, 600, function()
+                timer.Create("CheckForHeadcrabs" .. ent:EntIndex(), 0.1, 6000, function()
                     if not ent:IsValid() or ent:EntIndex() == 0 then
                         timer.Remove("CheckForHeadcrabs" .. ent:EntIndex())
 
@@ -541,12 +525,20 @@ function beginTeamAssignment()
 
                     local foundEntities = ents.FindInSphere(ent:GetPos(), 100) -- adjust radius as necessary
 
-                    for _, foundEnt in ipairs(foundEntities) do
+                    for _, foundEnt in pairs(foundEntities) do
                         if foundEnt:GetClass() == "npc_headcrab_poison" and foundEnt:GetName() == "" then
+                            local teamColors = {
+                                ["redteam"] = "255 0 0",
+                                ["blueteam"] = "0 0 255",
+                                ["yellowteam"] = "255 255 0",
+                                ["greenteam"] = "0 255 0"
+                            }
+
+                            -- PrintMessage(HUD_PRINTTALK, "found bastard named " .. foundEnt:GetName())
                             AssignTeam(foundEnt, poisonZombieTeam)
-                            --foundEnt:SetKeyValue("rendercolor", "255 30 30")
-                            print("Assigned headcrab team.")
                             foundEnt:SetMaxLookDistance(4000)
+                            foundEnt:SetKeyValue("rendercolor", teamColors[poisonZombieTeam:lower()])
+                            -- PrintMessage(HUD_PRINTTALK, "Assigned manhack team.")
                         end
                     end
                 end)
@@ -554,7 +546,7 @@ function beginTeamAssignment()
         end
 
         if npcClass == "npc_metropolice" then
-            timer.Simple(1 / 66, function()
+            timer.Simple(10 / 66, function()
                 local metrocopTeam = ent:GetName()
 
                 -- Start a timer that runs every second
@@ -566,9 +558,9 @@ function beginTeamAssignment()
                         return
                     end
 
-                    local foundEntities = ents.FindInSphere(ent:GetPos(), 50) -- adjust radius as necessary
+                    local foundEntities = ents.FindInSphere(ent:GetPos(), 100) -- adjust radius as necessary
 
-                    for _, foundEnt in ipairs(foundEntities) do
+                    for _, foundEnt in pairs(foundEntities) do
                         if foundEnt:GetClass() == "npc_manhack" and foundEnt:GetName() == "" then
                             local teamColors = {
                                 ["redteam"] = "255 0 0",
@@ -598,24 +590,21 @@ end
 hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
     local zombieTypes = {"npc_zombie", "npc_zombie_torso", "npc_fastzombie", "npc_poisonzombie"}
 
-    for _, type in ipairs(zombieTypes) do
+    for _, type in pairs(zombieTypes) do
         if npc:GetClass() == type then
             local deadZombiePos = npc:GetPos()
             local deadZombieTeam = npc:GetName()
 
             -- timer might be necessary as headcrab might not exist on same tick
-            timer.Create("CheckForHeadcrab" .. npc:EntIndex(), 0, 3, function()
+            timer.Create("CheckForHeadcrab" .. npc:EntIndex(), 1 / 66, 3, function()
                 print("Death headcrab check.")
                 local foundEntities = ents.FindInSphere(deadZombiePos, 25) -- radius needs adjusting
 
-                for _, ent in ipairs(foundEntities) do
+                for _, ent in pairs(foundEntities) do
                     if (ent:GetClass() == "npc_headcrab" or ent:GetClass() == "npc_headcrab_fast" or ent:GetClass() == "npc_headcrab_black") and ent:GetName() == "" then
                         AssignTeam(ent, deadZombieTeam)
                         --ent:SetKeyValue("rendercolor", "255 30 30") -- ! temp
                         print("Assigned headcrab team.")
-                        timer.Remove("CheckForHeadcrab" .. npc:EntIndex())
-
-                        return
                     end
                 end
             end)
@@ -641,12 +630,12 @@ function AssignTeam(ent, teamInput)
     end
 
     -- print("2Name is " .. ent:GetName())
-    for i, teamName in ipairs(npcColors) do
+    for i, teamName in pairs(npcColors) do
         teamEnts[i] = ents.FindByName(teamName)
     end
 
-    for i, teamName in ipairs(npcColors) do
-        for _, teamEntity in ipairs(teamEnts[i]) do
+    for i, teamName in pairs(npcColors) do
+        for _, teamEntity in pairs(teamEnts[i]) do
             -- to avoid self-love
             if ent ~= teamEntity and teamEntity:IsNPC() then
                 if string.find(ent:GetName(), teamName) then
@@ -688,6 +677,7 @@ end
 function startGame()
     PrintMessage(HUD_PRINTCENTER, "Ready!")
     RunConsoleCommand("sv_hibernate_think", "1")
+    randomizeTeams(GetConVar("sts_random_teams"):GetInt())
     gameStartedServer = true
     sendStartToPlayers()
     nextMap = chooseNextMap()
@@ -701,6 +691,27 @@ function startGame()
     end
 
     startLobbySpawn()
+end
+
+function randomizeTeams(mode)
+    if mode == 0 then return end -- no need to randomize teams
+
+    local players = player.GetAll()
+    local i = 1
+    if #players > 8 then mode = 2 end
+    local teamCount = mode * 2
+
+    while #players > 0 do
+        local playerIndex = math.random(1, #players)
+        local teamID = i % teamCount
+        if i % teamCount == 0 then
+            SetTeamFull(players[playerIndex], 4)
+        else
+            SetTeamFull(players[playerIndex], teamID)
+        end
+        table.remove(players, playerIndex)
+        i = i + 1
+    end
 end
 
 function upgradeABox(cubeName)
@@ -905,7 +916,7 @@ function getMapScreen(map)
 end
 
 function roundReset()
-    PrintMessage(HUD_PRINTTALK, "Resetting round!")
+    -- PrintMessage(HUD_PRINTTALK, "Resetting round!")
     roundCounter = roundCounter + 1
     local highestscore = 0
 
@@ -1035,9 +1046,13 @@ function beginFight()
         for _, mob in ipairs(mobs) do
             delay = delay + mob[2]
 
-            timer.Simple(delay, function()
-                mob[1]:Fire("ForceSpawn")
-            end)
+            -- if mob[3] then
+            --     timer.Simple(delay, mob[3](getTeamNameFromID(i), Vector(0,0,0)))
+            -- else
+                timer.Simple(delay, function()
+                    mob[1]:Fire("ForceSpawn")
+                end)
+            -- end
         end
     end
 
@@ -1116,24 +1131,26 @@ function beginFight()
             if amountalive == 1 then
                 timer.Remove("CheckForWin")
 
+                local difference = GetConVar("sts_winner_points"):GetInt() - GetConVar("sts_loser_points"):GetInt()
+
                 if winner == "blueteam" then
                     team.AddScore(1, 1)
-                    teams[1].points = teams[1].points + 1
+                    teams[1].points = teams[1].points + difference
                 elseif winner == "redteam" then
                     team.AddScore(2, 1)
-                    teams[2].points = teams[2].points + 1
+                    teams[2].points = teams[2].points + difference
                 elseif winner == "greenteam" then
                     team.AddScore(3, 1)
-                    teams[3].points = teams[3].points + 1
+                    teams[3].points = teams[3].points + difference
                 elseif winner == "yellowteam" then
                     team.AddScore(4, 1)
-                    teams[4].points = teams[4].points + 1
+                    teams[4].points = teams[4].points + difference
                 end
 
                 sound:Stop()
 
                 for teamID = 1, 4 do
-                    teams[teamID].points = teams[teamID].points + 5
+                    teams[teamID].points = teams[teamID].points + GetConVar("sts_loser_points"):GetInt()
                     SendPointsToTeamMembers(teamID)
                 end
 
@@ -1145,7 +1162,7 @@ function beginFight()
                 sound:Stop()
 
                 for teamID = 1, 4 do
-                    teams[teamID].points = teams[teamID].points + 5
+                    teams[teamID].points = teams[teamID].points + GetConVar("sts_loser_points"):GetInt()
                     SendPointsToTeamMembers(teamID)
                 end
 
@@ -1158,7 +1175,7 @@ function beginFight()
 end
 
 function endRound()
-    PrintMessage(HUD_PRINTTALK, "Round over!")
+    -- PrintMessage(HUD_PRINTTALK, "Round over!")
     endTeamAssignment()
     cleanupMap(nextMap)
     nextMap = chooseNextMap()

@@ -18,6 +18,7 @@ teams[1] = {
     },
     points = 0
 }
+team.SetColor(1, Color(51, 51, 255))
 
 teams[2] = {
     name = "Red",
@@ -36,6 +37,7 @@ teams[2] = {
     },
     points = 0
 }
+team.SetColor(2, Color(255, 0, 0))
 
 teams[3] = {
     name = "Green",
@@ -54,6 +56,7 @@ teams[3] = {
     },
     points = 0
 }
+team.SetColor(3, Color(0, 255, 0))
 
 teams[4] = {
     name = "Yellow",
@@ -72,6 +75,7 @@ teams[4] = {
     },
     points = 0
 }
+team.SetColor(4, Color(255, 255, 0))
 
 teams[0] = {
     name = "Empty",

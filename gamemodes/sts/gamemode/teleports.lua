@@ -35,13 +35,3 @@ end
 function stopGameSpawn()
     hook.Remove("PlayerSpawn", "GameSpawn")
 end
-
-function startSurvivalBonusRoundSpawn(bonusRound)
-    hook.Add("PlayerSpawn", "SurvivalBonusRoundSpawn", function(ply)
-        -- do stuff
-    end)
-end
-
-function stopSurvivalBonusRoundSpawn()
-    hook.Remove("PlayerSpawn", "SurvivalBonusRoundSpawn")
-end
