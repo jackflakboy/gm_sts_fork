@@ -49,23 +49,23 @@ function Mob:getSpawns(teamID, strength)
     return mobsToSpawn
 end
 
-function attachTeamIndicator(npc, teamID)
-    if not IsValid(npc) then return end
+-- function attachTeamIndicator(npc, teamID)
+--     if not IsValid(npc) then return end
 
-    -- Create the team indicator
-    local indicator = ents.Create("team_indicator")
-    if not IsValid(indicator) then return end
+--     -- Create the team indicator
+--     local indicator = ents.Create("team_indicator")
+--     if not IsValid(indicator) then return end
 
-    local teamColor = team.GetColor(teamID) -- Get the team color
+--     local teamColor = team.GetColor(teamID) -- Get the team color
 
-    -- Position it above the NPC's head
-    local offset = Vector(0, 0, 10) -- Change 90 to the desired height above the NPC
-    indicator:SetPos(npc:GetPos() + offset)
-    indicator:SetParent(npc)
-    indicator:SetLocalPos(offset)
-    indicator:SetColor(teamColor) -- Set the color based on the team
-    indicator:Spawn()
-end
+--     -- Position it above the NPC's head
+--     local offset = Vector(0, 0, 20) -- Change 90 to the desired height above the NPC
+--     indicator:SetPos(npc:GetPos() + offset)
+--     indicator:SetParent(npc)
+--     indicator:SetLocalPos(offset)
+--     indicator:SetColor(Color(255, 0, 0, 255)) -- Set the color based on the team
+--     indicator:Spawn()
+-- end
 
 -- local function spawnValkyrie(teamName, pos)
 --     -- Create the City Scanner
@@ -147,7 +147,7 @@ mobs[4] = {
     ["antlion"] = Mob.new("Antlion (x5)", {"npc_antlion"}, 5, 0.5),
     -- ["healer"] = Mob.new("Healer (x3)", {"npc_healer"}, 3), -- this guy sucks and should be replaced and also no relationship code to make him hate his own team yet
     ["bombsquad"] = Mob.new("Bombing Squad", {"npc_bombsquad"}, 3, 0.3),
-    ["elitesquad"] = Mob.new("Elite Squad", {"npc_elitesquad_ar", "npc_elitesquad_shotgun"}, 1, 1)
+    ["elitesquad"] = Mob.new("Elite Squad", {"npc_elitesquad_ar", "npc_elitesquad_shot"}, 1, 1)
 }
 
 cvars.AddChangeCallback("sts_episodic_content", function(convarName, valueOld, valueNew)

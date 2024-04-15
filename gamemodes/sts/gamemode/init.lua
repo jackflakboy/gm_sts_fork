@@ -382,13 +382,17 @@ end
 
 function GM:PlayerUse(ply, ent)
     if ent:GetName() == "waiting_blueteambutt" then
-        setTeamFull(ply, 1)
+        -- setTeamFull(ply, 1)
+        ply:ConCommand("set_team 1")
     elseif ent:GetName() == "waiting_redteambutt" then
-        setTeamFull(ply, 2)
+        -- setTeamFull(ply, 2)
+        ply:ConCommand("set_team 2")
     elseif ent:GetName() == "waiting_greenteambutt" then
-        setTeamFull(ply, 3)
+        -- setTeamFull(ply, 3)
+        ply:ConCommand("set_team 3")
     elseif ent:GetName() == "waiting_yellowteambutt" then
-        setTeamFull(ply, 4)
+        -- setTeamFull(ply, 4)
+        ply:ConCommand("set_team 4")
     end
 end
 
@@ -495,15 +499,25 @@ function beginTeamAssignment()
 
         -- name assigned after 1 tick
         timer.Simple(1 / 66, function()
-            if ((npcClass == "npc_headcrab" or npcClass == "npc_headcrab_fast" or npcClass == "npc_headcrab_black" or npcClass == "npc_manhack") and ent:GetName() == "") and not string.find(ent:GetName(), "notp") or npcClass == "npc_turret_floor" then return end -- mob was spawned by already existing mob and does not need teleporting
+            -- if (
+            -- (npcClass == "npc_headcrab" or
+            -- npcClass == "npc_headcrab_fast" or
+            -- npcClass == "npc_headcrab_black" or
+            -- npcClass == "npc_manhack") and
+            -- ent:GetName() == "") or
+            -- string.find(ent:GetName(), "notp") or
+            -- npcClass == "npc_turret_floor" then return end -- mob was spawned by already existing mob and does not need teleporting
+            if npcClass == "npc_turret_floor" then return end
+            if ent:GetName() == "" then return end
+            if string.find(ent:GetName(), "notp") then return end
 
             -- i forgot why this is waiting an extra tick
             timer.Simple(1 / 66, function()
                 -- PrintMessage(HUD_PRINTTALK, "teleporting!!!!! " .. ent:GetName() .. " " .. npcClass)
                 local randspawnpoint = math.random(1, 5)
-                print("teleporting to " .. randspawnpoint)
-                print("name is " .. ent:GetName())
-                print(string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1))
+                -- print("teleporting to " .. randspawnpoint)
+                -- print("name is " .. ent:GetName())
+                -- print(string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1))
                 ent:SetPos(nextMapSpawnLocations[string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1)][randspawnpoint][1]) -- TODO: frequently does nil values
                 ent:SetAngles(nextMapSpawnLocations[string.sub(string.lower(ent:GetName()), 1, string.find(string.lower(ent:GetName()), "team") - 1)][randspawnpoint][2])
                 ent:SetMaxLookDistance(4000)
