@@ -492,6 +492,7 @@ function beginTeamAssignment()
         local npcClass = ent:GetClass()
 
         timer.Simple(1 / 66, function()
+            if not ent:IsValid() or not ent:IsNPC() then return end
             if ent:GetName() ~= "" then
                 ent = AssignTeam(ent, ent:GetName())
             end
@@ -507,6 +508,7 @@ function beginTeamAssignment()
             -- ent:GetName() == "") or
             -- string.find(ent:GetName(), "notp") or
             -- npcClass == "npc_turret_floor" then return end -- mob was spawned by already existing mob and does not need teleporting
+            if not ent:IsValid() or not ent:IsNPC() then return end
             if npcClass == "npc_turret_floor" then return end
             if ent:GetName() == "" then return end
             if string.find(ent:GetName(), "notp") then return end
@@ -612,10 +614,19 @@ hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
             -- timer might be necessary as headcrab might not exist on same tick
             timer.Create("CheckForHeadcrab" .. npc:EntIndex(), 1 / 66, 3, function()
                 print("Death headcrab check.")
-                local foundEntities = ents.FindInSphere(deadZombiePos, 25) -- radius needs adjusting
+                local foundEntities = ents.FindInSphere(deadZombiePos, 100) -- radius needs adjusting
 
                 for _, ent in pairs(foundEntities) do
                     if (ent:GetClass() == "npc_headcrab" or ent:GetClass() == "npc_headcrab_fast" or ent:GetClass() == "npc_headcrab_black") and ent:GetName() == "" then
+                        local teamColors = {
+                            ["redteam"] = "255 0 0",
+                            ["blueteam"] = "0 0 255",
+                            ["yellowteam"] = "255 255 0",
+                            ["greenteam"] = "0 255 0"
+                        }
+
+                        ent:SetMaxLookDistance(4000)
+                        ent:SetKeyValue("rendercolor", teamColors[deadZombieTeam:lower()])
                         AssignTeam(ent, deadZombieTeam)
                         --ent:SetKeyValue("rendercolor", "255 30 30") -- ! temp
                         print("Assigned headcrab team.")
@@ -1240,7 +1251,16 @@ end
 
 function setupMap(map)
     for _, ent in ipairs(ents.GetAll()) do
-        if ent:GetName() == "map_push_" .. map then
+        if ent:GetName() == "map_push_red" then
+            ent:Fire("Enable")
+        end
+        if ent:GetName() == "map_push_blue" then
+            ent:Fire("Enable")
+        end
+        if ent:GetName() == "map_push_green" then
+            ent:Fire("Enable")
+        end
+        if ent:GetName() == "map_push_yellow" then
             ent:Fire("Enable")
         end
 
@@ -1302,7 +1322,16 @@ end
 
 function cleanupMap(map)
     for _, ent in ipairs(ents.GetAll()) do
-        if ent:GetName() == "map_push_" .. map then
+        if ent:GetName() == "map_push_red" then
+            ent:Fire("Disable")
+        end
+        if ent:GetName() == "map_push_blue" then
+            ent:Fire("Disable")
+        end
+        if ent:GetName() == "map_push_green" then
+            ent:Fire("Disable")
+        end
+        if ent:GetName() == "map_push_yellow" then
             ent:Fire("Disable")
         end
 
