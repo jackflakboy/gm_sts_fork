@@ -10,6 +10,7 @@ AddCSLuaFile("mobs.lua")
 AddCSLuaFile("sound.lua")
 AddCSLuaFile("teleports.lua")
 AddCSLuaFile("net.lua")
+AddCSLuaFile("testing.lua")
 -- AddCSLuaFile("entities/team_indicator/init.lua")
 include("bonusround.lua")
 include("concommands.lua")
@@ -23,6 +24,7 @@ include("mobs.lua")
 include("triggers.lua")
 include("sound.lua")
 include("teleports.lua")
+include("testing.lua")
 -- include("entities/team_indicator/init.lua")
 math.randomseed(os.time())
 nextMap = ""
@@ -42,9 +44,9 @@ gameStartedServer = false
 
 hook.Add("PlayerLoadout", "Default", function(ply) return true end)
 
-cvars.AddChangeCallback("sts_random_teams", function(convarName, valueOld, valueNew)
-    print("TODO: Create team door and open and close it")
-end)
+-- cvars.AddChangeCallback("sts_random_teams", function(convarName, valueOld, valueNew)
+--     print("TODO: Create team door and open and close it")
+-- end)
 
 cvars.AddChangeCallback("sts_force_bonus_rounds", function(convarName, valueOld, valueNew)
     for _, ent in ipairs(ents.GetAll()) do
@@ -494,12 +496,12 @@ function beginTeamAssignment()
         timer.Simple(1 / 66, function()
             if not ent:IsValid() or not ent:IsNPC() then return end
             if ent:GetName() ~= "" then
-                ent = AssignTeam(ent, ent:GetName())
+                ent = AssignTeam(ent, ent:GetName(), true)
             end
         end)
 
         -- name assigned after 1 tick
-        timer.Simple(2 / 66, function()
+        timer.Simple(6 / 66, function()
             -- if (
             -- (npcClass == "npc_headcrab" or
             -- npcClass == "npc_headcrab_fast" or
@@ -508,6 +510,11 @@ function beginTeamAssignment()
             -- ent:GetName() == "") or
             -- string.find(ent:GetName(), "notp") or
             -- npcClass == "npc_turret_floor" then return end -- mob was spawned by already existing mob and does not need teleporting
+
+
+            -- reacquire ent because it might have changed
+            ent = ents.GetByIndex(ent:EntIndex())
+
             if not ent:IsValid() or not ent:IsNPC() then return end
             if npcClass == "npc_turret_floor" then return end
             if ent:GetName() == "" then return end
@@ -530,9 +537,9 @@ function beginTeamAssignment()
             timer.Simple(10 / 66, function()
                 local poisonZombieTeam = ent:GetName()
                 -- Start a timer that runs every second
-                print("Starting poison zombie check" .. ent:EntIndex())
+                -- print("Starting poison zombie check" .. ent:EntIndex())
 
-                timer.Create("CheckForPoison" .. ent:EntIndex(), 0.1, 6000, function()
+                timer.Create("CheckForPoison" .. ent:EntIndex(), 1 / 66, 6000, function()
                     if not ent:IsValid() or ent:EntIndex() == 0 then
                         timer.Remove("CheckForPoison" .. ent:EntIndex())
 
@@ -550,11 +557,10 @@ function beginTeamAssignment()
                                 ["greenteam"] = "0 255 0"
                             }
 
-                            -- PrintMessage(HUD_PRINTTALK, "found bastard named " .. foundEnt:GetName())
-                            AssignTeam(foundEnt, poisonZombieTeam)
+                            -- PrintMessage(HUD_PRINTTALK, "found poison zombie")
+                            AssignTeam(foundEnt, poisonZombieTeam, false)
                             foundEnt:SetMaxLookDistance(4000)
                             foundEnt:SetKeyValue("rendercolor", teamColors[poisonZombieTeam:lower()])
-                            -- PrintMessage(HUD_PRINTTALK, "Assigned manhack team.")
                         end
                     end
                 end)
@@ -567,7 +573,7 @@ function beginTeamAssignment()
 
                 -- Start a timer that runs every second
                 -- PrintMessage(HUD_PRINTTALK, "Starting metrocop check" .. ent:EntIndex())
-                timer.Create("CheckForManhacks" .. ent:EntIndex(), 0.1, 6000, function()
+                timer.Create("CheckForManhacks" .. ent:EntIndex(), 1 / 66, 6000, function()
                     if not ent:IsValid() or ent:EntIndex() == 0 then
                         timer.Remove("CheckForManhacks" .. ent:EntIndex())
 
@@ -585,8 +591,8 @@ function beginTeamAssignment()
                                 ["greenteam"] = "0 255 0"
                             }
 
-                            -- PrintMessage(HUD_PRINTTALK, "found bastard named " .. foundEnt:GetName())
-                            AssignTeam(foundEnt, metrocopTeam)
+                            -- PrintMessage(HUD_PRINTTALK, "manhack found!")
+                            AssignTeam(foundEnt, metrocopTeam, false)
                             foundEnt:SetMaxLookDistance(4000)
                             foundEnt:SetKeyValue("rendercolor", teamColors[metrocopTeam:lower()])
                             -- PrintMessage(HUD_PRINTTALK, "Assigned manhack team.")
@@ -613,7 +619,7 @@ hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
 
             -- timer might be necessary as headcrab might not exist on same tick
             timer.Create("CheckForHeadcrab" .. npc:EntIndex(), 1 / 66, 3, function()
-                print("Death headcrab check.")
+                -- print("Death headcrab check.")
                 local foundEntities = ents.FindInSphere(deadZombiePos, 100) -- radius needs adjusting
 
                 for _, ent in pairs(foundEntities) do
@@ -627,9 +633,9 @@ hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
 
                         ent:SetMaxLookDistance(4000)
                         ent:SetKeyValue("rendercolor", teamColors[deadZombieTeam:lower()])
-                        AssignTeam(ent, deadZombieTeam)
+                        AssignTeam(ent, deadZombieTeam, false)
                         --ent:SetKeyValue("rendercolor", "255 30 30") -- ! temp
-                        print("Assigned headcrab team.")
+                        -- PrintMessage(HUD_PRINTTALK, "Assigned headcrab team.")
                     end
                 end
                 if not npc:IsValid() then
@@ -640,11 +646,21 @@ hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
     end
 end)
 
-function AssignTeam(ent, teamInput)
+function AssignTeam(ent, teamInput, tpDesired)
     if not ent:IsValid() or not ent:IsNPC() or ent:EntIndex() == 0 then return end
-    teamInput = teamInput or ""
 
     local npcColors = {"redteam", "blueteam", "greenteam", "yellowteam"}
+
+    local validInput = false
+    -- warn if teamInput is not valid team
+    for _, teamName in pairs(npcColors) do
+        if string.find(teamInput, teamName) then
+            validInput = true
+        end
+    end
+    if not validInput then
+        PrintMessage(HUD_PRINTTALK, "Warning! " .. teamInput .. " is not a valid team! NPC Class is " .. ent:GetClass() .. " with name " .. ent:GetName())
+    end
 
     local teamEnts = {}
 
@@ -664,12 +680,12 @@ function AssignTeam(ent, teamInput)
         for _, teamEntity in pairs(teamEnts[i]) do
             -- to avoid self-love
             if ent ~= teamEntity and teamEntity:IsNPC() then
-                if ent:GetName() == teamName then
+                if string.find(ent:GetName(), teamName) then
                     ent:AddEntityRelationship(teamEntity, D_LI, 10)
                     teamEntity:AddEntityRelationship(ent, D_LI, 10)
 
                     -- print(ent:GetClass() .. ent:GetName() .. " now likes " .. teamEntity:GetClass() .. teamEntity:GetName() .. "!")
-                    if ent:GetName() ~= teamEntity:GetName() then
+                    if not string.find(ent:GetName(), teamName) then
                         PrintMessage(HUD_PRINTTALK, "Warning! Opposite teams like each other!!! " .. ent:GetName() .. " " .. teamEntity:GetName())
                     end
                 else
@@ -677,12 +693,26 @@ function AssignTeam(ent, teamInput)
                     teamEntity:AddEntityRelationship(ent, D_HT, 10)
 
                     -- print(ent:GetClass() .. ent:GetName() .. " now hates " .. teamEntity:GetClass() .. teamEntity:GetName() .. "!")
-                    if ent:GetName() == teamEntity:GetName() then
+                    if string.find(ent:GetName(), teamName) then
                         PrintMessage(HUD_PRINTTALK, "Warning! Same teams hate each other!!! " .. ent:GetName() .. " " .. teamEntity:GetName())
                     end
                 end
             end
+            -- the following is REALLY slow and is an attempted bodge fix for the team self hatred. this might cause huge lag for games with lots of mobs!
+            -- not doing team hatred because there doesn't seem to be any issue with that currently
+            -- ! cannot emphasize enough how much this sucks, runs on every mob for every mob spawn this is O(n^2)
+            for _, teamEntity2 in pairs(teamEnts[i]) do
+                if teamEntity ~= teamEntity2 and teamEntity:IsNPC() and teamEntity2:IsNPC() then
+                    teamEntity:AddEntityRelationship(teamEntity2, D_LI, 10)
+                    teamEntity2:AddEntityRelationship(teamEntity, D_LI, 10)
+                end
+            end
         end
+    end
+
+    if not tpDesired then
+        ent:SetName(teamInput .. "notp")
+        -- PrintMessage(HUD_PRINTTALK, ent:GetClass() .. " " .. ent:GetName() .. " has been assigned to " .. teamInput .. " and will not be teleported.")
     end
 
     return ent
@@ -724,16 +754,16 @@ function randomizeTeams(mode)
 
     local players = player.GetAll()
     local i = 1
-    if #players > 8 then mode = 2 end
+    if #players > 8 then mode = 1 end
     local teamCount = mode * 2
 
     while #players > 0 do
         local playerIndex = math.random(1, #players)
         local teamID = i % teamCount
         if i % teamCount == 0 then
-            SetTeamFull(players[playerIndex], 4)
+            setTeamFull(players[playerIndex], 4)
         else
-            SetTeamFull(players[playerIndex], teamID)
+            setTeamFull(players[playerIndex], teamID)
         end
         table.remove(players, playerIndex)
         i = i + 1
@@ -1032,6 +1062,20 @@ function beginFight()
     startGameSpawn()
     setupMap(nextMap)
     local sound
+    for _, ent in ipairs(ents.GetAll()) do
+        if ent:GetName() == "map_push_red" then
+            ent:Fire("Enable")
+        end
+        if ent:GetName() == "map_push_blue" then
+            ent:Fire("Enable")
+        end
+        if ent:GetName() == "map_push_green" then
+            ent:Fire("Enable")
+        end
+        if ent:GetName() == "map_push_yellow" then
+            ent:Fire("Enable")
+        end
+    end
 
     if math.random(1, 2) == 1 then
         sound = playGlobalSound("bm_sts_sounds/brane_scan.wav")
@@ -1123,6 +1167,20 @@ function beginFight()
 
     timer.Simple(delay, function()
         -- PrintMessage(HUD_PRINTTALK, "checking for win")
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:GetName() == "map_push_red" then
+                ent:Fire("Disable")
+            end
+            if ent:GetName() == "map_push_blue" then
+                ent:Fire("Disable")
+            end
+            if ent:GetName() == "map_push_green" then
+                ent:Fire("Disable")
+            end
+            if ent:GetName() == "map_push_yellow" then
+                ent:Fire("Disable")
+            end
+        end
         timer.Create("CheckForWin", 1, 0, function()
             local alivetimer = table.shallow_copy(alive)
             local amountalive = 0
@@ -1145,6 +1203,7 @@ function beginFight()
                 if alivetimer[aliveteam] == 0 and amountalive > 1 then
                     SendServerMessage(formattedWinner[aliveteam] .. " Team Defeated!", winnerColor[aliveteam])
                     alivetimer[aliveteam] = -1 -- do not repeat message
+                    alive[aliveteam] = 0
 
                     if math.random(1, 50) == 1 then
                         playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "_lose_funny.wav")
@@ -1243,27 +1302,30 @@ function endRound()
         end
 
         for _, mob in ipairs(mobnames) do
-            if ent:GetName():lower() == mob then
+            if ent:GetName():lower() == mob or ent:GetName():lower() == mob .. "notp" then
                 ent:Remove()
             end
+        end
+        if ent:IsNPC() and ent:GetName() == "" then
+            ent:Remove()
         end
     end
 end
 
 function setupMap(map)
     for _, ent in ipairs(ents.GetAll()) do
-        if ent:GetName() == "map_push_red" then
-            ent:Fire("Enable")
-        end
-        if ent:GetName() == "map_push_blue" then
-            ent:Fire("Enable")
-        end
-        if ent:GetName() == "map_push_green" then
-            ent:Fire("Enable")
-        end
-        if ent:GetName() == "map_push_yellow" then
-            ent:Fire("Enable")
-        end
+        -- if ent:GetName() == "map_push_red" then
+        --     ent:Fire("Enable")
+        -- end
+        -- if ent:GetName() == "map_push_blue" then
+        --     ent:Fire("Enable")
+        -- end
+        -- if ent:GetName() == "map_push_green" then
+        --     ent:Fire("Enable")
+        -- end
+        -- if ent:GetName() == "map_push_yellow" then
+        --     ent:Fire("Enable")
+        -- end
 
         -- if map == "blue" then
         -- end
@@ -1323,18 +1385,18 @@ end
 
 function cleanupMap(map)
     for _, ent in ipairs(ents.GetAll()) do
-        if ent:GetName() == "map_push_red" then
-            ent:Fire("Disable")
-        end
-        if ent:GetName() == "map_push_blue" then
-            ent:Fire("Disable")
-        end
-        if ent:GetName() == "map_push_green" then
-            ent:Fire("Disable")
-        end
-        if ent:GetName() == "map_push_yellow" then
-            ent:Fire("Disable")
-        end
+        -- if ent:GetName() == "map_push_red" then
+        --     ent:Fire("Disable")
+        -- end
+        -- if ent:GetName() == "map_push_blue" then
+        --     ent:Fire("Disable")
+        -- end
+        -- if ent:GetName() == "map_push_green" then
+        --     ent:Fire("Disable")
+        -- end
+        -- if ent:GetName() == "map_push_yellow" then
+        --     ent:Fire("Disable")
+        -- end
 
         -- if map == "blue" then
         -- end
