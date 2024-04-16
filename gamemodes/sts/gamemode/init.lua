@@ -499,7 +499,7 @@ function beginTeamAssignment()
         end)
 
         -- name assigned after 1 tick
-        timer.Simple(1 / 66, function()
+        timer.Simple(2 / 66, function()
             -- if (
             -- (npcClass == "npc_headcrab" or
             -- npcClass == "npc_headcrab_fast" or
@@ -514,7 +514,7 @@ function beginTeamAssignment()
             if string.find(ent:GetName(), "notp") then return end
 
             -- i forgot why this is waiting an extra tick
-            timer.Simple(1 / 66, function()
+            timer.Simple(2 / 66, function()
                 -- PrintMessage(HUD_PRINTTALK, "teleporting!!!!! " .. ent:GetName() .. " " .. npcClass)
                 local randspawnpoint = math.random(1, 5)
                 -- print("teleporting to " .. randspawnpoint)
@@ -532,9 +532,9 @@ function beginTeamAssignment()
                 -- Start a timer that runs every second
                 print("Starting poison zombie check" .. ent:EntIndex())
 
-                timer.Create("CheckForHeadcrabs" .. ent:EntIndex(), 0.1, 6000, function()
+                timer.Create("CheckForPoison" .. ent:EntIndex(), 0.1, 6000, function()
                     if not ent:IsValid() or ent:EntIndex() == 0 then
-                        timer.Remove("CheckForHeadcrabs" .. ent:EntIndex())
+                        timer.Remove("CheckForPoison" .. ent:EntIndex())
 
                         return
                     end
@@ -632,13 +632,16 @@ hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
                         print("Assigned headcrab team.")
                     end
                 end
+                if not npc:IsValid() then
+                    timer.Remove("CheckForHeadcrab" .. npc:EntIndex())
+                end
             end)
         end
     end
 end)
 
 function AssignTeam(ent, teamInput)
-    if not ent:IsValid() or not ent:IsNPC() then return end
+    if not ent:IsValid() or not ent:IsNPC() or ent:EntIndex() == 0 then return end
     teamInput = teamInput or ""
 
     local npcColors = {"redteam", "blueteam", "greenteam", "yellowteam"}
@@ -650,9 +653,7 @@ function AssignTeam(ent, teamInput)
     -- this check is always true. running the same check in game is not always true. i don't get it!
     -- Too Bad!
     -- print("1Name is " .. ent:GetName())
-    if ent:GetName() == "" then
-        ent:SetName(teamInput)
-    end
+    ent:SetName(teamInput)
 
     -- print("2Name is " .. ent:GetName())
     for i, teamName in pairs(npcColors) do
@@ -663,7 +664,7 @@ function AssignTeam(ent, teamInput)
         for _, teamEntity in pairs(teamEnts[i]) do
             -- to avoid self-love
             if ent ~= teamEntity and teamEntity:IsNPC() then
-                if string.find(ent:GetName(), teamName) then
+                if ent:GetName() == teamName then
                     ent:AddEntityRelationship(teamEntity, D_LI, 10)
                     teamEntity:AddEntityRelationship(ent, D_LI, 10)
 
@@ -1146,9 +1147,9 @@ function beginFight()
                     alivetimer[aliveteam] = -1 -- do not repeat message
 
                     if math.random(1, 50) == 1 then
-                        playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "lose_funny.wav")
+                        playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "_lose_funny.wav")
                     else
-                        playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "lose" .. math.random(1, 2) .. ".wav")
+                        playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "_lose" .. math.random(1, 2) .. ".wav")
                     end
                 end
             end
@@ -1360,7 +1361,7 @@ function cleanupMap(map)
                 ent:Fire("Disable")
             end
 
-            if string.find(ent:GetName(), "mapcit_ballbeam_") then
+            if string.find(ent:GetName(), "mapcit_ballbeam") then
                 ent:Fire("Toggle")
             end
         end

@@ -105,11 +105,9 @@ if CLIENT then
         tempMessage = net.ReadString()
         tempMessageColor = net.ReadColor()
         local delay = net.ReadInt(32)
-        if delay > 0 then
-            timer.Simple(delay, function()
-                tempMessage = ""
-            end)
-        end
+        timer.Simple(delay, function()
+            tempMessage = ""
+        end)
     end)
 end
 
