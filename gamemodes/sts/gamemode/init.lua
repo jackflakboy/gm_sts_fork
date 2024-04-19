@@ -493,7 +493,8 @@ function beginTeamAssignment()
         if not ent:IsValid() or not ent:IsNPC() then return end
         local npcClass = ent:GetClass()
 
-        timer.Simple(1 / 66, function()
+        timer.Simple(3 / 66, function()
+            ent = ents.GetByIndex(ent:EntIndex())
             if not ent:IsValid() or not ent:IsNPC() then return end
             if ent:GetName() ~= "" then
                 ent = AssignTeam(ent, ent:GetName(), true)
@@ -535,6 +536,7 @@ function beginTeamAssignment()
 
         if npcClass == "npc_poisonzombie" then
             timer.Simple(10 / 66, function()
+                ent = ents.GetByIndex(ent:EntIndex())
                 local poisonZombieTeam = ent:GetName()
                 -- Start a timer that runs every second
                 -- print("Starting poison zombie check" .. ent:EntIndex())
@@ -569,6 +571,7 @@ function beginTeamAssignment()
 
         if npcClass == "npc_metropolice" then
             timer.Simple(10 / 66, function()
+                ent = ents.GetByIndex(ent:EntIndex())
                 local metrocopTeam = ent:GetName()
 
                 -- Start a timer that runs every second
@@ -613,7 +616,7 @@ hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
     local zombieTypes = {"npc_zombie", "npc_zombie_torso", "npc_fastzombie", "npc_poisonzombie"}
 
     for _, type in pairs(zombieTypes) do
-        if npc:GetClass() == type then
+        if npc:GetClass() == type and npc:GetName() ~= "" then
             local deadZombiePos = npc:GetPos()
             local deadZombieTeam = npc:GetName()
 
@@ -659,7 +662,7 @@ function AssignTeam(ent, teamInput, tpDesired)
         end
     end
     if not validInput then
-        PrintMessage(HUD_PRINTTALK, "Warning! " .. teamInput .. " is not a valid team! NPC Class is " .. ent:GetClass() .. " with name " .. ent:GetName())
+        print("Warning! " .. teamInput .. " is not a valid team! NPC Class is " .. ent:GetClass() .. " with name " .. ent:GetName())
     end
 
     local teamEnts = {}
