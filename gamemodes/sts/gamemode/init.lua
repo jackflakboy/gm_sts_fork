@@ -760,17 +760,31 @@ function randomizeTeams(mode)
     if #players > 8 then mode = 1 end
     local teamCount = mode * 2
 
-    while #players > 0 do
-        local playerIndex = math.random(1, #players)
-        local teamID = i % teamCount
-        if i % teamCount == 0 then
-            setTeamFull(players[playerIndex], 4)
-        else
-            setTeamFull(players[playerIndex], teamID)
+    if mode == 2 then
+        while #players > 0 do
+            local playerIndex = math.random(1, #players)
+            local teamID = i % teamCount
+            if i % teamCount == 0 then
+                setTeamFull(players[playerIndex], 4)
+            else
+                setTeamFull(players[playerIndex], teamID)
+            end
+            table.remove(players, playerIndex)
+            i = i + 1
         end
-        table.remove(players, playerIndex)
-        i = i + 1
+    else
+        while #players > 0 do
+            local playerIndex = math.random(1, #players)
+            if i % teamCount == 0 then
+                setTeamFull(players[playerIndex], 2)
+            else
+                setTeamFull(players[playerIndex], 1)
+            end
+            table.remove(players, playerIndex)
+            i = i + 1
+        end
     end
+
 end
 
 function upgradeABox(cubeName)
@@ -1101,6 +1115,7 @@ function beginFight()
     local teamsToSpawn = getPlayingTeams()
     local teamMobs = {} -- {1 = ..., 4 = ...}
     local delay
+    local largestDelay = 0
 
     for _, id in pairs(teamsToSpawn) do
         PrintTable(teams[id].spawners)
@@ -1126,6 +1141,9 @@ function beginFight()
                     mob[1]:Fire("ForceSpawn")
                 end)
             -- end
+        end
+        if delay > largestDelay then
+            largestDelay = delay
         end
     end
 
@@ -1168,8 +1186,7 @@ function beginFight()
         ["yellowteam"] = "yellow"
     }
 
-    timer.Simple(delay, function()
-        -- PrintMessage(HUD_PRINTTALK, "checking for win")
+    timer.Simple(largestDelay, function()
         for _, ent in ipairs(ents.GetAll()) do
             if ent:GetName() == "map_push_red" then
                 ent:Fire("Disable")
@@ -1184,6 +1201,10 @@ function beginFight()
                 ent:Fire("Disable")
             end
         end
+    end)
+
+    timer.Simple(delay, function()
+        -- PrintMessage(HUD_PRINTTALK, "checking for win")
         timer.Create("CheckForWin", 1, 0, function()
             local alivetimer = table.shallow_copy(alive)
             local amountalive = 0
@@ -1206,7 +1227,7 @@ function beginFight()
                 if alivetimer[aliveteam] == 0 and amountalive > 1 then
                     SendServerMessage(formattedWinner[aliveteam] .. " Team Defeated!", winnerColor[aliveteam])
                     alivetimer[aliveteam] = -1 -- do not repeat message
-                    alive[aliveteam] = 0
+                    alive[aliveteam] = -1
 
                     if math.random(1, 50) == 1 then
                         playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "_lose_funny.wav")
