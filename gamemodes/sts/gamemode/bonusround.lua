@@ -846,6 +846,7 @@ function beginHl2dm()
     hook.Add("PlayerLoadout", "HL2DM", function(ply)
         ply:Give("weapon_physcannon")
         ply:Give("weapon_crowbar")
+        ply:SetHealth(50)
         return true
     end)
     timer.Simple(4, function()
@@ -869,6 +870,9 @@ function beginHl2dm()
                 if ent:GetName() == ("maprav" .. "_" .. getTeamNameFromID(ply:Team()) .. "spawn" .. tostring(chosen)) then
                     ply:SetPos(ent:GetPos())
                     ply:SetEyeAngles(ent:GetAngles())
+                    ply:Give("weapon_physcannon")
+                    ply:Give("weapon_crowbar")
+                    ply:SetHealth(50)
                     break
                 end
             end
