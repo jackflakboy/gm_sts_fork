@@ -918,6 +918,13 @@ end
 
 function chooseNextMap()
     local options = getChosenMaps()
+    if #options == 1 then return options[1] end
+    -- remove last map from options
+    for i, map in ipairs(options) do
+        if map == nextMap then
+            table.remove(options, i)
+        end
+    end
     local map = options[math.random(#options)]
 
     return map
@@ -926,6 +933,12 @@ end
 function chooseBonusRound()
     local options = getChosenBonusRounds()
     if options == {} then return {} end
+    if #options == 1 then return options[1] end
+    for i, br in ipairs(options) do
+        if br == nextBR then
+            table.remove(options, i)
+        end
+    end
     local bonusRound = options[math.random(#options)]
 
     return bonusRound
