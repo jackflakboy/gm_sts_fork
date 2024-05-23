@@ -840,7 +840,7 @@ function beginHl2dm()
     end)
     timer.Simple(3, function()
         SendServerMessage("Half-Life 2 Deathmatch!", Color(255, 0, 255), 2)
-        HL2DMSound = playGlobalSound("bm_sts_sounds/brane_scan.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        HL2DMSound = playGlobalSound("bm_sts_sounds/funky_beat.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
     hook.Remove("PlayerLoadout", "Default")
     hook.Add("PlayerLoadout", "HL2DM", function(ply)
