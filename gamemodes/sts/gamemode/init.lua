@@ -1061,7 +1061,7 @@ function ReadyLeverPulled(teamName)
         end
     end
 
-    if required == pulled then
+    if required >= pulled then
         SendServerMessage("All Teams Ready!", Color(255, 255, 255))
 
         timer.Simple(5, function()
