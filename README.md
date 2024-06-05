@@ -3,5 +3,5 @@ gm_sts is a gamemode built in Garry's mod originally by Tergative. It is inspire
 
 
 ## Contributing
-If you'd like to contribute, ensure you are using VSCode and you are running GLuaLint and GLua Enhanced.
-Make sure to use descriptive variable names, and please useCamelCase.
+Yes please!
+I highly suggest you use VSCode with the GLuaLint and GLua Enhanced extensions.

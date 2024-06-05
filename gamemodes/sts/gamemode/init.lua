@@ -36,18 +36,15 @@ maps = {"square", "cit", "rav", "rail", "lake", "yellow", "green", "blue"}
 gameState = 0
 roundCounter = 0
 gameStartedServer = false
-
 -- determines loadout. returning true means override default, this might be able to be used for minigames.
 -- function GM:PlayerLoadout(ply)
 --     return true
 -- end
-
 hook.Add("PlayerLoadout", "Default", function(ply) return true end)
 
 -- cvars.AddChangeCallback("sts_random_teams", function(convarName, valueOld, valueNew)
 --     print("TODO: Create team door and open and close it")
 -- end)
-
 cvars.AddChangeCallback("sts_force_bonus_rounds", function(convarName, valueOld, valueNew)
     for _, ent in ipairs(ents.GetAll()) do
         if ent:GetName() == "waiting_lobby_brtoggle_lever" then
@@ -343,7 +340,7 @@ hook.Add("PlayerSpawn", "UniversalPlayerSpawn", function(ply)
     -- one fucking tick, 
     timer.Simple(1 / 66, function()
         setTeamFull(ply, ply:Team())
-        ply:SetNoCollideWithTeammates( true )
+        ply:SetNoCollideWithTeammates(true)
     end)
 
     ply:SetupHands()
@@ -353,7 +350,6 @@ function teleportToTeamSpawn(ply)
     local teams = {"waiting_bluetp", "waiting_redtp", "waiting_greentp", "waiting_yellowtp"}
 
     ply:SetHealth(100)
-
     local spawnPoint = teams[ply:Team()]
 
     for _, ent in ipairs(ents.GetAll()) do
@@ -417,6 +413,7 @@ function GM:OnPlayerPhysicsPickup(ply, ent)
             SendBoxInfoToPlayer(ply, boxEnt)
         end
     end
+
     if string.sub(ent:GetName(), 0, 4) == "flag" then
         ply:SetWalkSpeed(100)
         ply:SetRunSpeed(125)
@@ -425,6 +422,7 @@ end
 
 function GM:OnPlayerPhysicsDrop(ply, ent)
     ClearBox(ply)
+
     if string.sub(ent:GetName(), 0, 4) == "flag" then
         ply:SetWalkSpeed(200)
         ply:SetRunSpeed(400)
@@ -449,7 +447,6 @@ end
 -- runs endtimerstart() if server is empty
 function allgonecheck()
     -- print(tonumber(player.GetCount()))
-
     if tonumber(player.GetCount()) == 0 then
         print("Server Empty")
         endtimerstart()
@@ -496,6 +493,7 @@ function beginTeamAssignment()
         timer.Simple(3 / 66, function()
             ent = ents.GetByIndex(ent:EntIndex())
             if not ent:IsValid() or not ent:IsNPC() then return end
+
             if ent:GetName() ~= "" then
                 ent = AssignTeam(ent, ent:GetName(), true)
             end
@@ -511,11 +509,8 @@ function beginTeamAssignment()
             -- ent:GetName() == "") or
             -- string.find(ent:GetName(), "notp") or
             -- npcClass == "npc_turret_floor" then return end -- mob was spawned by already existing mob and does not need teleporting
-
-
             -- reacquire ent because it might have changed
             ent = ents.GetByIndex(ent:EntIndex())
-
             if not ent:IsValid() or not ent:IsNPC() then return end
             if npcClass == "npc_turret_floor" then return end
             if ent:GetName() == "" then return end
@@ -538,9 +533,9 @@ function beginTeamAssignment()
             timer.Simple(10 / 66, function()
                 ent = ents.GetByIndex(ent:EntIndex())
                 local poisonZombieTeam = ent:GetName()
+
                 -- Start a timer that runs every second
                 -- print("Starting poison zombie check" .. ent:EntIndex())
-
                 timer.Create("CheckForPoison" .. ent:EntIndex(), 1 / 66, 6000, function()
                     if not ent:IsValid() or ent:EntIndex() == 0 then
                         timer.Remove("CheckForPoison" .. ent:EntIndex())
@@ -641,6 +636,7 @@ hook.Add("OnNPCKilled", "TrackZombieDeath", function(npc)
                         -- PrintMessage(HUD_PRINTTALK, "Assigned headcrab team.")
                     end
                 end
+
                 if not npc:IsValid() then
                     timer.Remove("CheckForHeadcrab" .. npc:EntIndex())
                 end
@@ -655,18 +651,19 @@ function AssignTeam(ent, teamInput, tpDesired)
     local npcColors = {"redteam", "blueteam", "greenteam", "yellowteam"}
 
     local validInput = false
+
     -- warn if teamInput is not valid team
     for _, teamName in pairs(npcColors) do
         if string.find(teamInput, teamName) then
             validInput = true
         end
     end
+
     if not validInput then
         print("Warning! " .. teamInput .. " is not a valid team! NPC Class is " .. ent:GetClass() .. " with name " .. ent:GetName())
     end
 
     local teamEnts = {}
-
     -- PrintMessage(HUD_PRINTTALK, ent:GetName() .. ent:GetClass() .. ", " .. teamInput)
     -- for some reason which I cannot diagnose or explain despite my best attempts, 
     -- this check is always true. running the same check in game is not always true. i don't get it!
@@ -701,9 +698,12 @@ function AssignTeam(ent, teamInput, tpDesired)
                     end
                 end
             end
+
             -- the following is REALLY slow and is an attempted bodge fix for the team self hatred. this might cause huge lag for games with lots of mobs!
             -- not doing team hatred because there doesn't seem to be any issue with that currently
             -- ! cannot emphasize enough how much this sucks, runs on every mob for every mob spawn this is O(n^2)
+            -- ! this is some dumbass shit that i hate so much oh my god look at issue #4
+            -- ! when i eventually have every mob spawned by lua and not map entities, if this issue still persists i don't know what i'll do
             for _, teamEntity2 in pairs(teamEnts[i]) do
                 if teamEntity ~= teamEntity2 and teamEntity:IsNPC() and teamEntity2:IsNPC() then
                     teamEntity:AddEntityRelationship(teamEntity2, D_LI, 10)
@@ -754,37 +754,43 @@ end
 
 function randomizeTeams(mode)
     if mode == 0 then return end -- no need to randomize teams
-
     local players = player.GetAll()
     local i = 1
-    if #players > 8 then mode = 1 end
+
+    if #players > 8 then
+        mode = 1
+    end
+
     local teamCount = mode * 2
 
     if mode == 2 then
         while #players > 0 do
             local playerIndex = math.random(1, #players)
             local teamID = i % teamCount
+
             if i % teamCount == 0 then
                 setTeamFull(players[playerIndex], 4)
             else
                 setTeamFull(players[playerIndex], teamID)
             end
+
             table.remove(players, playerIndex)
             i = i + 1
         end
     else
         while #players > 0 do
             local playerIndex = math.random(1, #players)
+
             if i % teamCount == 0 then
                 setTeamFull(players[playerIndex], 2)
             else
                 setTeamFull(players[playerIndex], 1)
             end
+
             table.remove(players, playerIndex)
             i = i + 1
         end
     end
-
 end
 
 function upgradeABox(cubeName)
@@ -919,12 +925,14 @@ end
 function chooseNextMap()
     local options = getChosenMaps()
     if #options == 1 then return options[1] end
+
     -- remove last map from options
     for i, map in ipairs(options) do
         if map == nextMap then
             table.remove(options, i)
         end
     end
+
     local map = options[math.random(#options)]
 
     return map
@@ -934,11 +942,13 @@ function chooseBonusRound()
     local options = getChosenBonusRounds()
     if options == {} then return {} end
     if #options == 1 then return options[1] end
+
     for i, br in ipairs(options) do
         if br == nextBR then
             table.remove(options, i)
         end
     end
+
     local bonusRound = options[math.random(#options)]
 
     return bonusRound
@@ -1014,10 +1024,12 @@ function roundReset()
 
     if highestscore >= GetConVar("sts_total_rounds"):GetInt() then
         gameOver()
-    elseif roundCounter % GetConVar("sts_bonus_round_interval"):GetInt() == 0 and #getChosenBonusRounds() ~= 0 then -- cannot check if table equal to empty table
+    elseif roundCounter % GetConVar("sts_bonus_round_interval"):GetInt() == 0 and #getChosenBonusRounds() ~= 0 then
+        -- cannot check if table equal to empty table
         for _, ply in ipairs(player.GetAll()) do
             teleportToTeamSpawn(ply)
         end
+
         doBonusRound()
     else
         unmuteMainTrack()
@@ -1092,16 +1104,20 @@ function beginFight()
     startGameSpawn()
     setupMap(nextMap)
     local sound
+
     for _, ent in ipairs(ents.GetAll()) do
         if ent:GetName() == "map_push_red" then
             ent:Fire("Enable")
         end
+
         if ent:GetName() == "map_push_blue" then
             ent:Fire("Enable")
         end
+
         if ent:GetName() == "map_push_green" then
             ent:Fire("Enable")
         end
+
         if ent:GetName() == "map_push_yellow" then
             ent:Fire("Enable")
         end
@@ -1132,6 +1148,7 @@ function beginFight()
 
     for _, id in pairs(teamsToSpawn) do
         PrintTable(teams[id].spawners)
+
         for _, spawner in ipairs(teams[id].spawners) do
             if teamMobs[id] == nil then
                 teamMobs[id] = spawner[1].mob:getSpawns(id, spawner[1].strength)
@@ -1150,11 +1167,12 @@ function beginFight()
             -- if mob[3] then
             --     timer.Simple(delay, mob[3](getTeamNameFromID(i), Vector(0,0,0)))
             -- else
-                timer.Simple(delay, function()
-                    mob[1]:Fire("ForceSpawn")
-                end)
+            timer.Simple(delay, function()
+                mob[1]:Fire("ForceSpawn")
+            end)
             -- end
         end
+
         if delay > largestDelay then
             largestDelay = delay
         end
@@ -1163,7 +1181,6 @@ function beginFight()
     local alive = {}
 
     for _, id in pairs(teamsToSpawn) do
-
         if id == 1 then
             alive["blueteam"] = 0
         elseif id == 2 then
@@ -1204,12 +1221,15 @@ function beginFight()
             if ent:GetName() == "map_push_red" then
                 ent:Fire("Disable")
             end
+
             if ent:GetName() == "map_push_blue" then
                 ent:Fire("Disable")
             end
+
             if ent:GetName() == "map_push_green" then
                 ent:Fire("Disable")
             end
+
             if ent:GetName() == "map_push_yellow" then
                 ent:Fire("Disable")
             end
@@ -1218,6 +1238,15 @@ function beginFight()
 
     timer.Simple(delay, function()
         -- PrintMessage(HUD_PRINTTALK, "checking for win")
+        local suddenDeath = false
+
+        if GetConVar("sts_sudden_death"):GetInt() == 1 then
+            timer.Create("SuddenDeath", GetConVar("sts_sudden_death_time"):GetInt(), 1, function()
+                suddenDeath = true
+                SendServerMessage("Sudden Death has started! Kill all enemy mobs to win!", Color(255, 255, 255), 3)
+            end)
+        end
+
         timer.Create("CheckForWin", 1, 0, function()
             local alivetimer = table.shallow_copy(alive)
             local amountalive = 0
@@ -1230,11 +1259,30 @@ function beginFight()
                     alivetimer[name] = alivetimer[name] + 1
                 end
             end
-
             for aliveteam, _ in pairs(alive) do
                 if alivetimer[aliveteam] > 0 then
                     amountalive = amountalive + 1
                     winner = aliveteam
+                elseif suddenDeath then
+                    for _, ent in ipairs(ents.GetAll()) do
+                        if ent:GetName() == aliveteam and ent:IsValid() and ent:IsNPC() then
+                            for i, ply in ipairs(teams.GetPlayers(getTeamIDFromName(aliveteam))) do
+                                ent:AddEntityRelationship(ply, D_LI, 10)
+                            end
+                        elseif ent:IsNPC() and ent:IsValid() then
+                            for i, ply in ipairs(teams.GetPlayers(getTeamIDFromName(aliveteam))) do
+                                ent:AddEntityRelationship(ply, D_HT, 10)
+                            end
+                        end
+                    end
+                    -- teleport all players into arena
+                    for i, ply in ipairs(teams.GetPlayers(getTeamIDFromName(aliveteam))) do
+                        ply:SetHealth(100)
+                        ply:Give("weapon_smg1")
+                        ply:SetAmmo(1000, "SMG1")
+                        ply:SetPos(nextMapSpawnLocations[string.sub(getTeamNameFromID(ply:Team()), 1, string.find(string.lower(getTeamNameFromID(ply:Team())), "team") - 1)][i][1])
+                        ply:SetAngles(nextMapSpawnLocations[string.sub(getTeamNameFromID(ply:Team()), 1, string.find(string.lower(getTeamNameFromID(ply:Team())), "team") - 1)][i][2])
+                    end
                 end
 
                 if alivetimer[aliveteam] == 0 and amountalive > 1 then
@@ -1252,7 +1300,7 @@ function beginFight()
 
             if amountalive == 1 then
                 timer.Remove("CheckForWin")
-
+                timer.Remove("SuddenDeath")
                 local difference = GetConVar("sts_winner_points"):GetInt() - GetConVar("sts_loser_points"):GetInt()
 
                 if winner == "blueteam" then
@@ -1281,6 +1329,7 @@ function beginFight()
                 endRound()
             elseif amountalive == 0 then
                 timer.Remove("CheckForWin")
+                timer.Remove("SuddenDeath")
                 sound:Stop()
 
                 for teamID = 1, 4 do
@@ -1343,6 +1392,7 @@ function endRound()
                 ent:Remove()
             end
         end
+
         if ent:IsNPC() and ent:GetName() == "" then
             ent:Remove()
         end
@@ -1363,7 +1413,6 @@ function setupMap(map)
         -- if ent:GetName() == "map_push_yellow" then
         --     ent:Fire("Enable")
         -- end
-
         -- if map == "blue" then
         -- end
         -- if map == "yellow" then
@@ -1434,7 +1483,6 @@ function cleanupMap(map)
         -- if ent:GetName() == "map_push_yellow" then
         --     ent:Fire("Disable")
         -- end
-
         -- if map == "blue" then
         -- end
         -- if map == "yellow" then
@@ -1547,7 +1595,7 @@ function gameOver()
             timer.Simple(0.1, function()
                 ply:SetWalkSpeed(75)
                 ply:SetRunSpeed(125)
-                ply:SetNoCollideWithTeammates( true )
+                ply:SetNoCollideWithTeammates(true)
             end)
         end
     end)
@@ -1564,7 +1612,8 @@ function gameOver()
         gameReset()
     end)
 
-    timer.Simple(40, function() -- this will never actually run and is just to prevent the garbage collector from removing the sound
+    -- this will never actually run and is just to prevent the garbage collector from removing the sound
+    timer.Simple(40, function()
         endWinSound:Stop()
     end)
 end
