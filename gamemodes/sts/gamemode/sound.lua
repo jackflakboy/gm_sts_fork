@@ -20,9 +20,7 @@ function playGlobalSound( FileName, teamID )
         sound = CreateSound( game.GetWorld(), FileName, filter ) -- create the new sound, parented to the worldspawn (which always exists)
         if sound then
             sound:SetSoundLevel( 0 ) -- play everywhere
-            if CLIENT then
-                LoadedSounds[FileName] = { sound, filter } -- cache the CSoundPatch
-            end
+            LoadedSounds[FileName] = { sound, filter } -- cache the CSoundPatch
         end
     else
         sound = LoadedSounds[FileName][1]
