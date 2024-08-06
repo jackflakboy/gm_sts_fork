@@ -15,7 +15,7 @@ function playGlobalSound( FileName, teamID )
             filter:AddRecipientsByTeam( teamID )
         end
     end
-    if SERVER or LoadedSounds[FileName] == nil then
+    if SERVER or not LoadedSounds[FileName] then
         -- The sound is always re-created serverside because of the RecipientFilter.
         sound = CreateSound( game.GetWorld(), FileName, filter ) -- create the new sound, parented to the worldspawn (which always exists)
         if sound then
