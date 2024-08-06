@@ -21,7 +21,7 @@ CreateConVar("sts_sudden_death", "0", {FCVAR_GAMEDLL}, "Determine if sudden deat
 CreateConVar("sts_time_until_sudden_death", "120", {FCVAR_GAMEDLL}, "Determine time until sudden death should begin.", 1, 600)
 RunConsoleCommand("sv_gravity", "600") -- reset gravity
 RunConsoleCommand("sk_combine_s_kick", "6") -- change combine melee damage
-RunConsoleCommand("sbox_noclip", "0") -- ! disable ability to noclip. remember to change me  to 0 before release
+RunConsoleCommand("sbox_noclip", "0")
 RunConsoleCommand("sbox_godmode", "0")
 RunConsoleCommand("sbox_playershurtplayers", "1")
 RunConsoleCommand("sv_noclipspeed", "50")
@@ -118,18 +118,6 @@ function table.shallow_copy(t)
 
     return t2
 end
-
-
--- Starting to think that maybe the garbage collector is to blame for init.lua:542 being nil sometimes, so I'm going to try to keep the variables alive
-function testKeepVariablesAlive()
-    timer.Simple(1 / 66 , function()
-        nextMapSpawnLocations = nextMapSpawnLocations or {}
-        nextMap = nextMap or ""
-        nextBR = nextBR or ""
-    end)
-end
-
-testKeepVariablesAlive()
 
 function getTeamIDFromName(teamName1)
     local teamIDs = {"blue", "red", "green", "yellow"}

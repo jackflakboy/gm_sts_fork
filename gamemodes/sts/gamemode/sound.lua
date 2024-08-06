@@ -66,19 +66,3 @@ function unmuteMainTrack()
         mainTrack:ChangeVolume(1, 2)
     end
 end
-
--- this is to tell the garbage collector that these variables are 
--- still being used, otherwise sound gets cut every time it runs
--- ! WARNING: sounds will not be freed from memory, and this will cause a memory leak. it may be 
--- ! worthwile to manually free from memory via LoadedSounds[FileName] = nil after stopping 
--- ! if sounds are big or high in quantity, as the 32 bit version of gmod will crash at 4 gb of mem used
--- TODO: Find a better solution
-function keepSoundAlive()
-    timer.Create("KeepAlive", 1 / 66 , 0, function()  -- Run more frequently to renew the reference
-        LoadedSounds = LoadedSounds or {}
-        mainTrack = mainTrack or nil
-        mainTrackSound = mainTrackSound or 1
-    end)
-end
-
-keepSoundAlive()
