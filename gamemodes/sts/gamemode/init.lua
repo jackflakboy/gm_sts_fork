@@ -1103,7 +1103,9 @@ function beginFight()
     stopLobbySpawn()
     startGameSpawn()
     setupMap(nextMap)
+
     local sound
+    local suddenDeath = false
 
     for _, ent in ipairs(ents.GetAll()) do
         if ent:GetName() == "map_push_red" then
@@ -1238,7 +1240,6 @@ function beginFight()
 
     timer.Simple(delay, function()
         -- PrintMessage(HUD_PRINTTALK, "checking for win")
-        local suddenDeath = false
 
         if GetConVar("sts_sudden_death"):GetInt() == 1 then
             timer.Create("SuddenDeath", GetConVar("sts_sudden_death_time"):GetInt(), 1, function()
