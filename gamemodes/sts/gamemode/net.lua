@@ -95,7 +95,7 @@ if SERVER then
         net.Start("ServerToClientMessage")
         net.WriteString(message) -- The message
         net.WriteColor(color or Color(255, 255, 255)) -- The color of the message
-        net.WriteInt(time or 5, 32)
+        net.WriteInt(time or -1, 32)
         net.Broadcast() -- or net.Send(ply) if you want to send to a specific player        
     end
 end
@@ -105,9 +105,11 @@ if CLIENT then
         tempMessage = net.ReadString()
         tempMessageColor = net.ReadColor()
         local delay = net.ReadInt(32)
-        timer.Simple(delay, function()
-            tempMessage = ""
-        end)
+        if delay ~= -1 then
+            timer.Simple(delay, function()
+                tempMessage = ""
+            end)
+        end
     end)
 end
 
