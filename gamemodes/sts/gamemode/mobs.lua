@@ -107,7 +107,18 @@ end
 
 
 mobs[1] = {
-    ["headcrab"] = Mob.new("Headcrab", {"npc_headcrab"}, 1),
+    ["headcrab"] = Mob.new("Headcrab", {"npc_headcrab"}, 1, 1, function(teamID, strength, pos)
+        local amount = mobs[1]["headcrab"].multiplier * strength
+        for _ = 1, amount do
+            local headcrab = ents.Create("npc_headcrab")
+            local teamName = getTeamNameFromID(teamID)
+            if IsValid(headcrab) then
+                headcrab:SetPos(pos)
+                headcrab:SetName(teamName .. "teamname")
+                headcrab:Spawn()
+            end
+        end
+    end),
     ["blackheadcrab"] = Mob.new("Black Headcrab", {"npc_blackheadcrab"}, 1),
     ["fastheadcrab"] = Mob.new("Fast Headcrab", {"npc_fastheadcrab"}, 1),
     ["manhack"] = Mob.new("Manhack", {"npc_manhack"}, 1, 0.5),
