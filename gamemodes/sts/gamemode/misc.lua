@@ -22,6 +22,8 @@ CreateConVar("sts_time_until_sudden_death", "120", {FCVAR_GAMEDLL}, "Determine t
 RunConsoleCommand("sv_gravity", "600") -- reset gravity
 RunConsoleCommand("sk_combine_s_kick", "6") -- change combine melee damage
 RunConsoleCommand("sbox_noclip", "0") -- ! disable ability to noclip. remember to change me  to 0 before release
+RunConsoleCommand("sbox_godmode", "0")
+RunConsoleCommand("sbox_playershurtplayers", "1")
 RunConsoleCommand("sv_noclipspeed", "50")
 RunConsoleCommand("sk_citizen_heal_player_min_pct", "100")
 RunConsoleCommand("sk_citizen_heal_player_min_forced", "1")
