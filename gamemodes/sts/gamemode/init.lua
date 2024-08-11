@@ -438,6 +438,8 @@ function GM:PlayerDisconnected(ply)
     if gameStartedServer then
         timer.Simple(10, allgonecheck)
     end
+
+
 end
 
 function GM:PlayerConnect(name, ip)
@@ -1325,7 +1327,7 @@ function beginFight()
                     SendPointsToTeamMembers(teamID)
                 end
 
-                SendServerMessage(formattedWinner[winner] .. " Team Wins!", winnerColor[winner])
+                SendServerMessage(formattedWinner[winner] .. " Team Wins!", winnerColor[winner], 5)
                 playGlobalSound("sts_sounds_new/" .. winnerShorter[winner] .. "_win" .. math.random(1, 3) .. ".wav")
                 endRound()
             elseif amountalive == 0 then
