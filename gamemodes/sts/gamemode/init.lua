@@ -439,6 +439,10 @@ function GM:PlayerDisconnected(ply)
         timer.Simple(10, allgonecheck)
     end
 
+    if gameState == 0 then
+        shouldGameStart()
+    end
+
 
 end
 
@@ -1043,11 +1047,17 @@ function roundReset()
 end
 
 function ReadyLeverPulled(teamName)
+    playGlobalSound("sts_sounds_new/" .. teamName .. "_ready.wav")
+    shouldGameStart()
+end
+
+function shouldGameStart()
     local levers = {"waiting_blue_ready_lever", "waiting_red_ready_lever", "waiting_green_ready_lever", "waiting_yellow_ready_lever"}
+
+    local doors = {"waiting_blue_door", "waiting_red_door", "waiting_green_door", "waiting_yellow_door"}
 
     local pulled = 0
     local required = 0
-    playGlobalSound("sts_sounds_new/" .. teamName .. "_ready.wav")
 
     for i = 1, 4 do
         if #team.GetPlayers(i) > 0 then
@@ -1064,6 +1074,7 @@ function ReadyLeverPulled(teamName)
     end
 
     if required <= pulled then
+        gameState = 1
         SendServerMessage("All Teams Ready!", Color(255, 255, 255))
 
         timer.Simple(5, function()
@@ -1092,6 +1103,21 @@ function ReadyLeverPulled(teamName)
 
         timer.Simple(11.1, function()
             beginFight()
+            timer.Simple(1 / 66, function()
+                for _, ent in ipairs(ents.GetAll()) do
+                    for _, lever in ipairs(levers) do
+                        if ent:GetName() == lever then
+                            ent:Fire("close")
+                        end
+                    end
+                    for _, door in ipairs(doors) do
+                        if ent:GetName() == door then
+                            ent:Fire("close")
+                        end
+                    end
+                end
+                gameState = 0
+            end)
         end)
     end
 end
@@ -1363,26 +1389,11 @@ function endRound()
     stopGameSpawn()
     roundReset()
 
-    local levers = {"waiting_blue_ready_lever", "waiting_red_ready_lever", "waiting_green_ready_lever", "waiting_yellow_ready_lever"}
-
-    local doors = {"waiting_blue_door", "waiting_red_door", "waiting_green_door", "waiting_yellow_door"}
-
     local blockers = {"waiting_bluewall", "waiting_redwall", "waiting_greenwall", "waiting_yellowwall"}
 
     local mobnames = {"blueteam", "redteam", "greenteam", "yellowteam"}
 
     for _, ent in ipairs(ents.GetAll()) do
-        for _, lever in ipairs(levers) do
-            if ent:GetName() == lever then
-                ent:Fire("close")
-            end
-        end
-
-        for _, door in ipairs(doors) do
-            if ent:GetName() == door then
-                ent:Fire("close")
-            end
-        end
 
         for _, wall in ipairs(blockers) do
             if ent:GetName() == wall then
