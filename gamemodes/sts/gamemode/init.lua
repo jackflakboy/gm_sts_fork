@@ -1315,7 +1315,7 @@ function beginFight()
                 end
 
                 if alivetimer[aliveteam] == 0 and amountalive > 1 then
-                    SendServerMessage(formattedWinner[aliveteam] .. " Team Defeated!", winnerColor[aliveteam])
+                    SendServerMessage(formattedWinner[aliveteam] .. " Team Defeated!", winnerColor[aliveteam], 3)
                     alivetimer[aliveteam] = -1 -- do not repeat message
                     alive[aliveteam] = -1
 
@@ -1367,7 +1367,7 @@ function beginFight()
                 end
 
                 playGlobalSound("sts_sounds_new/tie.wav")
-                SendServerMessage("Tie!", Color(255, 255, 255))
+                SendServerMessage("Tie!", Color(255, 255, 255), 3)
                 endRound()
             end
         end)
