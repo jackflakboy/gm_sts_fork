@@ -29,6 +29,7 @@ RunConsoleCommand("sk_citizen_heal_player_min_pct", "100")
 RunConsoleCommand("sk_citizen_heal_player_min_forced", "1")
 RunConsoleCommand("sk_citizen_heal_ally", "40")
 RunConsoleCommand("sk_citizen_heal_ally_delay", "0.5") -- this might've not been set correctly prior and may cause a buff to medics
+RunConsoleCommand("sv_playerpickupallowed", "1") -- allow players to pick up objects, some other gamemodes might set this to false
 
 function GM:PlayerSpawnProp(ply, model)
     return false
