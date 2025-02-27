@@ -3,7 +3,7 @@ AddCSLuaFile("concommands.lua")
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 AddCSLuaFile("teamsetup.lua")
-AddCSLuaFile("testhud.lua")
+AddCSLuaFile("cl_hud.lua")
 AddCSLuaFile("cubes.lua")
 AddCSLuaFile("misc.lua")
 AddCSLuaFile("mobs.lua")
@@ -16,7 +16,6 @@ include("bonusround.lua")
 include("concommands.lua")
 include("shared.lua")
 include("teamsetup.lua")
-include("testhud.lua")
 include("cubes.lua")
 include("net.lua")
 include("misc.lua")
@@ -442,8 +441,6 @@ function GM:PlayerDisconnected(ply)
     if gameState == 0 then
         shouldGameStart()
     end
-
-
 end
 
 function GM:PlayerConnect(name, ip)
@@ -1103,6 +1100,7 @@ function shouldGameStart()
 
         timer.Simple(11.1, function()
             beginFight()
+
             timer.Simple(1 / 66, function()
                 for _, ent in ipairs(ents.GetAll()) do
                     for _, lever in ipairs(levers) do
@@ -1110,12 +1108,14 @@ function shouldGameStart()
                             ent:Fire("close")
                         end
                     end
+
                     for _, door in ipairs(doors) do
                         if ent:GetName() == door then
                             ent:Fire("close")
                         end
                     end
                 end
+
                 gameState = 0
             end)
         end)
@@ -1131,7 +1131,6 @@ function beginFight()
     stopLobbySpawn()
     startGameSpawn()
     setupMap(nextMap)
-
     local sound
     local suddenDeath = false
 
@@ -1268,7 +1267,6 @@ function beginFight()
 
     timer.Simple(delay, function()
         -- PrintMessage(HUD_PRINTTALK, "checking for win")
-
         if GetConVar("sts_sudden_death"):GetInt() == 1 then
             timer.Create("SuddenDeath", GetConVar("sts_sudden_death_time"):GetInt(), 1, function()
                 suddenDeath = true
@@ -1288,6 +1286,7 @@ function beginFight()
                     alivetimer[name] = alivetimer[name] + 1
                 end
             end
+
             for aliveteam, _ in pairs(alive) do
                 if alivetimer[aliveteam] > 0 then
                     amountalive = amountalive + 1
@@ -1304,6 +1303,7 @@ function beginFight()
                             end
                         end
                     end
+
                     -- teleport all players into arena
                     for i, ply in ipairs(teams.GetPlayers(getTeamIDFromName(aliveteam))) do
                         ply:SetHealth(100)
@@ -1394,7 +1394,6 @@ function endRound()
     local mobnames = {"blueteam", "redteam", "greenteam", "yellowteam"}
 
     for _, ent in ipairs(ents.GetAll()) do
-
         for _, wall in ipairs(blockers) do
             if ent:GetName() == wall then
                 ent:Remove()

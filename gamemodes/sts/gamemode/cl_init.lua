@@ -1,5 +1,5 @@
 include("shared.lua")
-include("testhud.lua")
+include("cl_hud.lua")
 include("net.lua")
 include("cubes.lua")
 include("mobs.lua")
