@@ -1,9 +1,7 @@
-include("teamsetup.lua")
-
+﻿include("teamsetup.lua")
 -- Server side: listens to the "RequestPoints" message and responds with "SyncPoints"
 if SERVER then
     util.AddNetworkString("SyncPoints")
-
     local function PointsRequest(length, client)
         -- Get the team of the player who sent the request
         local playerTeam = client:Team()
@@ -29,7 +27,6 @@ end
 if SERVER then
     function SendPointsToTeamMembers(teamIndex)
         local teamMembers = team.GetPlayers(teamIndex) -- This function should return a table with all the players of the team
-
         for _, player in ipairs(teamMembers) do
             net.Start("SyncPoints")
             net.WriteInt(teams[teamIndex].points, 32) -- Sending points to the player, using 32 bits to encode it
@@ -47,7 +44,6 @@ end
 
 if SERVER then
     util.AddNetworkString("SendBoxInfo")
-
     function SendBoxInfoToPlayer(player, box)
         net.Start("SendBoxInfo")
         net.WriteInt(box.rarity, 4)
@@ -65,12 +61,12 @@ if CLIENT then
         boxLevel = net.ReadInt(4)
         boxKey = net.ReadString()
     end
+
     net.Receive("SendBoxInfo", GetBoxInfo)
 end
 
 if SERVER then
     util.AddNetworkString("ClearBoxInfo")
-
     function ClearBox(player)
         net.Start("ClearBoxInfo")
         net.Send(player)
@@ -85,12 +81,12 @@ if CLIENT then
         boxLevel = 0
         boxKey = ""
     end
+
     net.Receive("ClearBoxInfo", CleanBox)
 end
 
 if SERVER then
     util.AddNetworkString("ServerToClientMessage")
-
     function SendServerMessage(message, color, time)
         net.Start("ServerToClientMessage")
         net.WriteString(message) -- The message
@@ -105,17 +101,12 @@ if CLIENT then
         tempMessage = net.ReadString()
         tempMessageColor = net.ReadColor()
         local delay = net.ReadInt(32)
-        if delay ~= -1 then
-            timer.Simple(delay, function()
-                tempMessage = ""
-            end)
-        end
+        if delay ~= -1 then timer.Simple(delay, function() tempMessage = "" end) end
     end)
 end
 
 if SERVER then
     util.AddNetworkString("TimerEnd")
-
     function SendTimerEnd(endTick)
         net.Start("TimerEnd")
         net.WriteInt(endTick, 32)
@@ -123,30 +114,18 @@ if SERVER then
     end
 end
 
-if CLIENT then
-    net.Receive("TimerEnd", function()
-        tickTimerOver = net.ReadInt(32)
-    end)
-end
-
+if CLIENT then net.Receive("TimerEnd", function() tickTimerOver = net.ReadInt(32) end) end
 if SERVER then
     util.AddNetworkString("StartGame")
-
     function sendStartToPlayers()
         net.Start("StartGame")
         net.Broadcast()
     end
 end
 
-if CLIENT then
-    net.Receive("StartGame", function()
-        gameStarted = true
-    end)
-end
-
+if CLIENT then net.Receive("StartGame", function() gameStarted = true end) end
 if SERVER then
     util.AddNetworkString("UpdateSettings")
-
     function updateSettingsToClients(startPoints, startRounds)
         net.Start("UpdateSettings")
         net.WriteInt(startPoints, 32)
@@ -164,7 +143,6 @@ end
 
 if SERVER then
     util.AddNetworkString("UpdateGravity")
-
     function updateGravityToClients(gravity)
         net.Start("UpdateGravity")
         net.WriteFloat(gravity)
@@ -175,15 +153,9 @@ if SERVER then
     end
 end
 
-if CLIENT then
-    net.Receive("UpdateGravity", function()
-        globalGravity = net.ReadFloat()
-    end)
-end
-
+if CLIENT then net.Receive("UpdateGravity", function() globalGravity = net.ReadFloat() end) end
 if SERVER then
     util.AddNetworkString("PlaySoundOnClient")
-
     function playSoundOnClient(soundName, ply)
         net.Start("PlaySoundOnClient")
         net.WriteString(soundName)
@@ -197,4 +169,3 @@ if CLIENT then
         playGlobalSound(soundName)
     end)
 end
-

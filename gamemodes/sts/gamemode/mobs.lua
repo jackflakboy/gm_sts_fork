@@ -15,7 +15,7 @@ function Mob.new(name, templates, multiplier, delay, spawnfunc)
         spawnfunc = spawnfunc or nil
     }
 
-    setmetatable( EmptyMob, Mob ) -- Set the metatable of 'EmptyMob' to 'Mob'
+    setmetatable(EmptyMob, Mob) -- Set the metatable of 'EmptyMob' to 'Mob'
     return EmptyMob -- Return the 'EmptyMob' table, whose metatable is 'Mob'. This is our object
 end
 
@@ -25,11 +25,7 @@ function Mob:spawn(teamID, strength)
     PrintMessage(HUD_PRINTTALK, "Spawning " .. self.name .. " with a multiplier of " .. amount .. " for team " .. teamID)
     for _, template in ipairs(self.templates) do
         for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == mobPrefixes[teamID] .. template .. mobSuffix then
-                timer.Create( "spawner" .. tostring(teamID), self.delay, amount, function()
-                    ent:Fire("ForceSpawn")
-                end)
-            end
+            if ent:GetName() == mobPrefixes[teamID] .. template .. mobSuffix then timer.Create("spawner" .. tostring(teamID), self.delay, amount, function() ent:Fire("ForceSpawn") end) end
         end
     end
 end
@@ -51,13 +47,10 @@ end
 
 -- function attachTeamIndicator(npc, teamID)
 --     if not IsValid(npc) then return end
-
 --     -- Create the team indicator
 --     local indicator = ents.Create("team_indicator")
 --     if not IsValid(indicator) then return end
-
 --     local teamColor = team.GetColor(teamID) -- Get the team color
-
 --     -- Position it above the NPC's head
 --     local offset = Vector(0, 0, 20) -- Change 90 to the desired height above the NPC
 --     indicator:SetPos(npc:GetPos() + offset)
@@ -66,7 +59,6 @@ end
 --     indicator:SetColor(Color(255, 0, 0, 255)) -- Set the color based on the team
 --     indicator:Spawn()
 -- end
-
 -- local function spawnValkyrie(teamName, pos)
 --     -- Create the City Scanner
 --     local scanner = ents.Create("npc_cscanner")
@@ -75,7 +67,6 @@ end
 --     scanner:Spawn()
 --     scanner:SetName(teamName)
 --     attachTeamIndicator(scanner, teamName)
-
 --     -- Create the first turret and parent it
 --     local turret1 = ents.Create("npc_turret_floor")
 --     if IsValid(turret1) then
@@ -89,7 +80,6 @@ end
 --             phys:SetMass(0.01) -- Set mass to almost zero
 --         end
 --     end
-
 --     -- Create the second turret and parent it
 --     local turret2 = ents.Create("npc_turret_floor")
 --     if IsValid(turret2) then
@@ -104,8 +94,6 @@ end
 --         end
 --     end
 -- end
-
-
 mobs[1] = {
     ["headcrab"] = Mob.new("Headcrab", {"npc_headcrab"}, 1, 1, function(teamID, strength, pos)
         local amount = mobs[1]["headcrab"].multiplier * strength
@@ -166,16 +154,15 @@ cvars.AddChangeCallback("sts_episodic_content", function(convarName, valueOld, v
         mobs[3]["brute"] = Mob.new("Brute", {"npc_brute"}, 1)
         mobs[1]["fasttorso"] = Mob.new("Fast Torso", {"npc_fasttorso"}, 1)
     end
+
     if valueNew == 0 then
         mobs[3]["brute"] = nil
         mobs[1]["fasttorso"] = nil
     end
 end)
-
 -- function createTeamIndicator(ent, teamID)
 --     local indicator = ents.Create("func_brush")
 -- end
-
 -- concommand.Add("spawn_valkyrie", function(ply, cmd, args)
 --     spawnValkyrie(args[1], ply:GetEyeTrace().HitPos)
 -- end)

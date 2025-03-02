@@ -1,4 +1,4 @@
-function beginTestFight()
+﻿function beginTestFight()
     PrintMessage(HUD_PRINTTALK, "Fight!")
     fillNextSpawns()
     beginTeamAssignment()
@@ -8,21 +8,13 @@ function beginTestFight()
     startGameSpawn()
     setupMap(nextMap)
     for _, ent in ipairs(ents.GetAll()) do
-        if ent:GetName() == "map_push_red" then
-            ent:Fire("Enable")
-        end
-        if ent:GetName() == "map_push_blue" then
-            ent:Fire("Enable")
-        end
-        if ent:GetName() == "map_push_green" then
-            ent:Fire("Enable")
-        end
-        if ent:GetName() == "map_push_yellow" then
-            ent:Fire("Enable")
-        end
+        if ent:GetName() == "map_push_red" then ent:Fire("Enable") end
+        if ent:GetName() == "map_push_blue" then ent:Fire("Enable") end
+        if ent:GetName() == "map_push_green" then ent:Fire("Enable") end
+        if ent:GetName() == "map_push_yellow" then ent:Fire("Enable") end
     end
-    local sound
 
+    local sound
     if math.random(1, 2) == 1 then
         sound = playGlobalSound("bm_sts_sounds/brane_scan.wav")
     else
@@ -41,30 +33,28 @@ function beginTestFight()
     end
 
     -- start spawning motherfuckers
-    local teamsToSpawn = {1,2,3,4}
+    local teamsToSpawn = {1, 2, 3, 4}
     local teamMobs = {} -- {1 = ..., 4 = ...}
     local delay
-
     for _, id in pairs(teamsToSpawn) do
         for i = 1, 4 do
-            local level = math.random(1,4)
+            local level = math.random(1, 4)
             local keys = {}
             -- get keys of mobs[level]
             for key, _ in pairs(mobs[level]) do
                 table.insert(keys, key)
                 print(key)
             end
+
             PrintTable(keys)
             local chosenmob = keys[math.random(1, #keys)]
             print(chosenmob)
-
             table.insert(teams[id].spawners[i], {
                 ["mob"] = mobs[level][chosenmob],
                 ["key"] = chosenmob,
                 ["multipler"] = 1,
-                ["strength"] = math.random(1,4)
+                ["strength"] = math.random(1, 4)
             })
-
         end
     end
 
@@ -81,24 +71,18 @@ function beginTestFight()
 
     for i, themobs in pairs(teamMobs) do
         delay = 0
-
         for _, mob in ipairs(themobs) do
             delay = delay + mob[2]
-
             -- if mob[3] then
             --     timer.Simple(delay, mob[3](getTeamNameFromID(i), Vector(0,0,0)))
             -- else
-                timer.Simple(delay, function()
-                    mob[1]:Fire("ForceSpawn")
-                end)
+            timer.Simple(delay, function() mob[1]:Fire("ForceSpawn") end)
             -- end
         end
     end
 
     local alive = {}
-
     for _, id in pairs(teamsToSpawn) do
-
         if id == 1 then
             alive["blueteam"] = 0
         elseif id == 2 then
@@ -112,7 +96,6 @@ function beginTestFight()
 
     -- PrintMessage(HUD_PRINTTALK, "waiting " .. delay .. " seconds")
     local winner
-
     local formattedWinner = {
         ["redteam"] = "Red",
         ["blueteam"] = "Blue",
@@ -137,30 +120,19 @@ function beginTestFight()
     timer.Simple(delay, function()
         -- PrintMessage(HUD_PRINTTALK, "checking for win")
         for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "map_push_red" then
-                ent:Fire("Disable")
-            end
-            if ent:GetName() == "map_push_blue" then
-                ent:Fire("Disable")
-            end
-            if ent:GetName() == "map_push_green" then
-                ent:Fire("Disable")
-            end
-            if ent:GetName() == "map_push_yellow" then
-                ent:Fire("Disable")
-            end
+            if ent:GetName() == "map_push_red" then ent:Fire("Disable") end
+            if ent:GetName() == "map_push_blue" then ent:Fire("Disable") end
+            if ent:GetName() == "map_push_green" then ent:Fire("Disable") end
+            if ent:GetName() == "map_push_yellow" then ent:Fire("Disable") end
         end
+
         timer.Create("CheckForWin", 1, 0, function()
             local alivetimer = table.shallow_copy(alive)
             local amountalive = 0
             local name
-
             for _, ent in ipairs(ents.GetAll()) do
                 name = ent:GetName():lower()
-
-                if (name == "redteam" or name == "greenteam" or name == "yellowteam" or name == "blueteam") and ent:IsValid() and ent:IsNPC() and ent:Health() > 0 and alivetimer[name] ~= -1 then
-                    alivetimer[name] = alivetimer[name] + 1
-                end
+                if (name == "redteam" or name == "greenteam" or name == "yellowteam" or name == "blueteam") and ent:IsValid() and ent:IsNPC() and ent:Health() > 0 and alivetimer[name] ~= -1 then alivetimer[name] = alivetimer[name] + 1 end
             end
 
             for aliveteam, _ in pairs(alive) do
@@ -173,7 +145,6 @@ function beginTestFight()
                     SendServerMessage(formattedWinner[aliveteam] .. " Team Defeated!", winnerColor[aliveteam])
                     alivetimer[aliveteam] = -1 -- do not repeat message
                     alive[aliveteam] = -1
-
                     if math.random(1, 50) == 1 then
                         playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "_lose_funny.wav")
                     else
@@ -184,9 +155,7 @@ function beginTestFight()
 
             if amountalive == 1 then
                 timer.Remove("CheckForWin")
-
                 local difference = GetConVar("sts_winner_points"):GetInt() - GetConVar("sts_loser_points"):GetInt()
-
                 if winner == "blueteam" then
                     team.AddScore(1, 1)
                     teams[1].points = teams[1].points + difference
@@ -202,7 +171,6 @@ function beginTestFight()
                 end
 
                 sound:Stop()
-
                 for teamID = 1, 4 do
                     teams[teamID].points = teams[teamID].points + GetConVar("sts_loser_points"):GetInt()
                     SendPointsToTeamMembers(teamID)
@@ -214,7 +182,6 @@ function beginTestFight()
             elseif amountalive == 0 then
                 timer.Remove("CheckForWin")
                 sound:Stop()
-
                 for teamID = 1, 4 do
                     teams[teamID].points = teams[teamID].points + GetConVar("sts_loser_points"):GetInt()
                     SendPointsToTeamMembers(teamID)
@@ -224,6 +191,7 @@ function beginTestFight()
                 SendServerMessage("Tie!", Color(255, 255, 255))
                 endRound()
             end
+
             for i = 1, 4 do
                 for j = 1, 4 do
                     table.remove(teams[i].spawners[j], 1)
@@ -233,6 +201,4 @@ function beginTestFight()
     end)
 end
 
-concommand.Add("watch_random_game", function(ply, cmd, args)
-    beginTestFight()
-end, nil, nil, FCVAR_CHEAT)
+concommand.Add("watch_random_game", function(ply, cmd, args) beginTestFight() end, nil, nil, FCVAR_CHEAT)

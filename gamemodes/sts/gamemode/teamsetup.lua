@@ -1,4 +1,4 @@
-local ply = FindMetaTable("Player")
+﻿local ply = FindMetaTable("Player")
 include("cubes.lua")
 teams = {}
 teams[1] = {
@@ -18,8 +18,8 @@ teams[1] = {
     },
     points = 0
 }
-team.SetColor(1, Color(51, 51, 255, 255))
 
+team.SetColor(1, Color(51, 51, 255, 255))
 teams[2] = {
     name = "Red",
     color = Vector(1.0, 0, 0),
@@ -37,8 +37,8 @@ teams[2] = {
     },
     points = 0
 }
-team.SetColor(2, Color(255, 0, 0, 255))
 
+team.SetColor(2, Color(255, 0, 0, 255))
 teams[3] = {
     name = "Green",
     color = Vector(0.0, 1.0, 0.0),
@@ -56,8 +56,8 @@ teams[3] = {
     },
     points = 0
 }
-team.SetColor(3, Color(0, 255, 0, 255))
 
+team.SetColor(3, Color(0, 255, 0, 255))
 teams[4] = {
     name = "Yellow",
     color = Vector(1.0, 1.0, 0.0),
@@ -75,8 +75,8 @@ teams[4] = {
     },
     points = 0
 }
-team.SetColor(4, Color(255, 255, 0, 255))
 
+team.SetColor(4, Color(255, 255, 0, 255))
 teams[0] = {
     name = "Empty",
     color = Vector(1.0, 1.0, 1.0),
@@ -100,7 +100,6 @@ teams[5] = {
         [4] = {}
     },
 }
-
 
 -- deprecated?
 function ply:SetupTeam(n)

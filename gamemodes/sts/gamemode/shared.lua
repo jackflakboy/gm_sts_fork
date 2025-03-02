@@ -1,4 +1,4 @@
-GM.Name = "sts"
+﻿GM.Name = "sts"
 GM.Author = "Tergative & Austin"
 GM.Email = "N/A"
 GM.Website = "N/A"
@@ -23,7 +23,6 @@ teamnums[3] = "green"
 teamnums[4] = "yellow"
 teamnums[0] = "empty"
 teamnums[5] = "spectator"
-
 function GM:Initialize()
 end
 --dostuff

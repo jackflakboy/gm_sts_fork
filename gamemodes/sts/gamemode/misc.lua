@@ -1,4 +1,4 @@
-CreateConVar("sts_starting_points", "20", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Starting points. No effect after game start.", 1, 80)
+﻿CreateConVar("sts_starting_points", "20", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Starting points. No effect after game start.", 1, 80)
 CreateConVar("sts_total_rounds", "5", {FCVAR_GAMEDLL, FCVAR_REPLICATED}, "Amount of rounds to play. No effect after game start.", 1, 24)
 CreateConVar("sts_minimum_players", "2", {FCVAR_GAMEDLL}, "Minimum players required before game can start.", 0, 16)
 CreateConVar("sts_outfitter_support", "0", {FCVAR_GAMEDLL}, "Change how team recognition is handled if using outfitter.", 0, 1)
@@ -30,7 +30,6 @@ RunConsoleCommand("sk_citizen_heal_player_min_forced", "1")
 RunConsoleCommand("sk_citizen_heal_ally", "40")
 RunConsoleCommand("sk_citizen_heal_ally_delay", "0.5") -- this might've not been set correctly prior and may cause a buff to medics
 RunConsoleCommand("sv_playerpickupallowed", "1") -- allow players to pick up objects, some other gamemodes might set this to false
-
 function GM:PlayerSpawnProp(ply, model)
     return false
 end
@@ -75,12 +74,9 @@ function getMapSpawners(mapName)
     for _, ent in ipairs(ents.FindByClass("info_teleport_destination")) do
         for _, teamName in ipairs(teamNames) do
             -- mapciv_bluespawn1
-            if string.find(ent:GetName(), "map" .. mapName .. "_" .. teamName .. "spawn") then
-                table.insert(mapSpawners[teamName], ent)
-            end
+            if string.find(ent:GetName(), "map" .. mapName .. "_" .. teamName .. "spawn") then table.insert(mapSpawners[teamName], ent) end
         end
     end
-
     return mapSpawners
 end
 
@@ -106,7 +102,6 @@ function TableConcat(t1, t2)
     for i = 1, #t2 do
         t1[#t1 + 1] = t2[i]
     end
-
     return t1
 end
 
@@ -116,13 +111,11 @@ function table.shallow_copy(t)
     for k, v in pairs(t) do
         t2[k] = v
     end
-
     return t2
 end
 
 function getTeamIDFromName(teamName1)
     local teamIDs = {"blue", "red", "green", "yellow"}
-
     for i, name in ipairs(teamIDs) do
         if name == teamName1 then return i end
     end
@@ -131,14 +124,12 @@ end
 function getTeamNameFromID(teamName1)
     if teamName1 == 0 then return "Spectator" end
     local teamIDs = {"blue", "red", "green", "yellow"}
-
     return teamIDs[teamName1]
 end
 
 cvars.AddChangeCallback("sts_forbid_dev_room", function(convarName, valueOld, valueNew)
     if valueNew == "0" then
         print("gyas")
-
         for _, ent in ipairs(ents.GetAll()) do
             if ent:GetName() == "dev_secret_button" then
                 ent:Fire("unlock")

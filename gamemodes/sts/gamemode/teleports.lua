@@ -1,4 +1,4 @@
-function startLobbySpawn()
+﻿function startLobbySpawn()
     hook.Add("PlayerSpawn", "LobbySpawn", function(ply)
         if ply:Team() ~= 0 then
             local teams = {"waiting_bluetp", "waiting_redtp", "waiting_greentp", "waiting_yellowtp"}

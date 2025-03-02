@@ -1,8 +1,6 @@
-include("mobs.lua")
-
+﻿include("mobs.lua")
 Cube = {}
 Cube.__index = Cube
-
 function Cube.new(entity, level, rarity, strength, multiplier, mob, key)
     local EmptyCube = {
         entity = entity or "",
@@ -14,7 +12,7 @@ function Cube.new(entity, level, rarity, strength, multiplier, mob, key)
         key = key or ""
     }
 
-    setmetatable( EmptyCube, Cube )
+    setmetatable(EmptyCube, Cube)
     return EmptyCube
 end
 
@@ -28,7 +26,6 @@ end
 function Cube:randomize()
     -- local desiredTeam
     local chosenMob
-
     if self.level == 1 then
         self.rarity = 1
     elseif self.level == 2 then
@@ -41,7 +38,6 @@ function Cube:randomize()
         self.rarity = 4
     else
         PrintMessage(HUD_PRINTTALK, "Malformed cube at " .. self.entity .. "\nPlease screenshot and report in the discord!")
-
         return false
     end
 
@@ -61,12 +57,10 @@ function Cube:randomize()
 
     chosenMob = keyset[math.random(#keyset)]
     -- PrintMessage(HUD_PRINTTALK, chosenMob)
-
     self.mob = mobs[self.rarity][chosenMob]
     self.key = chosenMob
     -- PrintTable(self.mob)
     self.strength = math.random(1, 4)
-
     return true
 end
 
@@ -82,7 +76,6 @@ end
 
 function Cube:canUpgrade(points)
     local cost = self.level * 6
-
     if points >= cost then
         return true
     else
@@ -92,7 +85,6 @@ end
 
 function Cube:changeColor()
     local ent = self:getEntity()
-
     if self.level == 1 then
         ent:SetColor(Color(138, 21, 255, 255))
     elseif self.level == 2 then

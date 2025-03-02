@@ -1,4 +1,4 @@
--- Headcrab
+﻿-- Headcrab
 SetGlobalString("headcrab_1", "Headcrabs are the default mob, mostly")
 SetGlobalString("headcrab_2", "because they're the worst. Headcrabs")
 SetGlobalString("headcrab_3", "are slow, weak, and inarguably the")
