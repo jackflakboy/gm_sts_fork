@@ -8,7 +8,6 @@
     [7] = false
 }
 
-bonusSurvivors = {}
 function deathmatchKill(victim, inflictor, attacker)
     if attacker == victim then
         attacker:PrintMessage(HUD_PRINTTALK, "Quit killing yourself")
@@ -36,11 +35,12 @@ function deathmatchKill(victim, inflictor, attacker)
 end
 
 function beginSurvival()
+    bonusSurvivors = {}
     for _, ply in ipairs(player.GetAll()) do
         bonusSurvivors[ply:SteamID()] = true
     end
 
-    hook.Add("PlayerDeath", "SurvivalDeath", survivalDeath)
+    hook.Add("PostPlayerDeath", "SurvivalDeath", survivalDeath)
 end
 
 function survivalDeath(ply)
@@ -750,11 +750,11 @@ function beginRavenholm()
         end
 
         for _, ply in ipairs(player.GetAll()) do
+            ply:SetHealth(1)
             local chosen = math.random(1, 5)
             for _, ent in ipairs(ents.FindByClass("info_teleport_destination")) do
                 if ent:GetName() == ("maprav" .. "_" .. getTeamNameFromID(ply:Team()) .. "spawn" .. tostring(chosen)) then
                     ply:SetPos(ent:GetPos())
-                    ply:SetHealth(1)
                     ply:SetEyeAngles(ent:GetAngles())
                     break
                 end
