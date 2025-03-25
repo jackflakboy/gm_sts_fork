@@ -1,12 +1,17 @@
-﻿LoadedSounds = LoadedSounds or {}
-mainTrack = mainTrack or nil
+﻿mainTrack = mainTrack or nil
 mainTrackSound = 1
-function playGlobalSound(FileName, teamID)
+GlobalSoundCache = GlobalSoundCache or {}
+
+function playGlobalSound(FileName, teamID, cleanupTime)
     local sound
     local filter
     teamID = teamID or -1
+    cleanupTime = cleanupTime or 0
+
+    -- Build the RecipientFilter on server only
     if SERVER then
         filter = RecipientFilter()
+
         if teamID == -1 then
             filter:AddAllPlayers()
         else
@@ -14,50 +19,88 @@ function playGlobalSound(FileName, teamID)
         end
     end
 
-    if SERVER or not LoadedSounds[FileName] then
-        -- The sound is always re-created serverside because of the RecipientFilter.
-        sound = CreateSound(game.GetWorld(), FileName, filter) -- create the new sound, parented to the worldspawn (which always exists)
+    if SERVER or not GlobalSoundCache[FileName] then
+        sound = CreateSound(game.GetWorld(), FileName, filter)
+
         if sound then
             sound:SetSoundLevel(0) -- play everywhere
-            LoadedSounds[FileName] = {
-                sound, -- cache the CSoundPatch
-                filter
+
+            GlobalSoundCache[FileName] = {
+                sound = sound,
+                filter = filter
             }
         end
     else
-        sound = LoadedSounds[FileName][1]
-        filter = LoadedSounds[FileName][2]
+        -- We already have a cached reference on the client
+        sound = GlobalSoundCache[FileName].sound
+        filter = GlobalSoundCache[FileName].filter
     end
 
+    if cleanupTime then
+        timer.Simple(cleanupTime, function()
+            GlobalSoundCache[FileName] = nil
+        end)
+    end
+
+    -- If we have a valid sound, play (re-play) it
     if sound then
         if CLIENT then
-            sound:Stop() -- it won't play again otherwise
+            -- Stop first so it replays from the beginning
+            sound:Stop()
         end
 
         sound:Play()
     end
-    return sound -- useful if you want to stop the sound yourself
+    -- We still return the sound object in case you want to Stop it manually
+
+    return sound
+end
+
+function playSimpleGlobalSound(FileName, teamID)
+    local filter = RecipientFilter()
+    teamID = teamID or -1
+    if teamID == -1 then
+        filter:AddAllPlayers()
+    else
+        filter:AddRecipientsByTeam(teamID)
+    end
+
+    EmitSound(FileName, Vector(0, 0, 0), -2, CHAN_AUTO, 1, SNDLVL_NONE, 0, 100, 0, filter)
 end
 
 function beginPlayingMainTrack()
-    if not mainTrack then -- Only create a new mainTrack if it does not already exist
-        mainTrack = playGlobalSound("bm_sts_sounds/miami_sky_hq.wav")
-        if mainTrackSound == 0 then mainTrack:ChangeVolume(0, 0) end
+    -- Only create a new mainTrack if it does not already exist
+    if not mainTrack then
+        mainTrack = playGlobalSound("music/miami_sky_hq.wav")
+
+        if mainTrackSound == 0 then
+            mainTrack:ChangeVolume(0, 0)
+        end
+
         -- Setting up the timer to restart the sound track
         timer.Create("RepeatTrack", 103, 0, function()
             mainTrack:Stop() -- Stop the current track
             mainTrack:Play() -- Play the track again
-            if mainTrackSound == 0 then mainTrack:ChangeVolume(0, 0) end
+
+            if mainTrackSound == 0 then
+                mainTrack:ChangeVolume(0, 0)
+            end
         end)
     end
 end
 
 function muteMainTrack()
     mainTrackSound = 0
-    if mainTrack then mainTrack:ChangeVolume(0, 2) end
+
+    if mainTrack then
+        mainTrack:ChangeVolume(0, 2)
+    end
 end
 
 function unmuteMainTrack()
     mainTrackSound = 1
-    if mainTrack then mainTrack:ChangeVolume(1, 2) end
+
+    if mainTrack then
+        mainTrack:ChangeVolume(1, 2)
+    end
 end
