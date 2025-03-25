@@ -1044,7 +1044,7 @@ function roundReset()
 end
 
 function ReadyLeverPulled(teamName)
-    playGlobalSound("sts_sounds_new/" .. teamName .. "_ready.wav")
+    playSimpleGlobalSound("sts_sounds_new/" .. teamName .. "_ready.wav")
     shouldGameStart()
 end
 
@@ -1320,9 +1320,9 @@ function beginFight()
                     alive[aliveteam] = -1
 
                     if math.random(1, 50) == 1 then
-                        playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "_lose_funny.wav")
+                        playSimpleGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "_lose_funny.wav")
                     else
-                        playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "_lose" .. math.random(1, 2) .. ".wav")
+                        playSimpleGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "_lose" .. math.random(1, 2) .. ".wav")
                     end
                 end
             end
@@ -1354,7 +1354,7 @@ function beginFight()
                 end
 
                 SendServerMessage(formattedWinner[winner] .. " Team Wins!", winnerColor[winner], 5)
-                playGlobalSound("sts_sounds_new/" .. winnerShorter[winner] .. "_win" .. math.random(1, 3) .. ".wav")
+                playSimpleGlobalSound("sts_sounds_new/" .. winnerShorter[winner] .. "_win" .. math.random(1, 3) .. ".wav")
                 endRound()
             elseif amountalive == 0 then
                 timer.Remove("CheckForWin")
@@ -1366,7 +1366,7 @@ function beginFight()
                     SendPointsToTeamMembers(teamID)
                 end
 
-                playGlobalSound("sts_sounds_new/tie.wav")
+                playSimpleGlobalSound("sts_sounds_new/tie.wav")
                 SendServerMessage("Tie!", Color(255, 255, 255), 3)
                 endRound()
             end
@@ -1559,7 +1559,7 @@ function gameOver()
     local highestscore = 0
     stopLobbySpawn()
     stopGameSpawn()
-    endWinSound = playGlobalSound("music/end_win.wav")
+    playSimpleGlobalSound("music/end_win.wav")
 
     for _, teamID in ipairs(getPlayingTeams()) do
         if team.GetScore(teamID) > highestscore then

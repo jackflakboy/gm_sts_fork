@@ -8,7 +8,6 @@ function playGlobalSound(FileName, teamID, cleanupTime)
     teamID = teamID or -1
     cleanupTime = cleanupTime or 0
 
-    -- Build the RecipientFilter on server only
     if SERVER then
         filter = RecipientFilter()
 
@@ -31,7 +30,6 @@ function playGlobalSound(FileName, teamID, cleanupTime)
             }
         end
     else
-        -- We already have a cached reference on the client
         sound = GlobalSoundCache[FileName].sound
         filter = GlobalSoundCache[FileName].filter
     end
@@ -42,16 +40,13 @@ function playGlobalSound(FileName, teamID, cleanupTime)
         end)
     end
 
-    -- If we have a valid sound, play (re-play) it
     if sound then
         if CLIENT then
-            -- Stop first so it replays from the beginning
             sound:Stop()
         end
 
         sound:Play()
     end
-    -- We still return the sound object in case you want to Stop it manually
 
     return sound
 end

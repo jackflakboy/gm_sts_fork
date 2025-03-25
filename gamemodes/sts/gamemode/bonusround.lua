@@ -162,6 +162,7 @@ function beginElMatador()
     hook.Add("PlayerSpawn", "ElMatadorTP", elMatadorTeleport)
     stopLobbySpawn()
     beginSurvival()
+    local ElMatadorSound
     local desiredTime = GetConVar("sts_survival_time"):GetInt()
 
     for _, ply in ipairs(player.GetAll()) do
@@ -276,6 +277,7 @@ function beginSpaceSMGs()
     hook.Add("PlayerSpawn", "SpaceSMGTP", SpaceSMGsTeleport)
     stopLobbySpawn()
     local desiredTime = GetConVar("sts_deathmatch_time"):GetInt()
+    local SpaceSMGsSound
 
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -367,6 +369,7 @@ function beginCTF()
     hook.Add("PlayerSpawn", "CTFTP", CTFTeleport)
     stopLobbySpawn()
     local desiredTime = GetConVar("sts_deathmatch_time"):GetInt()
+    local CTFSound
 
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -471,6 +474,7 @@ function beginBattery()
     hook.Add("PlayerSpawn", "BatteryTP", BatteryTeleport)
     stopLobbySpawn()
     local desiredTime = GetConVar("sts_deathmatch_time"):GetInt()
+    local BatterySound
 
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -592,6 +596,7 @@ function beginCrabRave()
     local desiredTime = GetConVar("sts_survival_time"):GetInt()
     beginSurvival()
     stopLobbySpawn()
+    local CrabRaveSound
 
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -703,6 +708,7 @@ function beginBoomstick()
     hook.Add("PlayerSpawn", "BoomstickTP", boomstickTeleport)
     stopLobbySpawn()
     local desiredTime = GetConVar("sts_deathmatch_time"):GetInt()
+    local BoomstickSound
 
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -806,6 +812,7 @@ function beginRavenholm()
     local desiredTime = GetConVar("sts_survival_time"):GetInt()
     beginSurvival()
     stopLobbySpawn()
+    local RavenholmSound
 
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -946,6 +953,7 @@ function beginHl2dm()
     hook.Add("PlayerSpawn", "HL2TP", hl2dmTeleport)
     stopLobbySpawn()
     local desiredTime = GetConVar("sts_deathmatch_time"):GetInt()
+    local HL2DMSound
 
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -1069,6 +1077,7 @@ function beginDodgeball()
     hook.Add("PlayerSpawn", "DodgeballTP", dodgeballTeleport)
     stopLobbySpawn()
     local desiredTime = GetConVar("sts_deathmatch_time"):GetInt()
+    local DodgeballSound
 
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)
@@ -1173,6 +1182,7 @@ function beginLookUp()
     local desiredTime = GetConVar("sts_survival_time"):GetInt()
     beginSurvival()
     stopLobbySpawn()
+    local LookUpSound
 
     for _, ply in ipairs(player.GetAll()) do
         ply:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 255), 1, 4)

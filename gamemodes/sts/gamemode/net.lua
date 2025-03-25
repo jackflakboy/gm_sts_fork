@@ -154,18 +154,3 @@ if SERVER then
 end
 
 if CLIENT then net.Receive("UpdateGravity", function() globalGravity = net.ReadFloat() end) end
-if SERVER then
-    util.AddNetworkString("PlaySoundOnClient")
-    function playSoundOnClient(soundName, ply)
-        net.Start("PlaySoundOnClient")
-        net.WriteString(soundName)
-        net.Send(ply)
-    end
-end
-
-if CLIENT then
-    net.Receive("PlaySoundOnClient", function()
-        local soundName = net.ReadString()
-        playGlobalSound(soundName)
-    end)
-end
