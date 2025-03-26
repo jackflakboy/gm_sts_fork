@@ -51,18 +51,6 @@ function playGlobalSound(FileName, teamID, cleanupTime)
     return sound
 end
 
-function playSimpleGlobalSound(FileName, teamID)
-    local filter = RecipientFilter()
-    teamID = teamID or -1
-    if teamID == -1 then
-        filter:AddAllPlayers()
-    else
-        filter:AddRecipientsByTeam(teamID)
-    end
-
-    EmitSound(FileName, Vector(0, 0, 0), -2, CHAN_AUTO, 1, SNDLVL_NONE, 0, 100, 0, filter)
-end
-
 function beginPlayingMainTrack()
     -- Only create a new mainTrack if it does not already exist
     if not mainTrack then

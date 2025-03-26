@@ -36,7 +36,7 @@ function HUD()
     ----------------------------------------------------------------
     if not gameStarted then
         draw.RoundedBox(cornerRadiusSmall, (screenWidth * 0.5) - ScaleW(225), ScaleH(75), ScaleW(450), ScaleH(60), Color(10, 10, 10, 230))
-        draw.SimpleText("Starting Points: " .. startingPoints, "CloseCaption_Bold", screenWidth * 0.5, ScaleH(90), Color(255, 255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+        draw.SimpleText("Starting Points: " .. startingPoints, "CloseCaption_Bold", screenWidth * 0.5 + ScaleW(90), ScaleH(90), Color(255, 255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
         draw.SimpleText("Rounds: " .. startingRounds, "CloseCaption_Bold", (screenWidth * 0.5) - ScaleW(180), ScaleH(90), Color(255, 255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
     end
 
@@ -89,7 +89,7 @@ function HUD()
             -- Draw up to 15 lines of description
             for i = 1, 15 do
                 local desc = GetGlobalString(mobDescription .. "_" .. i)
-                if desc and desc ~= "" then draw.SimpleText(desc, "ChatFont", panelX + ScaleW(20), panelY + ScaleH(130) + ScaleH(20) * i, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP) end
+                if desc and desc ~= "" then draw.SimpleText(desc, "ChatFont", panelX + ScaleW(20), panelY + ScaleH(200) + ScaleH(20) * i, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP) end
             end
         end
     end

@@ -11,6 +11,7 @@ AddCSLuaFile("sound.lua")
 AddCSLuaFile("teleports.lua")
 AddCSLuaFile("net.lua")
 AddCSLuaFile("testing.lua")
+AddCSLuaFile("descriptions.lua")
 -- AddCSLuaFile("entities/team_indicator/init.lua")
 include("bonusround.lua")
 include("concommands.lua")
@@ -864,10 +865,10 @@ function upgradeABox(cubeName)
         local funny = math.random(1, 100)
 
         if funny == 1 then
-            playSimpleGlobalSound("sts_sounds_new/newtechlevel_funny.wav", teamID)
+            playGlobalSound("sts_sounds_new/newtechlevel_funny.wav", teamID)
         else
             local variant = math.random(1, 3)
-            playSimpleGlobalSound("sts_sounds_new/newtechlevel" .. variant .. ".wav", teamID)
+            playGlobalSound("sts_sounds_new/newtechlevel" .. variant .. ".wav", teamID)
         end
     end
 
@@ -1044,7 +1045,7 @@ function roundReset()
 end
 
 function ReadyLeverPulled(teamName)
-    playSimpleGlobalSound("sts_sounds_new/" .. teamName .. "_ready.wav")
+    playGlobalSound("sts_sounds_new/" .. teamName .. "_ready.wav")
     shouldGameStart()
 end
 
@@ -1320,9 +1321,9 @@ function beginFight()
                     alive[aliveteam] = -1
 
                     if math.random(1, 50) == 1 then
-                        playSimpleGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "_lose_funny.wav")
+                        playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "_lose_funny.wav")
                     else
-                        playSimpleGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "_lose" .. math.random(1, 2) .. ".wav")
+                        playGlobalSound("sts_sounds_new/" .. winnerShorter[aliveteam] .. "_lose" .. math.random(1, 2) .. ".wav")
                     end
                 end
             end
@@ -1354,7 +1355,7 @@ function beginFight()
                 end
 
                 SendServerMessage(formattedWinner[winner] .. " Team Wins!", winnerColor[winner], 5)
-                playSimpleGlobalSound("sts_sounds_new/" .. winnerShorter[winner] .. "_win" .. math.random(1, 3) .. ".wav")
+                playGlobalSound("sts_sounds_new/" .. winnerShorter[winner] .. "_win" .. math.random(1, 3) .. ".wav")
                 endRound()
             elseif amountalive == 0 then
                 timer.Remove("CheckForWin")
@@ -1366,7 +1367,7 @@ function beginFight()
                     SendPointsToTeamMembers(teamID)
                 end
 
-                playSimpleGlobalSound("sts_sounds_new/tie.wav")
+                playGlobalSound("sts_sounds_new/tie.wav")
                 SendServerMessage("Tie!", Color(255, 255, 255), 3)
                 endRound()
             end
@@ -1382,6 +1383,7 @@ function endRound()
     setNextMapScreen(getMapScreen(nextMap))
 
     for _, ply in ipairs(player.GetAll()) do
+        ply:StripWeapons()
         teleportToTeamSpawn(ply)
     end
 
@@ -1559,7 +1561,7 @@ function gameOver()
     local highestscore = 0
     stopLobbySpawn()
     stopGameSpawn()
-    playSimpleGlobalSound("music/end_win.wav")
+    playGlobalSound("music/end_win.wav")
 
     for _, teamID in ipairs(getPlayingTeams()) do
         if team.GetScore(teamID) > highestscore then
