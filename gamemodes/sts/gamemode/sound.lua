@@ -54,7 +54,7 @@ end
 function beginPlayingMainTrack()
     -- Only create a new mainTrack if it does not already exist
     if not mainTrack then
-        mainTrack = playGlobalSound("music/miami_sky_hq.wav")
+        mainTrack = playGlobalSound("sts_music/miami_sky_hq.wav")
 
         if mainTrackSound == 0 then
             mainTrack:ChangeVolume(0, 0)

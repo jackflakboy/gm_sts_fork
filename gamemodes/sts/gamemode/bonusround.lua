@@ -176,7 +176,7 @@ function beginElMatador()
 
     timer.Simple(3, function()
         SendServerMessage("El Matador!", Color(255, 0, 255), 2)
-        ElMatadorSound = playGlobalSound("music/go_together_ashija.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        ElMatadorSound = playGlobalSound("sts_music/go_together_ashija.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
 
     -- TODO: determine the root cause and find a better solution
@@ -290,7 +290,7 @@ function beginSpaceSMGs()
 
     timer.Simple(3, function()
         SendServerMessage("Space SMGs!", Color(255, 0, 255), 2)
-        SpaceSMGsSound = playGlobalSound("music/triage_at_dawn_remix.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        SpaceSMGsSound = playGlobalSound("sts_music/triage_at_dawn_remix.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
 
     -- TODO: determine the root cause and find a better solution
@@ -382,7 +382,7 @@ function beginCTF()
 
     timer.Simple(3, function()
         SendServerMessage("Capture the Flag!", Color(255, 0, 255), 2)
-        CTFSound = playGlobalSound("music/something_secret_steers.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        CTFSound = playGlobalSound("sts_music/something_secret_steers.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
 
     hook.Remove("PlayerLoadout", "Default")
@@ -487,7 +487,7 @@ function beginBattery()
 
     timer.Simple(3, function()
         SendServerMessage("Batteries!", Color(255, 0, 255), 2)
-        BatterySound = playGlobalSound("music/something_secret_steers.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        BatterySound = playGlobalSound("sts_music/something_secret_steers.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
 
     hook.Remove("PlayerLoadout", "Default")
@@ -609,7 +609,7 @@ function beginCrabRave()
 
     timer.Simple(3, function()
         SendServerMessage("Crab Rave!", Color(255, 0, 255), 2)
-        CrabRaveSound = playGlobalSound("music/go_together_ashija.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        CrabRaveSound = playGlobalSound("sts_music/go_together_ashija.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
 
     timer.Simple(4, function()
@@ -721,7 +721,7 @@ function beginBoomstick()
 
     timer.Simple(3, function()
         SendServerMessage("Boomsticks!", Color(255, 0, 255), 2)
-        BoomstickSound = playGlobalSound("music/funky_beat.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        BoomstickSound = playGlobalSound("sts_music/funky_beat.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
 
     hook.Remove("PlayerLoadout", "Default")
@@ -825,7 +825,7 @@ function beginRavenholm()
 
     timer.Simple(3, function()
         SendServerMessage("We went to Ravenholm!", Color(255, 0, 255), 2)
-        RavenholmSound = playGlobalSound("music/HNG3r.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        RavenholmSound = playGlobalSound("sts_music/HNG3r.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
 
     timer.Simple(4, function()
@@ -966,7 +966,7 @@ function beginHl2dm()
 
     timer.Simple(3, function()
         SendServerMessage("Half-Life 2 Deathmatch!", Color(255, 0, 255), 2)
-        HL2DMSound = playGlobalSound("music/funky_beat.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        HL2DMSound = playGlobalSound("sts_music/funky_beat.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
 
     hook.Remove("PlayerLoadout", "Default")
@@ -1100,7 +1100,7 @@ function beginDodgeball()
 
     timer.Simple(3, function()
         SendServerMessage("Dodgeball!", Color(255, 0, 255), 2)
-        DodgeballSound = playGlobalSound("music/celestial.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        DodgeballSound = playGlobalSound("sts_music/celestial.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
 
     hook.Remove("PlayerLoadout", "Default")
@@ -1195,7 +1195,7 @@ function beginLookUp()
 
     timer.Simple(3, function()
         SendServerMessage("Look Up!", Color(255, 0, 255), 2)
-        LookUpSound = playGlobalSound("music/cp_violation.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
+        LookUpSound = playGlobalSound("sts_music/cp_violation.wav") -- this has to be a global object because this is the only way i can figure out how to prevent it from stopping randomly
     end)
 
     timer.Simple(4, function()
