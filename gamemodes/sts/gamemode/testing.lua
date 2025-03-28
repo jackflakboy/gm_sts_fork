@@ -212,6 +212,7 @@
                         ply:SetPos(nextMapSpawnLocations[getTeamNameFromID(ply:Team())][i][1])
                         ply:SetAngles(nextMapSpawnLocations[getTeamNameFromID(ply:Team())][i][2])
                     end
+                    enableWallhacks()
                 end
 
                 if alivetimer[aliveteam] == 0 and amountalive > 1 then
@@ -257,6 +258,7 @@
                 SendServerMessage(formattedWinner[winner] .. " Team Wins!", winnerColor[winner], 5)
                 playGlobalSound("sts_sounds_new/" .. winnerShorter[winner] .. "_win" .. math.random(1, 3) .. ".wav")
                 endRound()
+                disableWallhacks()
             elseif amountalive == 0 then
                 timer.Remove("CheckForWin")
                 timer.Remove("SuddenDeath")
@@ -270,6 +272,7 @@
                 playGlobalSound("sts_sounds_new/tie.wav")
                 SendServerMessage("Tie!", Color(255, 255, 255), 3)
                 endRound()
+                disableWallhacks()
             end
         end)
     end)

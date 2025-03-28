@@ -160,9 +160,49 @@ cvars.AddChangeCallback("sts_episodic_content", function(convarName, valueOld, v
         mobs[1]["fasttorso"] = nil
     end
 end)
--- function createTeamIndicator(ent, teamID)
---     local indicator = ents.Create("func_brush")
--- end
--- concommand.Add("spawn_valkyrie", function(ply, cmd, args)
---     spawnValkyrie(args[1], ply:GetEyeTrace().HitPos)
--- end)
+
+function enableWallhacks()
+    hook.Add("PreDrawHalos", "GiveNPCsOutlines", function()
+        local npcs = {
+            ["red"] = {},
+            ["blue"] = {},
+            ["yellow"] = {},
+            ["green"] = {}
+        }
+        for _, ent in ipairs(ents.GetAll()) do
+            if ent:IsNPC() and string.find(ent:GetName(), "red") then
+                table.insert(npcs["red"], ent)
+            end
+            if ent:IsNPC() and string.find(ent:GetName(), "blue") then
+                table.insert(npcs["blue"], ent)
+            end
+            if ent:IsNPC() and string.find(ent:GetName(), "yellow") then
+                table.insert(npcs["yellow"], ent)
+            end
+            if ent:IsNPC() and string.find(ent:GetName(), "green") then
+                table.insert(npcs["green"], ent)
+            end
+        end
+
+        for _, ply in ipairs(player.GetAll()) do
+            if ply:Team() == 1 then
+                table.insert(npcs["blue"], ply)
+            elseif ply:Team() == 2 then
+                table.insert(npcs["red"], ply)
+            elseif ply:Team() == 3 then
+                table.insert(npcs["green"], ply)
+            elseif ply:Team() == 4 then
+                table.insert(npcs["yellow"], ply)
+            end
+        end
+
+        halo.Add(npcs["red"], Color(255, 0, 0), 2, 2, 2, true, true)
+        halo.Add(npcs["blue"], Color(51, 51, 255), 2, 2, 2, true, true)
+        halo.Add(npcs["yellow"], Color(255, 255, 0), 2, 2, 2, true, true)
+        halo.Add(npcs["green"], Color(0, 255, 0), 2, 2, 2, true, true)
+    end)
+end
+
+function disableWallhacks()
+    hook.Remove("PreDrawHalos", "GiveNPCsOutlines")
+end
