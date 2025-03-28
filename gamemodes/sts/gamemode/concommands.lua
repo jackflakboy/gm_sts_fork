@@ -17,7 +17,7 @@ local teamProperties = {
     },
     [4] = {
         color = Vector(1.0, 1.0, 0.0),
-        outfitterColor = "255 2530 0",
+        outfitterColor = "255 255 0",
         namePrefix = "Yellowply"
     },
     [0] = {

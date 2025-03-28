@@ -1,7 +1,8 @@
 "sts"
 {
 	"base"			"base"
-	"title"			"Sts"
-	"maps"			""
+	"title"			"STS"
+	"maps"			"^gm_sts"
 	"menusystem"	"1"
+	"workshopid"	"2422776877"
 }
