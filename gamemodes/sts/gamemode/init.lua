@@ -332,6 +332,10 @@ function GM:PlayerInitialSpawn(ply)
     end
 
     updateSettingsToClients(GetConVar("sts_starting_points"):GetInt(), GetConVar("sts_total_rounds"):GetInt())
+
+    if math.random(1, 100) == 1 then
+        playGlobalSound("sts_announcer/playerjoin.ogg")
+    end
 end
 
 hook.Add("PlayerSpawn", "UniversalPlayerSpawn", function(ply)
@@ -441,6 +445,10 @@ function GM:PlayerDisconnected(ply)
 
     if gameState == 0 then
         shouldGameStart()
+    end
+
+    if math.random(1, 100) == 1 then
+        playGlobalSound("sts_announcer/playerleave.ogg")
     end
 end
 
