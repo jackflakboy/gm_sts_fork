@@ -18,7 +18,7 @@ CreateConVar("sts_bonus_round_interval", "2", {FCVAR_GAMEDLL, FCVAR_REPLICATED, 
 CreateConVar("sts_winner_points", "6", {FCVAR_GAMEDLL, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Determine point reward for winning a round.", 1, 100)
 CreateConVar("sts_loser_points", "5", {FCVAR_GAMEDLL, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Determine point reward for losing a round.", 1, 100)
 CreateConVar("sts_sudden_death", "1", {FCVAR_GAMEDLL, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Determine if sudden death should be enabled.", 0, 1)
-CreateConVar("sts_sudden_death_time", "25", {FCVAR_GAMEDLL, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Determine time until sudden death should begin.", 1, 600)
+CreateConVar("sts_sudden_death_time", "120", {FCVAR_GAMEDLL, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Determine time until sudden death should begin.", 1, 600)
 RunConsoleCommand("sv_gravity", "600") -- reset gravity
 RunConsoleCommand("sk_combine_s_kick", "6") -- change combine melee damage
 RunConsoleCommand("sbox_noclip", "0")
