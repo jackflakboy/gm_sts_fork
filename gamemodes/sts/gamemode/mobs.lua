@@ -163,43 +163,50 @@ end)
 
 function enableWallhacks()
     hook.Add("PreDrawHalos", "GiveNPCsOutlines", function()
-        local npcs = {
-            ["red"] = {},
-            ["blue"] = {},
-            ["yellow"] = {},
-            ["green"] = {}
+        local buckets = {
+            red = {},
+            blue = {},
+            yellow = {},
+            green = {},
+            white = {}
         }
+
+        -- npc pass
         for _, ent in ipairs(ents.GetAll()) do
-            if ent:IsNPC() and string.find(ent:GetName(), "red") then
-                table.insert(npcs["red"], ent)
-            end
-            if ent:IsNPC() and string.find(ent:GetName(), "blue") then
-                table.insert(npcs["blue"], ent)
-            end
-            if ent:IsNPC() and string.find(ent:GetName(), "yellow") then
-                table.insert(npcs["yellow"], ent)
-            end
-            if ent:IsNPC() and string.find(ent:GetName(), "green") then
-                table.insert(npcs["green"], ent)
+            if not ent:IsNPC() then continue end
+            local name = ent:GetNWString("wallhack_col", "white"):lower()
+            if name:find("red", 1, true) then
+                table.insert(buckets.red, ent)
+            elseif name:find("blue", 1, true) then
+                table.insert(buckets.blue, ent)
+            elseif name:find("yellow", 1, true) then
+                table.insert(buckets.yellow, ent)
+            elseif name:find("green", 1, true) then
+                table.insert(buckets.green, ent)
+            elseif name:find("white", 1, true) then
+                table.insert(buckets.white, ent)
             end
         end
 
+        -- player pass
         for _, ply in ipairs(player.GetAll()) do
-            if ply:Team() == 1 then
-                table.insert(npcs["blue"], ply)
-            elseif ply:Team() == 2 then
-                table.insert(npcs["red"], ply)
-            elseif ply:Team() == 3 then
-                table.insert(npcs["green"], ply)
-            elseif ply:Team() == 4 then
-                table.insert(npcs["yellow"], ply)
+            local t = ply:Team()
+            if t == 1 then
+                table.insert(buckets.blue, ply)
+            elseif t == 2 then
+                table.insert(buckets.red, ply)
+            elseif t == 3 then
+                table.insert(buckets.green, ply)
+            elseif t == 4 then
+                table.insert(buckets.yellow, ply)
             end
         end
 
-        halo.Add(npcs["red"], Color(255, 0, 0), 2, 2, 2, true, true)
-        halo.Add(npcs["blue"], Color(51, 51, 255), 2, 2, 2, true, true)
-        halo.Add(npcs["yellow"], Color(255, 255, 0), 2, 2, 2, true, true)
-        halo.Add(npcs["green"], Color(0, 255, 0), 2, 2, 2, true, true)
+        if #buckets.red > 0 then halo.Add(buckets.red, Color(255, 0, 0), 2, 2, 2, true, true) end
+        if #buckets.blue > 0 then halo.Add(buckets.blue, Color(51, 51, 255), 2, 2, 2, true, true) end
+        if #buckets.yellow > 0 then halo.Add(buckets.yellow, Color(255, 255, 0), 2, 2, 2, true, true) end
+        if #buckets.green > 0 then halo.Add(buckets.green, Color(0, 255, 0), 2, 2, 2, true, true) end
+        if #buckets.white > 0 then halo.Add(buckets.white, Color(255, 255, 255), 2, 2, 2, true, true) end
     end)
 end
 

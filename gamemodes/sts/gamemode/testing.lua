@@ -9,23 +9,11 @@
     setupMap(nextMap)
     local soundTrack
     local suddenDeath = false
-
     for _, ent in ipairs(ents.GetAll()) do
-        if ent:GetName() == "map_push_red" then
-            ent:Fire("Enable")
-        end
-
-        if ent:GetName() == "map_push_blue" then
-            ent:Fire("Enable")
-        end
-
-        if ent:GetName() == "map_push_green" then
-            ent:Fire("Enable")
-        end
-
-        if ent:GetName() == "map_push_yellow" then
-            ent:Fire("Enable")
-        end
+        if ent:GetName() == "map_push_red" then ent:Fire("Enable") end
+        if ent:GetName() == "map_push_blue" then ent:Fire("Enable") end
+        if ent:GetName() == "map_push_green" then ent:Fire("Enable") end
+        if ent:GetName() == "map_push_yellow" then ent:Fire("Enable") end
     end
 
     if math.random(1, 2) == 1 then
@@ -46,11 +34,10 @@
     end
 
     -- start spawning motherfuckers
-    local teamsToSpawn = {1,2,3,4}
+    local teamsToSpawn = {1, 2, 3, 4}
     local teamMobs = {} -- {1 = ..., 4 = ...}
     local delay
     local largestDelay = 0
-
     for _, id in pairs(teamsToSpawn) do
         for i = 1, 4 do
             local level = math.random(1, 4)
@@ -75,7 +62,6 @@
 
     for _, id in pairs(teamsToSpawn) do
         PrintTable(teams[id].spawners)
-
         for _, spawner in ipairs(teams[id].spawners) do
             if teamMobs[id] == nil then
                 teamMobs[id] = spawner[1].mob:getSpawns(id, spawner[1].strength)
@@ -87,26 +73,19 @@
 
     for i, theMobs in pairs(teamMobs) do
         delay = 0
-
         for _, mob in ipairs(theMobs) do
             delay = delay + mob[2]
-
             -- if mob[3] then
             --     timer.Simple(delay, mob[3](getTeamNameFromID(i), Vector(0,0,0)))
             -- else
-            timer.Simple(delay, function()
-                mob[1]:Fire("ForceSpawn")
-            end)
+            timer.Simple(delay, function() mob[1]:Fire("ForceSpawn") end)
             -- end
         end
 
-        if delay > largestDelay then
-            largestDelay = delay
-        end
+        if delay > largestDelay then largestDelay = delay end
     end
 
     local alive = {}
-
     for _, id in pairs(teamsToSpawn) do
         if id == 1 then
             alive["blueteam"] = 0
@@ -121,7 +100,6 @@
 
     -- PrintMessage(HUD_PRINTTALK, "waiting " .. delay .. " seconds")
     local winner
-
     local formattedWinner = {
         ["redteam"] = "Red",
         ["blueteam"] = "Blue",
@@ -145,21 +123,10 @@
 
     timer.Simple(largestDelay, function()
         for _, ent in ipairs(ents.GetAll()) do
-            if ent:GetName() == "map_push_red" then
-                ent:Fire("Disable")
-            end
-
-            if ent:GetName() == "map_push_blue" then
-                ent:Fire("Disable")
-            end
-
-            if ent:GetName() == "map_push_green" then
-                ent:Fire("Disable")
-            end
-
-            if ent:GetName() == "map_push_yellow" then
-                ent:Fire("Disable")
-            end
+            if ent:GetName() == "map_push_red" then ent:Fire("Disable") end
+            if ent:GetName() == "map_push_blue" then ent:Fire("Disable") end
+            if ent:GetName() == "map_push_green" then ent:Fire("Disable") end
+            if ent:GetName() == "map_push_yellow" then ent:Fire("Disable") end
         end
     end)
 
@@ -176,13 +143,9 @@
             local alivetimer = table.shallow_copy(alive)
             local amountalive = 0
             local name
-
             for _, ent in ipairs(ents.GetAll()) do
                 name = ent:GetName():lower()
-
-                if (name == "redteam" or name == "greenteam" or name == "yellowteam" or name == "blueteam") and ent:IsValid() and ent:IsNPC() and ent:Health() > 0 and alivetimer[name] ~= -1 then
-                    alivetimer[name] = alivetimer[name] + 1
-                end
+                if (name == "redteam" or name == "greenteam" or name == "yellowteam" or name == "blueteam") and ent:IsValid() and ent:IsNPC() and ent:Health() > 0 and alivetimer[name] ~= -1 then alivetimer[name] = alivetimer[name] + 1 end
             end
 
             for aliveteam, _ in pairs(alive) do
@@ -212,14 +175,14 @@
                         ply:SetPos(nextMapSpawnLocations[getTeamNameFromID(ply:Team())][i][1])
                         ply:SetAngles(nextMapSpawnLocations[getTeamNameFromID(ply:Team())][i][2])
                     end
-                    enableWallhacks()
+
+                    enableWallhacksGlobally()
                 end
 
                 if alivetimer[aliveteam] == 0 and amountalive > 1 then
                     SendServerMessage(formattedWinner[aliveteam] .. " Team Defeated!", winnerColor[aliveteam], 3)
                     alivetimer[aliveteam] = -1 -- do not repeat message
                     alive[aliveteam] = -1
-
                     if math.random(1, 50) == 1 then
                         playGlobalSound("sts_announcer/" .. winnerShorter[aliveteam] .. "_lose_funny.wav")
                     else
@@ -227,13 +190,12 @@
                     end
                 end
             end
-            suddenDeath = false
 
+            suddenDeath = false
             if amountalive == 1 then
                 timer.Remove("CheckForWin")
                 timer.Remove("SuddenDeath")
                 local difference = GetConVar("sts_winner_points"):GetInt() - GetConVar("sts_loser_points"):GetInt()
-
                 if winner == "blueteam" then
                     team.AddScore(1, 1)
                     teams[1].points = teams[1].points + difference
@@ -249,7 +211,6 @@
                 end
 
                 soundTrack:Stop()
-
                 for teamID = 1, 4 do
                     teams[teamID].points = teams[teamID].points + GetConVar("sts_loser_points"):GetInt()
                     SendPointsToTeamMembers(teamID)
@@ -258,12 +219,11 @@
                 SendServerMessage(formattedWinner[winner] .. " Team Wins!", winnerColor[winner], 5)
                 playGlobalSound("sts_announcer/" .. winnerShorter[winner] .. "_win" .. math.random(1, 3) .. ".wav")
                 endRound()
-                disableWallhacks()
+                disableWallhacksGlobally()
             elseif amountalive == 0 then
                 timer.Remove("CheckForWin")
                 timer.Remove("SuddenDeath")
                 soundTrack:Stop()
-
                 for teamID = 1, 4 do
                     teams[teamID].points = teams[teamID].points + GetConVar("sts_loser_points"):GetInt()
                     SendPointsToTeamMembers(teamID)
@@ -272,7 +232,7 @@
                 playGlobalSound("sts_announcer/tie.wav")
                 SendServerMessage("Tie!", Color(255, 255, 255), 3)
                 endRound()
-                disableWallhacks()
+                disableWallhacksGlobally()
             end
         end)
     end)

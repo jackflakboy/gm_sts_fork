@@ -154,3 +154,21 @@ if SERVER then
 end
 
 if CLIENT then net.Receive("UpdateGravity", function() globalGravity = net.ReadFloat() end) end
+if SERVER then
+    util.AddNetworkString("Wallhacks")
+    function enableWallhacksGlobally()
+        net.Start("Wallhacks")
+        net.Broadcast()
+    end
+
+    util.AddNetworkString("DisableWallhacks")
+    function disableWallhacksGlobally()
+        net.Start("DisableWallhacks")
+        net.Broadcast()
+    end
+end
+
+if CLIENT then
+    net.Receive("Wallhacks", function() enableWallhacks() end)
+    net.Receive("DisableWallhacks", function() disableWallhacks() end)
+end

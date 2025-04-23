@@ -1,16 +1,14 @@
 ﻿AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
-
 function ENT:Initialize()
     -- Dummy model
     self:SetModel("models/props_junk/PopCan01a.mdl")
     self:SetMoveType(MOVETYPE_NONE)
     self:SetSolid(SOLID_NONE)
     self:DrawShadow(false)
-    self:SetNoDraw(true)
-    self:SetCircleRadius(30)
-    self:SetCircleColor(Vector(math.Rand(0, 1), math.Rand(0, 1), math.Rand(0, 1)))
+    self:SetNoDraw(false)
+    self:SetPos(Vector(0, 0, 0))
 end
 
 function ENT:AttachToEntity(parentEnt)

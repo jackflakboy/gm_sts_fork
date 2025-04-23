@@ -13,7 +13,6 @@ gameStarted = false
 tempMessage = ""
 startedGame = false
 CreateClientConVar("sts_use_descriptions", "1", true, true, "Enables mob descriptions", 0, 1)
-
 surface.CreateFont("timefont", {
     font = "Default", --  Use the font-name which is shown to you by your operating system Font Viewer, not the file name
     extended = false,
