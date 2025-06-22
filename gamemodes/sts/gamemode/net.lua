@@ -172,3 +172,30 @@ if CLIENT then
     net.Receive("Wallhacks", function() enableWallhacks() end)
     net.Receive("DisableWallhacks", function() disableWallhacks() end)
 end
+
+
+if SERVER then
+    util.AddNetworkString("ShieldHitEffect")
+end
+if CLIENT then
+    net.Receive("ShieldHitEffect", function()
+    local pos = net.ReadVector()
+    local ed = EffectData()
+    ed:SetOrigin(pos)
+    util.Effect("cball_bounce", ed)
+    end)
+end
+if SERVER then
+    -- I dont have half life 2 'officially' installed but I have the content files, and for some reason this would cause errors with the death notices or something
+    -- this fixes that issue
+    hook.Add("Initialize", "RegisterAntlionWorker", function()
+        local npcList = list.GetForEdit("NPC")
+        
+        npcList["npc_antlion_worker"] = {
+            Name = "Antlion Worker",
+            Class = "npc_antlion_worker",
+            Category = "Half-Life 2"
+        }
+        print("Registered npc_antlion_worker in NPC list")
+    end)
+end

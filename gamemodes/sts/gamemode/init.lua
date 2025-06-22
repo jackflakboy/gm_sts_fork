@@ -12,7 +12,7 @@ AddCSLuaFile("teleports.lua")
 AddCSLuaFile("net.lua")
 AddCSLuaFile("testing.lua")
 AddCSLuaFile("descriptions.lua")
--- AddCSLuaFile("entities/team_indicator/init.lua")
+--AddCSLuaFile("entities/team_indicator/init.lua")
 include("bonusround.lua")
 include("concommands.lua")
 include("shared.lua")
@@ -25,7 +25,7 @@ include("triggers.lua")
 include("sound.lua")
 include("teleports.lua")
 include("testing.lua")
--- include("entities/team_indicator/init.lua")
+--include("entities/team_indicator/init.lua")
 math.randomseed(os.time())
 nextMap = ""
 nextBR = ""
@@ -443,6 +443,7 @@ function beginTeamAssignment()
             ent = ents.GetByIndex(ent:EntIndex())
             if not ent:IsValid() or not ent:IsNPC() then return end
             if npcClass == "npc_turret_floor" then return end
+            if npcClass == "npc_sniper" then return end
             if ent:GetName() == "" then return end
             if string.find(ent:GetName(), "notp") then return end
             -- i forgot why this is waiting an extra tick
@@ -991,28 +992,67 @@ function beginFight()
     -- start spawning motherfuckers
     local teamsToSpawn = getPlayingTeams()
     local teamMobs = {} -- {1 = ..., 4 = ...}
+
     local delay
     local largestDelay = 0
-    for _, id in pairs(teamsToSpawn) do
-        PrintTable(teams[id].spawners)
+
+    -- Now we build table of mobs to spawn per team
+    -- for every team in teamsToSpawn
+
+    -- spawn point is just an info target in an empty box near the team mob boxes, i just wanted somewhere to spawn them not at 0,0,0
+    local spawn_point
+    for _, ent in ipairs(ents.FindByClass("info_target")) do
+        if ent:GetName() == "spawn_room_marker" then
+            spawn_point = ent
+        end
+    end
+ for _, id in pairs(teamsToSpawn) do
+        
+        -- for every spawner in each team
         for _, spawner in ipairs(teams[id].spawners) do
-            if teamMobs[id] == nil then
-                teamMobs[id] = spawner[1].mob:getSpawns(id, spawner[1].strength)
+
+
+            -- Check if mob has spawn function
+            if spawner[1].mob.spawnfunc == nil then
+            
+                if teamMobs[id] == nil then
+                
+                    teamMobs[id] = spawner[1].mob:getSpawns(id, spawner[1].strength)
+                else
+                    --print("Adding regular mobs")
+                    TableConcat(teamMobs[id], spawner[1].mob:getSpawns(id, spawner[1].strength))
+                end
             else
-                TableConcat(teamMobs[id], spawner[1].mob:getSpawns(id, spawner[1].strength))
+                --print("Spawnfunc found! Adding " .. spawner[1].mob.name .. " to teamMobs table")
+                local newtable = {spawner[1].mob, id, spawner[1].strength, spawn_point:GetPos()}
+                if teamMobs[id] == nil then 
+                    teamMobs[id] = {newtable}
+                else
+                    table.insert(teamMobs[id], newtable)
+                end
             end
         end
     end
+    
 
     for i, mobs in pairs(teamMobs) do
         delay = 0
+        
         for _, mob in ipairs(mobs) do
-            delay = delay + mob[2]
-            -- if mob[3] then
-            --     timer.Simple(delay, mob[3](getTeamNameFromID(i), Vector(0,0,0)))
-            -- else
-            timer.Simple(delay, function() mob[1]:Fire("ForceSpawn") end)
-            -- end
+           
+            
+            if getmetatable(mob[1]) == Mob then
+                for i = 1, mob[3] * mob[1].multiplier do
+                    delay = delay + mob[1].delay
+                    mob[1].spawnfunc(mob[2], delay, spawn_point:GetPos())
+                end
+            else
+                delay = delay + mob[2]
+                timer.Simple(delay, function() mob[1]:Fire("ForceSpawn") end)
+            end
+
+
+            
         end
 
         if delay > largestDelay then largestDelay = delay end
@@ -1062,7 +1102,7 @@ function beginFight()
             if ent:GetName() == "map_push_yellow" then ent:Fire("Disable") end
         end
     end)
-
+    
     timer.Simple(delay, function()
         -- PrintMessage(HUD_PRINTTALK, "checking for win")
         if GetConVar("sts_sudden_death"):GetInt() == 1 then
@@ -1071,7 +1111,7 @@ function beginFight()
                 SendServerMessage("Sudden Death has started! Kill all enemy mobs to win!", Color(255, 255, 255), 3)
             end)
         end
-
+        local haveplayersbeenteleported = false 
         timer.Create("CheckForWin", 1, 0, function()
             local alivetimer = table.shallow_copy(alive)
             local amountalive = 0
@@ -1099,16 +1139,18 @@ function beginFight()
                             end
                         end
                     end
-
-                    -- teleport all players into arena
-                    for i, ply in pairs(team.GetPlayers(getTeamIDFromName(winnerShorter[aliveteam]))) do
-                        ply:SetHealth(100)
-                        ply:Give("weapon_pistol")
-                        ply:SetAmmo(1000, "Pistol")
-                        ply:SetPos(nextMapSpawnLocations[getTeamNameFromID(ply:Team())][i][1])
-                        ply:SetAngles(nextMapSpawnLocations[getTeamNameFromID(ply:Team())][i][2])
+                    -- Trying to fix sudden death respawning you every second
+                    if haveplayersbeenteleported == false then
+                        -- teleport all players into arena
+                        for i, ply in pairs(team.GetPlayers(getTeamIDFromName(winnerShorter[aliveteam]))) do
+                            ply:SetHealth(100)
+                            ply:Give("weapon_pistol")
+                            ply:SetAmmo(1000, "Pistol")
+                            ply:SetPos(nextMapSpawnLocations[getTeamNameFromID(ply:Team())][i][1])
+                            ply:SetAngles(nextMapSpawnLocations[getTeamNameFromID(ply:Team())][i][2])
+                        end
+                        
                     end
-
                     enableWallhacksGlobally()
                 end
 
@@ -1123,7 +1165,7 @@ function beginFight()
                     end
                 end
             end
-
+            haveplayersbeenteleported = true 
             if amountalive == 1 then
                 timer.Remove("CheckForWin")
                 timer.Remove("SuddenDeath")
